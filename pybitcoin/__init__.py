@@ -144,10 +144,6 @@ class Message(object):
         return COMMAND_MAP[command].parse(payload)
 
 
-#EX_VERSION = Message('version', '62 EA 00 00 01 00 00 00 00 00 00 00 11 B2 D0 50 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 3B 2E B3 5D 8C E6 17 65 0F 2F 53 61 74 6F 73 68 69 3A 30 2E 37 2E 32 2F C0 3E 03 00'.replace(' ', '').decode('hex'))
-#EX_VERACK = Message('verack', '\x01\xe2\x15\x10\x4d\x01' + ('\x00' * 17) + '\xff\xff\x0a\x00\x00\x01\x20\x8d')
-
-
 class Version(Message):
     BITS = [(f, struct.calcsize(f)) for f in ['<iQq', '<Q', '<i']]
 
