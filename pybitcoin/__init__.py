@@ -42,7 +42,7 @@ def splitn(bytes, n):
 
 def parse(bytes, fmt):
     (bit, bytes) = splitn(bytes, fmt[1])
-    return (bytes, struct.unpack(fmt[0], bit))
+    return (struct.unpack(fmt[0], bit), bytes)
 
 
 def encode_varint(i):
@@ -61,13 +61,13 @@ def encode_varint(i):
 def parse_varint(bytes):
     (b0,) = struct.unpack('<B', bytes[0])
     if b0 < 0xfd:
-        return (bytes[1:], b0)
+        return (b0, bytes[1:])
     elif b0 == 0xfd:
-        return (bytes[3:], struct.unpack('<H', bytes[1:3])[0])
+        return (struct.unpack('<H', bytes[1:3])[0], bytes[3:])
     elif b0 == 0xfe:
-        return (bytes[5:], struct.unpack('<I', bytes[1:5])[0])
+        return (struct.unpack('<I', bytes[1:5])[0], bytes[5:])
     elif b0 == 0xff:
-        return (bytes[9:], struct.unpack('<Q', bytes[1:9])[0])
+        return (struct.unpack('<Q', bytes[1:9])[0], bytes[9:])
     else:
         raise ParseError('Inconceivable! %r' % (b0,))
 
@@ -77,8 +77,8 @@ def encode_varstr(s):
 
 
 def parse_varstr(bytes):
-    (bytes, str_len) = parse_varint(bytes)
-    return splitn(bytes, str_len)[::-1]
+    (str_len, bytes) = parse_varint(bytes)
+    return splitn(bytes, str_len)
 
 
 ADDR_SVCS_FMT = fmt_w_size('<Q')
@@ -94,10 +94,10 @@ def encode_addr_bare(addr):
 
 
 def parse_addr_bare(bytes):
-    (bytes, (services,)) = parse(bytes, ADDR_SVCS_FMT)
-    (bytes, (_, _, _, ipbytes, port)) = parse(bytes, ADDR_BARE_FMT)
+    ((services,), bytes) = parse(bytes, ADDR_SVCS_FMT)
+    ((_, _, _, ipbytes, port), bytes) = parse(bytes, ADDR_BARE_FMT)
     ip = '.'.join(str(ord(o)) for o in ipbytes)
-    return (bytes, (services, ip, port))
+    return ((services, ip, port), bytes)
 
 
 ADDR_FMT = fmt_w_size('<I')
@@ -106,9 +106,9 @@ def encode_addr(addr, ts):
 
 
 def parse_addr(bytes):
-    (bytes, ts) = parse(bytes, ADDR_FMT)
-    (bytes, addr) = parse_addr_bare(bytes)
-    return (bytes, ts, addr)
+    (ts, bytes) = parse(bytes, ADDR_FMT)
+    (addr, bytes) = parse_addr_bare(bytes)
+    return (ts, addr, bytes)
 
 
 class Message(object):
@@ -128,12 +128,13 @@ class Message(object):
 
     @property
     def bytes(self):
-        return (struct.pack(self.HEADER_FMT[0], self.magic, self.command, len(self.payload), self.checksum) +
+        return (struct.pack(self.HEADER_FMT[0],
+                            self.magic, self.command, len(self.payload), self.checksum) +
                 self.payload)
 
     @classmethod
     def parse(cls, bytes):
-        (bytes, (magic, command, payload_len, checksum)) = parse(bytes, cls.HEADER_FMT)
+        ((magic, command, payload_len, checksum), bytes) = parse(bytes, cls.HEADER_FMT)
         if magic != MAGIC:
             raise ParseError('Magic does not match: %r' % (magic,))
         (payload, bytes) = splitn(bytes, payload_len)
@@ -173,21 +174,21 @@ class Version(Message):
 
     @classmethod
     def parse(cls, bytes):
-        (bytes, (version, services, timestamp)) = parse(bytes, cls.BITS[0])
-        (bytes, addr_recv) = parse_addr_bare(bytes)
-        (bytes, addr_from) = parse_addr_bare(bytes)
-        (bytes, (nonce,)) = parse(bytes, cls.BITS[1])
-        (bytes, user_agent) = parse_varstr(bytes)
-        (bytes, (start_height,)) = parse(bytes, cls.BITS[2])
-        return (bytes,
-                Version(version,
+        ((version, services, timestamp), bytes) = parse(bytes, cls.BITS[0])
+        (addr_recv, bytes) = parse_addr_bare(bytes)
+        (addr_from, bytes) = parse_addr_bare(bytes)
+        ((nonce,), bytes) = parse(bytes, cls.BITS[1])
+        (user_agent, bytes) = parse_varstr(bytes)
+        ((start_height,), bytes) = parse(bytes, cls.BITS[2])
+        return (Version(version,
                         addr_recv,
                         addr_from,
                         nonce,
                         user_agent,
                         start_height,
                         services,
-                        timestamp))
+                        timestamp),
+                bytes)
 
 
 class Verack(Message):
