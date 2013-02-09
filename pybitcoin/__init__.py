@@ -197,9 +197,7 @@ class Verack(Message):
 
     @classmethod
     def parse(cls, bytes):
-        if len(bytes) == 0:
-            raise ParseError('Verack should be empty')
-        return Verack()
+        return (Verack(), bytes)
 
 
 class Ping(Message):
@@ -212,9 +210,7 @@ class Ping(Message):
 
     @classmethod
     def parse(cls, bytes):
-        if len(bytes) == 0:
-            raise ParseError('Ping should be empty')
-        return Ping()
+        return (Ping(), bytes)
 
 
 COMMAND_MAP = {
