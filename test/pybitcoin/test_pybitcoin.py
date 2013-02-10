@@ -15,8 +15,8 @@ def test_version():
         except:
             print '%s: <>' % (f,)
     assert(len(bytes) == 0)
-    assert(msg.magic == pmsg.magic)
-    assert(msg.command == pmsg.command)
+    assert(msg.header.magic == pmsg.header.magic)
+    assert(msg.header.command == pmsg.header.command)
     assert(msg.version == pmsg.version)
     assert(msg.services == pmsg.services)
     assert(msg.timestamp == pmsg.timestamp)
@@ -26,5 +26,6 @@ def test_version():
     assert(msg.user_agent == pmsg.user_agent)
     assert(msg.start_height == pmsg.start_height)
     assert(msg.payload == pmsg.payload)
+    assert(msg.header.checksum == pmsg.header.checksum)
     assert(msg.checksum == pmsg.checksum)
     assert(msg.bytes == pmsg.bytes)

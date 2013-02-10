@@ -111,44 +111,68 @@ def parse_addr(bytes):
     return (ts, addr, bytes)
 
 
-class Message(object):
+class MessageHeader(object):
     HEADER_FMT = fmt_w_size('<4s12sI4s')
 
-    def __init__(self, command):
+    def __init__(self, command=None, payload_length=None, checksum=None):
         self.magic = MAGIC
         self.command = command
+        self.payload_length = payload_length
+        self.checksum = checksum
 
     @property
-    def checksum(self):
-        return self.calc_checksum(self.payload)
+    def bytes(self):
+        return struct.pack(self.HEADER_FMT[0],
+                           self.magic, self.command, self.payload_length, self.checksum)
+
+    @classmethod
+    def parse(cls, bytes):
+        ((magic, command, payload_length, checksum), bytes) = parse(bytes, cls.HEADER_FMT)
+        if magic != MAGIC:
+            raise ParseError('Magic does not match: %r' % (magic,))
+        command = command.rstrip('\x00')
+        return (cls(command, payload_length, checksum), bytes)
+
+
+class Message(object):
+    def __init__(self, command=None, header=None):
+        if header is None:
+            self.header = MessageHeader(command)
+        else:
+            self.header = header
 
     @classmethod
     def calc_checksum(cls, payload):
         return sha256(sha256(payload).digest()).digest()[:4]
 
     @property
+    def checksum(self):
+        return self.calc_checksum(self.payload)
+
+    @property
     def bytes(self):
-        return (struct.pack(self.HEADER_FMT[0],
-                            self.magic, self.command, len(self.payload), self.checksum) +
-                self.payload)
+        if self.header is None:
+            self.header = MessageHeader(self.command, len(self.payload), self.checksum)
+        else:
+            self.header.payload_length = len(self.payload)
+            self.header.checksum = self.checksum
+        return self.header.bytes + self.payload
 
     @classmethod
-    def parse(cls, bytes):
-        ((magic, command, payload_len, checksum), bytes) = parse(bytes, cls.HEADER_FMT)
-        if magic != MAGIC:
-            raise ParseError('Magic does not match: %r' % (magic,))
-        (payload, bytes) = splitn(bytes, payload_len)
-        if checksum != cls.calc_checksum(payload):
+    def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
+        (payload, bytes) = splitn(bytes, header.payload_length)
+        if header.checksum != cls.calc_checksum(payload):
             raise ParseError('Checksum is incorrect')
-        command = command.rstrip('\x00')
-        return COMMAND_MAP[command].parse(payload)
+        return COMMAND_MAP[header.command].parse(payload, header)
 
 
 class Version(Message):
     BITS = [(f, struct.calcsize(f)) for f in ['<iQq', '<Q', '<i']]
 
-    def __init__(self, version, addr_recv, addr_from, nonce, user_agent, start_height, services=0x01, timestamp=None):
-        super(Version, self).__init__('version')
+    def __init__(self, version, addr_recv, addr_from, nonce, user_agent, start_height, services=0x01, timestamp=None, header=None):
+        super(Version, self).__init__('version', header=header)
         self.version = version
         self.services = services
         self.timestamp = timestamp if timestamp is not None else long(time.time())
@@ -169,35 +193,36 @@ class Version(Message):
             struct.pack(self.BITS[2][0], self.start_height)])
 
     @classmethod
-    def parse(cls, bytes):
+    def parse(cls, bytes, header=None):
         ((version, services, timestamp), bytes) = parse(bytes, cls.BITS[0])
         (addr_recv, bytes) = parse_addr_bare(bytes)
         (addr_from, bytes) = parse_addr_bare(bytes)
         ((nonce,), bytes) = parse(bytes, cls.BITS[1])
         (user_agent, bytes) = parse_varstr(bytes)
         ((start_height,), bytes) = parse(bytes, cls.BITS[2])
-        return (Version(version,
-                        addr_recv,
-                        addr_from,
-                        nonce,
-                        user_agent,
-                        start_height,
-                        services,
-                        timestamp),
+        return (cls(version,
+                    addr_recv,
+                    addr_from,
+                    nonce,
+                    user_agent,
+                    start_height,
+                    services,
+                    timestamp,
+                    header),
                 bytes)
 
 
 class Verack(Message):
-    def __init__(self):
-        super(Verack, self).__init__('verack')
+    def __init__(self, header=None):
+        super(Verack, self).__init__('verack', header=header)
 
     @property
     def payload(self):
         return ''
 
     @classmethod
-    def parse(cls, bytes):
-        return (Verack(), bytes)
+    def parse(cls, bytes, header=None):
+        return (cls(header), bytes)
 
 
 class Ping(Message):
@@ -209,8 +234,8 @@ class Ping(Message):
         return ''
 
     @classmethod
-    def parse(cls, bytes):
-        return (Ping(), bytes)
+    def parse(cls, bytes, header=None):
+        return (cls(header), bytes)
 
 
 COMMAND_MAP = {
