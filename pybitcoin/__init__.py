@@ -1,7 +1,11 @@
 """PyBitCoin"""
 from hashlib import sha256
+import logging
 import struct
 import time
+
+
+log = logging.getLogger(__name__)
 
 
 MAGIC = struct.pack('<I', 0xD9B4BEF9)
@@ -165,11 +169,13 @@ class Message(object):
         (payload, bytes) = splitn(bytes, header.payload_length)
         if header.checksum != cls.calc_checksum(payload):
             raise ParseError('Checksum is incorrect')
-        return COMMAND_MAP[header.command].parse(payload, header)
+        if header.command not in COMMAND_CLASS_MAP:
+            raise ParseError('Unknown command %s' % (header.command,))
+        return COMMAND_CLASS_MAP[header.command].parse(payload, header)
 
 
 class Version(Message):
-    BITS = [(f, struct.calcsize(f)) for f in ['<iQq', '<Q', '<i']]
+    BITS = [fmt_w_size(f) for f in ['<iQq', '<Q', '<i']]
 
     def __init__(self, version, addr_recv, addr_from, nonce, user_agent, start_height, services=0x01, timestamp=None, header=None):
         super(Version, self).__init__('version', header=header)
@@ -226,8 +232,8 @@ class Verack(Message):
 
 
 class Ping(Message):
-    def __init__(self):
-        super(Verack, self).__init__('ping')
+    def __init__(self, header=None):
+        super(Verack, self).__init__('ping', header=header)
 
     @property
     def payload(self):
@@ -238,8 +244,78 @@ class Ping(Message):
         return (cls(header), bytes)
 
 
-COMMAND_MAP = {
+class Address(Message):
+    def __init__(self, header=None):
+        super(Address, self).__init__('addr', header=header)
+
+    @property
+    def payload(self):
+        raise Error()
+
+    @classmethod
+    def parse(cls, bytes, header=None):
+        raise Error()
+
+
+class Inventory(Message):
+    FORMAT = fmt_w_size('<I32s')
+
+    def __init__(self, hashes=None, header=None):
+        super(Inventory, self).__init__('inv', header=header)
+        self.hashes = hashes if hashes is not None else []
+
+    @property
+    def payload(self):
+        return ''.join([
+            encode_varint(len(self.hashes))]
+            + [
+                struct.pack(self.FORMAT, *item)
+                for item in self.hashes
+            ])
+
+    @classmethod
+    def parse(cls, bytes, header=None):
+        (count, bytes) = parse_varint(bytes)
+        hashes = []
+        for _ in xrange(count):
+            (item, bytes) = parse(bytes, cls.FORMAT)
+            hashes.append(item)
+        return (cls(hashes, header), bytes)
+
+    def __repr__(self):
+        return 'inv([' + ', '.join([repr(i) for i in self.hashes]) + '])'
+
+
+COMMAND_CLASS_MAP = {
     'version': Version,
     'verack': Verack,
     'ping': Ping,
+    'inv': Inventory,
 }
+
+
+def handle_default(msg):
+    log.info('No handler for %s message' % (msg.header.command,))
+
+
+def handle_verack(msg):
+    pass
+
+
+def handle_ping(msg):
+    pass
+
+
+def handle_version(msg):
+    return Verack()
+
+
+COMMAND_HANDLE_MAP = {
+    'verack': handle_verack,
+    'version': handle_version,
+    'ping': handle_ping,
+}
+
+
+def handle_message(msg):
+    return COMMAND_HANDLE_MAP.get(msg.header.command, handle_default)(msg)
