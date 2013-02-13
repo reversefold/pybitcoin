@@ -283,7 +283,7 @@ class Inventory(Message):
         return (cls(hashes, header), bytes)
 
     def __repr__(self):
-        return 'inv([' + ', '.join([repr(i) for i in self.hashes]) + '])'
+        return 'inv([' + ', '.join(repr(i) for i in self.hashes) + '])'
 
 
 COMMAND_CLASS_MAP = {
