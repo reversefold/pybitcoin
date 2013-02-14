@@ -7,6 +7,7 @@ import logging.config
 import socket
 
 import pybitcoin as bc
+from pybitcoin import protocol
 
 
 log = logging.getLogger(__name__)
@@ -48,14 +49,14 @@ def main():
     sock = socket.socket()
     try:
         sock.connect(('localhost', 8333))
-        outmsg = bc.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), 7284544412836900411, '/PyBitCoin:0.0.1/', 212672, 1, 1355854353)
+        outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), 7284544412836900411, '/PyBitCoin:0.0.1/', 212672, 1, 1355854353)
         log.info('Sending %s' % (outmsg.header.command,))
         sock.sendall(outmsg.bytes)
         while True:
-            hdr_bytes = recv_bytes(sock, bc.MessageHeader.HEADER_FMT[1])
-            (hdr, _) = bc.MessageHeader.parse(hdr_bytes)
+            hdr_bytes = recv_bytes(sock, protocol.MessageHeader.HEADER_FMT[1])
+            (hdr, _) = protocol.MessageHeader.parse(hdr_bytes)
             payload_bytes = recv_bytes(sock, hdr.payload_length)
-            (inmsg, _) = bc.Message.parse(payload_bytes, hdr)
+            (inmsg, _) = protocol.Message.parse(payload_bytes, hdr)
             if inmsg is None:
                 log.warn('No parser for command %r, skipping' % (hdr.command,))
                 continue
