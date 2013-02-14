@@ -27,10 +27,15 @@ def handle_version(msg):
     return protocol.Verack()
 
 
+def handle_inv(msg):
+    return protocol.GetData(msg.hashes)
+
+
 COMMAND_HANDLE_MAP = {
     'verack': handle_verack,
     'version': handle_version,
     'ping': handle_ping,
+    'inv': handle_inv,
 }
 
 

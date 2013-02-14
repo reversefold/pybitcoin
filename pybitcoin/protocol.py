@@ -274,11 +274,11 @@ class AddressList(Message):
             self.header, ', '.join(repr(a) for a in self.addresses))
 
 
-class Inventory(Message):
+class InventoryVector(Message):
     FORMAT = fmt_w_size('<I32s')
 
-    def __init__(self, hashes=None, header=None):
-        super(Inventory, self).__init__('inv', header=header)
+    def __init__(self, command=None, hashes=None, header=None):
+        super(InventoryVector, self).__init__(command, header=header)
         self.hashes = hashes if hashes is not None else []
 
     @property
@@ -286,7 +286,7 @@ class Inventory(Message):
         return ''.join([
             encode_varint(len(self.hashes))]
             + [
-                struct.pack(self.FORMAT, *item)
+                struct.pack(self.FORMAT[0], *item)
                 for item in self.hashes
             ])
 
@@ -302,6 +302,16 @@ class Inventory(Message):
     def __repr__(self):
         return 'Inventory(%r, [%s])' % (
             self.header, ', '.join('(%r, %r)' % (i[0], util.visual(i[1])) for i in self.hashes))
+
+
+class Inventory(InventoryVector):
+    def __init__(self, hashes=None, header=None):
+        super(Inventory, self).__init__('inv', hashes=hashes, header=header)
+
+
+class GetData(InventoryVector):
+    def __init__(self, hashes=None, header=None):
+        super(GetData, self).__init__('getdata', hashes=hashes, header=header)
 
 
 COMMAND_CLASS_MAP = {
