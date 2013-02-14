@@ -3,6 +3,8 @@ import logging
 import struct
 import time
 
+from pybitcoin import util
+
 
 log = logging.getLogger(__name__)
 
@@ -87,12 +89,12 @@ def parse_addr_bare(bytes):
 
 
 ADDR_FMT = fmt_w_size('<I')
-def encode_addr(addr, ts):
+def encode_addr(ts, addr):
     return struct.pack(ADDR_FMT[0], ts) + encode_addr_bare(addr)
 
 
 def parse_addr(bytes):
-    (ts, bytes) = parse(bytes, ADDR_FMT)
+    ((ts,), bytes) = parse(bytes, ADDR_FMT)
     (addr, bytes) = parse_addr_bare(bytes)
     return (ts, addr, bytes)
 
@@ -118,6 +120,13 @@ class MessageHeader(object):
             raise ParseError('Magic does not match: %r' % (magic,))
         command = command.rstrip('\x00')
         return (cls(command, payload_length, checksum), bytes)
+
+    def __repr__(self):
+        return 'MessageHeader(%s, %s, %r, %s)' % (
+            util.visual(self.magic),
+            self.command,
+            self.payload_length,
+            util.visual(self.checksum))
 
 
 class Message(object):
@@ -154,6 +163,9 @@ class Message(object):
         if header.command not in COMMAND_CLASS_MAP:
             raise ParseError('Unknown command %s' % (header.command,))
         return COMMAND_CLASS_MAP[header.command].parse(payload, header)
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.header)
 
 
 class Version(Message):
@@ -199,6 +211,18 @@ class Version(Message):
                     header),
                 bytes)
 
+    def __repr__(self):
+        return 'Version(%r, %r, %r, %r, %r, %r, %r, %r, %r)' % (
+            self.header,
+            self.version,
+            self.services,
+            self.timestamp,
+            self.addr_recv,
+            self.addr_from,
+            self.nonce,
+            self.user_agent,
+            self.start_height)
+
 
 class Verack(Message):
     def __init__(self, header=None):
@@ -226,17 +250,28 @@ class Ping(Message):
         return (cls(header), bytes)
 
 
-class Address(Message):
-    def __init__(self, header=None):
-        super(Address, self).__init__('addr', header=header)
+class AddressList(Message):
+    def __init__(self, addresses=None, header=None):
+        super(AddressList, self).__init__('addr', header=header)
+        self.addresses = addresses if addresses is not None else []
 
     @property
     def payload(self):
-        raise Error()
+        return (encode_varint(len(self.addresses))
+                + ''.join(encode_addr(*a) for a in self.addresses))
 
     @classmethod
     def parse(cls, bytes, header=None):
-        raise Error()
+        (addr_count, bytes) = parse_varint(bytes)
+        addresses = []
+        for _ in xrange(addr_count):
+            (ts, addr, bytes) = parse_addr(bytes)
+            addresses.append((ts, addr))
+        return (cls(addresses, header), bytes)
+
+    def __repr__(self):
+        return 'AddressList(%r, [%s])' % (
+            self.header, ', '.join(repr(a) for a in self.addresses))
 
 
 class Inventory(Message):
@@ -265,7 +300,8 @@ class Inventory(Message):
         return (cls(hashes, header), bytes)
 
     def __repr__(self):
-        return 'inv([' + ', '.join(repr(i) for i in self.hashes) + '])'
+        return 'Inventory(%r, [%s])' % (
+            self.header, ', '.join('(%r, %r)' % (i[0], util.visual(i[1])) for i in self.hashes))
 
 
 COMMAND_CLASS_MAP = {
@@ -273,4 +309,5 @@ COMMAND_CLASS_MAP = {
     'verack': Verack,
     'ping': Ping,
     'inv': Inventory,
+    'addr': AddressList,
 }

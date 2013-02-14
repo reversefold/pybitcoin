@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from gevent import monkey
-monkey.patch_all()
+import greenhouse.emulation
+greenhouse.emulation.patch()
 
 import logging
 import logging.config
