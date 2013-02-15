@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 MAGIC = struct.pack('<I', 0xD9B4BEF9)
 
 
+
 class Error(Exception):
     pass
 
@@ -24,7 +25,14 @@ def fmt_w_size(fmt):
     return (fmt, struct.calcsize(fmt))
 
 
+UINT32_FMT = fmt_w_size('<I')
+INT64_FMT = fmt_w_size('<q')
+HASH_FMT = fmt_w_size('<I32s')
+
+
 def splitn(bytes, n):
+    if len(bytes) < n:
+        raise ParseError('Expected %r+ bytes, got %r: %r' % (n, len(bytes), bytes))
     return bytes[:n], bytes[n:]
 
 
@@ -275,8 +283,6 @@ class AddressList(Message):
 
 
 class InventoryVector(Message):
-    FORMAT = fmt_w_size('<I32s')
-
     def __init__(self, command=None, hashes=None, header=None):
         super(InventoryVector, self).__init__(command, header=header)
         self.hashes = hashes if hashes is not None else []
@@ -286,7 +292,7 @@ class InventoryVector(Message):
         return ''.join([
             encode_varint(len(self.hashes))]
             + [
-                struct.pack(self.FORMAT[0], *item)
+                struct.pack(HASH_FMT[0], *item)
                 for item in self.hashes
             ])
 
@@ -295,13 +301,13 @@ class InventoryVector(Message):
         (count, bytes) = parse_varint(bytes)
         hashes = []
         for _ in xrange(count):
-            (item, bytes) = parse(bytes, cls.FORMAT)
+            (item, bytes) = parse(bytes, HASH_FMT)
             hashes.append(item)
         return (cls(hashes, header), bytes)
 
     def __repr__(self):
         return 'Inventory(%r, [%s])' % (
-            self.header, ', '.join('(%r, %r)' % (i[0], util.visual(i[1])) for i in self.hashes))
+            self.header, ', '.join('(%r, %s)' % (i[0], i[1].encode('hex')) for i in self.hashes))
 
 
 class Inventory(InventoryVector):
@@ -314,10 +320,108 @@ class GetData(InventoryVector):
         super(GetData, self).__init__('getdata', hashes=hashes, header=header)
 
 
+class GetHeaders(Message):
+    pass
+
+
+class TxIn(object):
+    OUTPOINT_FMT = fmt_w_size('<32sI')
+
+    def __init__(self, previous_output, signature_script, sequence):
+        self.previous_output = previous_output
+        self.signature_script = signature_script
+        self.sequence = sequence
+
+    @classmethod
+    def parse(cls, bytes):
+        (previous_output, bytes) = parse(bytes, cls.OUTPOINT_FMT)
+        (script_len, bytes) = parse_varint(bytes)
+        (signature_script, bytes) = splitn(bytes, script_len)
+        ((sequence,), bytes) = parse(bytes, UINT32_FMT)
+        return (cls(previous_output, signature_script, sequence), bytes)
+
+    def bytes(self):
+        return ''.join([
+            struct.pack(self.OUTPOINT_FMT[0], *self.previous_output),
+            encode_varint(len(self.signature_script)),
+            self.signature_script,
+            struct.pack(UINT32_FMT[0], self.sequence)])
+
+    def __repr__(self):
+        return 'TxIn((%s, %r), %s, %r)' % (
+            self.previous_output[0].encode('hex'), self.previous_output[1],
+            self.signature_script.encode('hex'),
+            self.sequence)
+
+
+class TxOut(object):
+    def __init__(self, value, pk_script):
+        self.value = value
+        self.pk_script = pk_script
+
+    @classmethod
+    def parse(cls, bytes):
+        ((value,), bytes) = parse(bytes, INT64_FMT)
+        (script_len, bytes) = parse_varint(bytes)
+        (pk_script, bytes) = splitn(bytes, script_len)
+        return (cls(value, pk_script), bytes)
+
+    def bytes(self):
+        return ''.join([
+            struct.pack(INT64_FMT[0], self.value),
+            encode_varint(len(self.pk_script)),
+            self.pk_script])
+
+    def __repr__(self):
+        return 'TxOut(%r, %s)' % (self.value, self.pk_script.encode('hex'))
+
+
+class Transaction(Message):
+    def __init__(self, version, tx_in, tx_out, lock_time, header=None):
+        super(Transaction, self).__init__('tx', header=header)
+        self.version = version
+        self.tx_in = tx_in
+        self.tx_out = tx_out
+        self.lock_time = lock_time
+
+    @classmethod
+    def parse(cls, bytes, header=None):
+        (version, bytes) = parse(bytes, UINT32_FMT)
+        (num_tx_in, bytes) = parse_varint(bytes)
+        tx_in = []
+        for _ in xrange(num_tx_in):
+            (tx, bytes) = TxIn.parse(bytes)
+            tx_in.append(tx)
+        (num_tx_out, bytes) = parse_varint(bytes)
+        tx_out = []
+        for _ in xrange(num_tx_out):
+            (tx, bytes) = TxOut.parse(bytes)
+            tx_out.append(tx)
+        (lock_time, bytes) = parse(bytes, UINT32_FMT)
+        return (cls(version, tx_in, tx_out, lock_time, header), bytes)
+
+    def bytes(self):
+        return ''.join([
+            struct.pack(UINT32_FMT[0], self.version),
+            encode_varint(len(self.tx_in)),
+            ''.join(tx.bytes for tx in self.tx_in),
+            encode_varint(len(self.tx_out)),
+            ''.join(tx.bytes for tx in self.tx_out),
+            struct.pack(UINT32_FMT[0], self.lock_time)])
+
+    def __repr__(self):
+        return 'Transaction(%r, [%s], [%s], %r)' % (
+            self.version,
+            ', '.join(repr(tx) for tx in self.tx_in),
+            ', '.join(repr(tx) for tx in self.tx_out),
+            self.lock_time)
+
+
 COMMAND_CLASS_MAP = {
     'version': Version,
     'verack': Verack,
     'ping': Ping,
     'inv': Inventory,
     'addr': AddressList,
+    'tx': Transaction,
 }
