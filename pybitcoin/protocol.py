@@ -283,6 +283,11 @@ class AddressList(Message):
 
 
 class InventoryVector(Message):
+    HASH_TYPES = {
+        0: 'ERROR',
+        1: 'MSG_TX',
+        2: 'MSG_BLOCK'}
+
     def __init__(self, command=None, hashes=None, header=None):
         super(InventoryVector, self).__init__(command, header=header)
         self.hashes = hashes if hashes is not None else []
@@ -307,7 +312,11 @@ class InventoryVector(Message):
 
     def __repr__(self):
         return 'Inventory(%r, [%s])' % (
-            self.header, ', '.join('(%r, %s)' % (i[0], i[1].encode('hex')) for i in self.hashes))
+            self.header,
+            ', '.join('(%s, %s)' % (
+                self.HASH_TYPES.get(i[0], '<UNKNOWN>'),
+                i[1].encode('hex')
+            ) for i in self.hashes))
 
 
 class Inventory(InventoryVector):
@@ -318,10 +327,6 @@ class Inventory(InventoryVector):
 class GetData(InventoryVector):
     def __init__(self, hashes=None, header=None):
         super(GetData, self).__init__('getdata', hashes=hashes, header=header)
-
-
-class GetHeaders(Message):
-    pass
 
 
 class TxIn(object):
@@ -415,6 +420,11 @@ class Transaction(Message):
             ', '.join(repr(tx) for tx in self.tx_in),
             ', '.join(repr(tx) for tx in self.tx_out),
             self.lock_time)
+
+
+class GetHeaders(Message):
+    def __init__(self):
+        raise Error('Unimplemented')
 
 
 COMMAND_CLASS_MAP = {
