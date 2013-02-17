@@ -12,6 +12,41 @@ log = logging.getLogger(__name__)
 MAGIC = struct.pack('<I', 0xD9B4BEF9)
 
 
+base58_alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+
+
+def natural_to_string(n, alphabet=None):
+    if n < 0:
+        raise TypeError('n must be a natural')
+    if alphabet is None:
+        s = ('%x' % (n,)).lstrip('0')
+        if len(s) % 2:
+            s = '0' + s
+        return s.decode('hex')
+    else:
+        assert len(set(alphabet)) == len(alphabet)
+        res = []
+        while n:
+            n, x = divmod(n, len(alphabet))
+            res.append(alphabet[x])
+        res.reverse()
+        return ''.join(res)
+
+
+def string_to_natural(s, alphabet=None):
+    if alphabet is None:
+        assert not s.startswith('\x00')
+        return int(s.encode('hex'), 16) if s else 0
+    else:
+        assert len(set(alphabet)) == len(alphabet)
+        assert not s.startswith(alphabet[0])
+        return sum(alphabet.index(char) * len(alphabet)**i for i, char in enumerate(reversed(s)))
+
+
+def base58_encode(bindata):
+    bindata2 = bindata.lstrip(chr(0))
+    return base58_alphabet[0]*(len(bindata) - len(bindata2)) + natural_to_string(string_to_natural(bindata2), base58_alphabet)
+
 
 class Error(Exception):
     pass
@@ -345,6 +380,7 @@ class TxIn(object):
         ((sequence,), bytes) = parse(bytes, UINT32_FMT)
         return (cls(previous_output, signature_script, sequence), bytes)
 
+    @property
     def bytes(self):
         return ''.join([
             struct.pack(self.OUTPOINT_FMT[0], *self.previous_output),
@@ -359,6 +395,36 @@ class TxIn(object):
             self.sequence)
 
 
+def address_from_pubkey(bytes):
+    pass
+
+
+def address_from_pk_hash(bytes):
+    ext_hash = '\x00' + bytes
+    return ext_hash + sha256(sha256(ext_hash).digest()).digest()[:4]
+
+
+class PubKeyScript(object):
+    def __init__(self, bytes):
+        self.bytes = bytes
+
+    @property
+    def is_standard_transaction(self):
+        return (self.bytes.startswith('\x76\xa9\x14')
+                and self.bytes.endswith('\x88\xac')
+                and len(self.bytes) == 25)
+
+    def __repr__(self):
+        if self.is_standard_transaction:
+            addr = address_from_pk_hash(self.bytes[3:-2])
+            addr_enc = base58_encode(addr)
+            return 'To Addr: %s' % (addr_enc,)
+        return self.bytes.encode('hex')
+
+    def __len__(self):
+        return len(self.bytes)
+
+
 class TxOut(object):
     def __init__(self, value, pk_script):
         self.value = value
@@ -369,16 +435,17 @@ class TxOut(object):
         ((value,), bytes) = parse(bytes, INT64_FMT)
         (script_len, bytes) = parse_varint(bytes)
         (pk_script, bytes) = splitn(bytes, script_len)
-        return (cls(value, pk_script), bytes)
+        return (cls(value, PubKeyScript(pk_script)), bytes)
 
+    @property
     def bytes(self):
         return ''.join([
             struct.pack(INT64_FMT[0], self.value),
             encode_varint(len(self.pk_script)),
-            self.pk_script])
+            self.pk_script.bytes])
 
     def __repr__(self):
-        return 'TxOut(%r, %s)' % (self.value, self.pk_script.encode('hex'))
+        return 'TxOut(%r, %r)' % (self.value, self.pk_script)
 
 
 class Transaction(Message):
