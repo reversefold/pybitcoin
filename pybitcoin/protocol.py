@@ -472,6 +472,7 @@ class Transaction(Message):
         (lock_time, bytes) = parse(bytes, UINT32_FMT)
         return (cls(version, tx_in, tx_out, lock_time, header), bytes)
 
+    @property
     def bytes(self):
         return ''.join([
             struct.pack(UINT32_FMT[0], self.version),
