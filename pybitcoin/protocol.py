@@ -142,6 +142,15 @@ def parse_addr(bytes):
     return (ts, addr, bytes)
 
 
+def address_from_pubkey(bytes):
+    pass
+
+
+def address_from_pk_hash(bytes):
+    ext_hash = '\x00' + bytes
+    return ext_hash + sha256(sha256(ext_hash).digest()).digest()[:4]
+
+
 class MessageHeader(object):
     HEADER_FMT = fmt_w_size('<4s12sI4s')
 
@@ -393,15 +402,6 @@ class TxIn(object):
             self.previous_output[0].encode('hex'), self.previous_output[1],
             self.signature_script.encode('hex'),
             self.sequence)
-
-
-def address_from_pubkey(bytes):
-    pass
-
-
-def address_from_pk_hash(bytes):
-    ext_hash = '\x00' + bytes
-    return ext_hash + sha256(sha256(ext_hash).digest()).digest()[:4]
 
 
 class PubKeyScript(object):
