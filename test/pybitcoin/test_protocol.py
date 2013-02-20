@@ -1,4 +1,5 @@
-"""."""
+"""PyBitCoin tests"""
+import os
 import unittest
 
 from pybitcoin import protocol
@@ -51,3 +52,10 @@ class VersionTest(unittest.TestCase):
         self.assertEqual(msg.header.checksum, pmsg.header.checksum)
         self.assertEqual(msg.checksum, pmsg.checksum)
         self.assertEqual(msg.bytes, pmsg.bytes)
+
+
+class TransactionTest(unittest.TestCase):
+    def test_parse(self):
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') as f:
+            (tx, bytes) = protocol.Transaction.parse(f.read().decode('hex'))
+        self.assertEqual(bytes, '')
