@@ -458,7 +458,7 @@ class Transaction(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
-        (version, bytes) = parse(bytes, UINT32_FMT)
+        ((version,), bytes) = parse(bytes, UINT32_FMT)
         (num_tx_in, bytes) = parse_varint(bytes)
         tx_in = []
         for _ in xrange(num_tx_in):
@@ -469,7 +469,7 @@ class Transaction(Message):
         for _ in xrange(num_tx_out):
             (tx, bytes) = TxOut.parse(bytes)
             tx_out.append(tx)
-        (lock_time, bytes) = parse(bytes, UINT32_FMT)
+        ((lock_time,), bytes) = parse(bytes, UINT32_FMT)
         return (cls(version, tx_in, tx_out, lock_time, header), bytes)
 
     @property
