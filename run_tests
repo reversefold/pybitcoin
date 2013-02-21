@@ -1,4 +1,3 @@
 #!/bin/sh
-export PYTHONPATH=.
 nosetests --with-coverage
 coverage html
