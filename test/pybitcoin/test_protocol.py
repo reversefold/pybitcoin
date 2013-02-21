@@ -61,7 +61,7 @@ class TxInTest(unittest.TestCase):
         script = 'scriptscriptscript'
         idx = 75
         seq = 42
-        txin = protocol.TxIn((tx_hash, idx), script, seq)
+        txin1 = txin = protocol.TxIn((tx_hash, idx), script, seq)
         self.assertEquals(txin.previous_output, (tx_hash, idx))
         self.assertEquals(txin.signature_script, script)
         self.assertEquals(txin.sequence, seq)
@@ -72,6 +72,8 @@ class TxInTest(unittest.TestCase):
         self.assertEquals(txin.signature_script, script)
         self.assertEquals(txin.sequence, seq)
 
+        self.assertEquals(txin1, txin)
+
 
 class PubKeyScriptTest(unittest.TestCase):
     def test_pks(self):
@@ -80,6 +82,7 @@ class PubKeyScriptTest(unittest.TestCase):
         self.assertEquals(pks.bytes, script)
         self.assertEquals(repr(pks), script.encode('hex'))
         self.assertFalse(pks.is_standard_transaction)
+
         addr = '\x42' * 20
         script = '\x76\xa9\x14' + addr + '\x88\xac'
         pks = protocol.PubKeyScript(script)
@@ -89,13 +92,15 @@ class PubKeyScriptTest(unittest.TestCase):
             'To Addr: ' + protocol.base58_encode(protocol.address_from_pk_hash(addr)))
         self.assertTrue(pks.is_standard_transaction)
 
+        self.assertEquals(pks, pks)
+
 
 class TxOutTest(unittest.TestCase):
     def test_txout(self):
         val = 12345
         pksbytes = '\x32' * 40
         pks = protocol.PubKeyScript(pksbytes)
-        txout = protocol.TxOut(val, pks)
+        txout1 = txout = protocol.TxOut(val, pks)
         self.assertEquals(txout.value, val)
         self.assertEquals(txout.pk_script.bytes, pksbytes)
 
@@ -103,6 +108,8 @@ class TxOutTest(unittest.TestCase):
         self.assertEquals(bytes, '')
         self.assertEquals(txout.value, val)
         self.assertEquals(txout.pk_script.bytes, pksbytes)
+
+        self.assertEquals(txout1, txout)
 
 
 class TransactionTest(unittest.TestCase):
@@ -126,15 +133,17 @@ class TransactionTest(unittest.TestCase):
         txout = [txout]
         lock = 12345678
 
-        tx = protocol.Transaction(v, txin, txout, lock)
+        tx1 = tx = protocol.Transaction(v, txin, txout, lock)
         self.assertEquals(tx.version, v)
-#        self.assertEquals(tx.tx_in, txin)
-#        self.assertEquals(tx.tx_out, txout)
+        self.assertEquals(tx.tx_in, txin)
+        self.assertEquals(tx.tx_out, txout)
         self.assertEquals(tx.lock_time, lock)
 
         (tx, bytes) = protocol.Transaction.parse(tx.bytes)
         self.assertEquals(bytes, '')
         self.assertEquals(tx.version, v)
-#        self.assertEquals(tx.tx_in, txin)
-#        self.assertEquals(tx.tx_out, txout)
+        self.assertEquals(tx.tx_in, txin)
+        self.assertEquals(tx.tx_out, txout)
         self.assertEquals(tx.lock_time, lock)
+
+        self.assertEquals(tx1, tx)

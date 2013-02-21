@@ -397,6 +397,11 @@ class TxIn(object):
             self.signature_script,
             struct.pack(UINT32_FMT[0], self.sequence)])
 
+    def __eq__(self, b):
+        return (self.previous_output == b.previous_output
+                and self.signature_script == b.signature_script
+                and self.sequence == b.sequence)
+
     def __repr__(self):
         return 'TxIn((%s, %r), %s, %r)' % (
             self.previous_output[0].encode('hex'), self.previous_output[1],
@@ -414,15 +419,18 @@ class PubKeyScript(object):
                 and self.bytes.endswith('\x88\xac')
                 and len(self.bytes) == 25)
 
+    def __eq__(self, b):
+        return self.bytes == b.bytes
+
+    def __len__(self):
+        return len(self.bytes)
+
     def __repr__(self):
         if self.is_standard_transaction:
             addr = address_from_pk_hash(self.bytes[3:-2])
             addr_enc = base58_encode(addr)
             return 'To Addr: %s' % (addr_enc,)
         return self.bytes.encode('hex')
-
-    def __len__(self):
-        return len(self.bytes)
 
 
 class TxOut(object):
@@ -443,6 +451,9 @@ class TxOut(object):
             struct.pack(INT64_FMT[0], self.value),
             encode_varint(len(self.pk_script)),
             self.pk_script.bytes])
+
+    def __eq__(self, b):
+        return self.value == b.value and self.pk_script == b.pk_script
 
     def __repr__(self):
         return 'TxOut(%r, %r)' % (self.value, self.pk_script)
@@ -481,6 +492,12 @@ class Transaction(Message):
             encode_varint(len(self.tx_out)),
             ''.join(tx.bytes for tx in self.tx_out),
             struct.pack(UINT32_FMT[0], self.lock_time)])
+
+    def __eq__(self, b):
+        return (self.version == b.version
+                and self.tx_in == b.tx_in
+                and self.tx_out == b.tx_out
+                and self.lock_time == b.lock_time)
 
     def __repr__(self):
         return 'Transaction(%r, [%s], [%s], %r)' % (
