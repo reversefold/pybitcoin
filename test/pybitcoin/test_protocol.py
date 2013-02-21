@@ -1,4 +1,5 @@
 """PyBitCoin tests"""
+import hashlib
 import os
 import unittest
 
@@ -54,8 +55,65 @@ class VersionTest(unittest.TestCase):
         self.assertEqual(msg.bytes, pmsg.bytes)
 
 
+class TxInTest(unittest.TestCase):
+    def test_txin(self):
+        tx_hash = hashlib.sha256(hashlib.sha256('enigmaenigmaenigma').digest()).digest()
+        script = 'scriptscriptscript'
+        idx = 75
+        seq = 42
+        txin = protocol.TxIn((tx_hash, idx), script, seq)
+        self.assertEquals(txin.previous_output, (tx_hash, idx))
+        self.assertEquals(txin.signature_script, script)
+        self.assertEquals(txin.sequence, seq)
+
+        (txin, bytes) = protocol.TxIn.parse(txin.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(txin.previous_output, (tx_hash, idx))
+        self.assertEquals(txin.signature_script, script)
+        self.assertEquals(txin.sequence, seq)
+
+
+class PubKeyScriptTest(unittest.TestCase):
+    def test_pks(self):
+        script = '\x42' * 5
+        pks = protocol.PubKeyScript(script)
+        self.assertEquals(pks.bytes, script)
+        self.assertEquals(repr(pks), script.encode('hex'))
+        self.assertFalse(pks.is_standard_transaction)
+        addr = '\x42' * 20
+        script = '\x76\xa9\x14' + addr + '\x88\xac'
+        pks = protocol.PubKeyScript(script)
+        self.assertEquals(pks.bytes, script)
+        self.assertEquals(
+            repr(pks),
+            'To Addr: ' + protocol.base58_encode(protocol.address_from_pk_hash(addr)))
+        self.assertTrue(pks.is_standard_transaction)
+
+
+class TxOutTest(unittest.TestCase):
+    def test_txout(self):
+        val = 12345
+        pksbytes = '\x32' * 40
+        pks = protocol.PubKeyScript(pksbytes)
+        txout = protocol.TxOut(val, pks)
+        self.assertEquals(txout.value, val)
+        self.assertEquals(txout.pk_script.bytes, pksbytes)
+
+        (txout, bytes) = protocol.TxOut.parse(txout.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(txout.value, val)
+        self.assertEquals(txout.pk_script.bytes, pksbytes)
+
+
 class TransactionTest(unittest.TestCase):
     def test_parse(self):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') as f:
             (tx, bytes) = protocol.Transaction.parse(f.read().decode('hex'))
         self.assertEqual(bytes, '')
+
+#    def test_transaction(self):
+#        v = 42
+#        txin = []
+#        txout = []
+#        lock = 12345678
+#        tx = protocol.Transaction(v, txin, txout, lock)
