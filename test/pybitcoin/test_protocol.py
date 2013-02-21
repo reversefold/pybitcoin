@@ -111,9 +111,30 @@ class TransactionTest(unittest.TestCase):
             (tx, bytes) = protocol.Transaction.parse(f.read().decode('hex'))
         self.assertEqual(bytes, '')
 
-#    def test_transaction(self):
-#        v = 42
-#        txin = []
-#        txout = []
-#        lock = 12345678
-#        tx = protocol.Transaction(v, txin, txout, lock)
+    def test_transaction(self):
+        v = 42
+        tx_hash = hashlib.sha256(hashlib.sha256('enigmaenigmaenigma').digest()).digest()
+        script = 'scriptscriptscript'
+        idx = 75
+        seq = 42
+        txin = protocol.TxIn((tx_hash, idx), script, seq)
+        txin = [txin]
+        val = 12345
+        pksbytes = '\x32' * 40
+        pks = protocol.PubKeyScript(pksbytes)
+        txout = protocol.TxOut(val, pks)
+        txout = [txout]
+        lock = 12345678
+
+        tx = protocol.Transaction(v, txin, txout, lock)
+        self.assertEquals(tx.version, v)
+#        self.assertEquals(tx.tx_in, txin)
+#        self.assertEquals(tx.tx_out, txout)
+        self.assertEquals(tx.lock_time, lock)
+
+        (tx, bytes) = protocol.Transaction.parse(tx.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(tx.version, v)
+#        self.assertEquals(tx.tx_in, txin)
+#        self.assertEquals(tx.tx_out, txout)
+        self.assertEquals(tx.lock_time, lock)
