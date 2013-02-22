@@ -184,9 +184,9 @@ class MessageHeader(object):
 class Message(object):
     def __init__(self, command=None, header=None):
         if header is None:
-            self.header = MessageHeader(command)
+            self._header = MessageHeader(command)
         else:
-            self.header = header
+            self._header = header
 
     @classmethod
     def calc_checksum(cls, payload):
@@ -198,12 +198,16 @@ class Message(object):
 
     @property
     def bytes(self):
-        if self.header is None:
-            self.header = MessageHeader(self.command, len(self.payload), self.checksum)
-        else:
-            self.header.payload_length = len(self.payload)
-            self.header.checksum = self.checksum
         return self.header.bytes + self.payload
+
+    @property
+    def header(self):
+        if self._header is None:
+            self._header = MessageHeader(self.command, len(self.payload), self.checksum)
+        else:
+            self._header.payload_length = len(self.payload)
+            self._header.checksum = self.checksum
+        return self._header
 
     @classmethod
     def parse(cls, bytes, header=None):
