@@ -488,7 +488,7 @@ class Transaction(Message):
         return (cls(version, tx_in, tx_out, lock_time, header), bytes)
 
     @property
-    def bytes(self):
+    def payload(self):
         return ''.join([
             struct.pack(UINT32_FMT[0], self.version),
             encode_varint(len(self.tx_in)),
