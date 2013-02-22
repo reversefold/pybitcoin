@@ -250,6 +250,8 @@ class Version(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
         ((version, services, timestamp), bytes) = parse(bytes, cls.BITS[0])
         (addr_recv, bytes) = parse_addr_bare(bytes)
         (addr_from, bytes) = parse_addr_bare(bytes)
@@ -290,6 +292,8 @@ class Verack(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
         return (cls(header), bytes)
 
 
@@ -303,6 +307,8 @@ class Ping(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
         return (cls(header), bytes)
 
 
@@ -318,6 +324,8 @@ class AddressList(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
         (addr_count, bytes) = parse_varint(bytes)
         addresses = []
         for _ in xrange(addr_count):
@@ -351,6 +359,8 @@ class InventoryVector(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
         (count, bytes) = parse_varint(bytes)
         hashes = []
         for _ in xrange(count):
@@ -473,6 +483,8 @@ class Transaction(Message):
 
     @classmethod
     def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
         ((version,), bytes) = parse(bytes, UINT32_FMT)
         (num_tx_in, bytes) = parse_varint(bytes)
         tx_in = []
