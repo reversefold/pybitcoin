@@ -4,6 +4,7 @@ greenhouse.emulation.patch()
 
 import logging
 import logging.config
+import random
 import socket
 
 import pybitcoin as bc
@@ -49,8 +50,9 @@ def main():
     sock = socket.socket()
     try:
         sock.connect(('localhost', 8333))
-        outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), 7284544412836900411, '/PyBitCoin:0.0.1/', 212672, 1, 1355854353)
-        log.info('Sending %s' % (outmsg.header.command,))
+        outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 212672, 1, 1355854353)
+        log.info('Sending %s', outmsg.header.command)
+        log.debug('%r', outmsg)
         sock.sendall(outmsg.bytes)
         while True:
             hdr_bytes = recv_bytes(sock, protocol.MessageHeader.HEADER_FMT[1])
@@ -58,15 +60,15 @@ def main():
             payload_bytes = recv_bytes(sock, hdr.payload_length)
             (inmsg, _) = protocol.Message.parse(payload_bytes, hdr)
             if inmsg is None:
-                log.warn('No parser for command %r, skipping' % (hdr.command,))
+                log.warn('No parser for command %r, skipping', hdr.command)
                 continue
             log.info('Received %s' % (inmsg.header.command,))
-            log.debug(repr(inmsg))
+            log.debug('%r', inmsg)
             #print bc.visual2(inmsg)
             outmsg = bc.handle_message(inmsg)
             if not outmsg:
                 continue
-            log.info('Sending %s' % (outmsg.header.command,))
+            log.info('Sending %s', outmsg.header.command)
             sock.sendall(outmsg.bytes)
 
     finally:
