@@ -218,7 +218,10 @@ class Message(object):
             raise ParseError('Checksum is incorrect')
         if header.command not in COMMAND_CLASS_MAP:
             raise ParseError('Unknown command %s' % (header.command,))
-        return COMMAND_CLASS_MAP[header.command].parse(payload, header)
+        (msg, empty) = COMMAND_CLASS_MAP[header.command].parse(payload, header)
+        if empty != '':
+            raise ParseError('Trailing bytes after parsing payload')
+        return (msg, bytes)
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.header)
