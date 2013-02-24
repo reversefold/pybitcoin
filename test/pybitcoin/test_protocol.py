@@ -1,9 +1,14 @@
 """PyBitCoin tests"""
 import hashlib
 import os
+import struct
 import unittest
 
 from pybitcoin import protocol
+
+
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') as f:
+    TX_BYTES = f.read().decode('hex')
 
 
 class MessageHeaderTest(unittest.TestCase):
@@ -23,6 +28,34 @@ class MessageHeaderTest(unittest.TestCase):
         self.assertEqual(hdr.payload_length, 1024)
         self.assertEqual(hdr.checksum, '\x01\x12\xae\x97')
         self.assertEqual(hdr.bytes, '\xf9\xbe\xb4\xd9header\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\x12\xae\x97')
+
+
+class MessageTest(unittest.TestCase):
+    def test_parse(self):
+        pass
+
+    def test_parse_returns_trailing_bytes(self):
+        trailing = '\x12\x34'
+        (msg, bytes) = protocol.Message.parse(TX_BYTES + trailing)
+        self.assertEqual(bytes, trailing)
+
+
+    def test_parse_fails_with_bad_checksum(self):
+        with self.assertRaises(protocol.ParseError):
+            parts = protocol.splitn(TX_BYTES, struct.calcsize('<4s12sI'))
+            bytes = parts[0] + '\x98' + parts[1][1:]
+            (msg, bytes) = protocol.Message.parse(bytes)
+
+    def test_parse_fails_with_extra_bytes(self):
+        with self.assertRaises(protocol.ParseError):
+            parts = protocol.splitn(TX_BYTES, struct.calcsize('<4s12s'))
+            isize = struct.calcsize('<I')
+            newsize = struct.unpack('<I', parts[1][:isize])[0] + 1
+            (checksum, payload) = protocol.splitn(parts[1][isize:], 4)
+            payload += '\x42'
+            checksum = protocol.Message.calc_checksum(payload)
+            bytes = parts[0] + struct.pack('<I', newsize) + checksum + payload
+            (msg, bytes) = protocol.Message.parse(bytes)
 
 
 class VersionTest(unittest.TestCase):
@@ -114,8 +147,7 @@ class TxOutTest(unittest.TestCase):
 
 class TransactionTest(unittest.TestCase):
     def test_parse(self):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') as f:
-            (tx, bytes) = protocol.Transaction.parse(f.read().decode('hex'))
+        (tx, bytes) = protocol.Transaction.parse(TX_BYTES)
         self.assertEqual(bytes, '')
 
     def test_transaction(self):
