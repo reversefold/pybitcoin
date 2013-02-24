@@ -546,6 +546,64 @@ class TransactionMessage(Message):
         return 'TransactionMessage(%r, %r)' % (self.header, self.tx)
 
 
+class Block(Message):
+    HDR_FMT = fmt_w_size('<I32s32sIII')
+
+    def __init__(self, version, prev_block_hash, merkle_root, timestamp, bits, nonce, txns, header=None):
+        super(Message, self).__init__('block', header=header)
+        self.version = version
+        self.prev_block_hash = prev_block_hash
+        self.merkle_root = merkle_root
+        self.timestamp = timestamp
+        self.bits = bits
+        self.nonce = nonce
+        self.txns = txns
+
+    @property
+    def block_header(self):
+        return struct.pack(
+            self.HDR_FMT[0],
+            self.version,
+            self.prev_block_hash,
+            self.merkle_root,
+            self.timestamp,
+            self.bits,
+            self.nonce)
+
+    @property
+    def block_hash(self):
+        return sha256(sha256(self.block_header).digest()).digest()
+
+    @property
+    def payload(self):
+        return ''.join(
+            [self.block_header,
+             encode_varint(len(self.txns)),
+             ''.join(tx.bytes for tx in self.txns)])
+
+    @classmethod
+    def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
+        ((version, prev_block_hash, merkle_root, timestamp, bits, nonce),
+         bytes) = parse(bytes, cls.HDR_FMT)
+        (num_tx, bytes) = parse_varint(bytes)
+        txns = []
+        for _ in xrange(num_tx):
+            (tx, bytes) = Transaction.parse(bytes)
+            txns.append(tx)
+        return (cls(version, prev_block_hash, merkle_root, timestamp, bits, nonce, txns), bytes)
+
+    def __eq__(self, b):
+        return (self.version == b.version
+                and self.prev_block_hash == b.prev_block_hash
+                and self.merkle_root == b.merkle_root
+                and self.timestamp == b.timestamp
+                and self.bits == b.bits
+                and self.nonce == b.nonce
+                and self.txns == b.txns)
+
+
 class GetHeaders(Message):
     def __init__(self):
         raise Error('Unimplemented')
@@ -558,4 +616,5 @@ COMMAND_CLASS_MAP = {
     'inv': Inventory,
     'addr': AddressList,
     'tx': TransactionMessage,
+    'block': Block,
 }
