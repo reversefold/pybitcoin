@@ -476,18 +476,15 @@ class TxOut(object):
         return 'TxOut(%r, %r)' % (self.value, self.pk_script)
 
 
-class Transaction(Message):
-    def __init__(self, version, tx_in, tx_out, lock_time, header=None):
-        super(Transaction, self).__init__('tx', header=header)
+class Transaction(object):
+    def __init__(self, version, tx_in, tx_out, lock_time):
         self.version = version
         self.tx_in = tx_in
         self.tx_out = tx_out
         self.lock_time = lock_time
 
     @classmethod
-    def parse(cls, bytes, header=None):
-        if header is None:
-            (header, bytes) = MessageHeader.parse(bytes)
+    def parse(cls, bytes):
         ((version,), bytes) = parse(bytes, UINT32_FMT)
         (num_tx_in, bytes) = parse_varint(bytes)
         tx_in = []
@@ -500,10 +497,10 @@ class Transaction(Message):
             (tx, bytes) = TxOut.parse(bytes)
             tx_out.append(tx)
         ((lock_time,), bytes) = parse(bytes, UINT32_FMT)
-        return (cls(version, tx_in, tx_out, lock_time, header), bytes)
+        return (cls(version, tx_in, tx_out, lock_time), bytes)
 
     @property
-    def payload(self):
+    def bytes(self):
         return ''.join([
             struct.pack(UINT32_FMT[0], self.version),
             encode_varint(len(self.tx_in)),
@@ -526,6 +523,29 @@ class Transaction(Message):
             self.lock_time)
 
 
+class TransactionMessage(Message):
+    def __init__(self, tx, header=None):
+        super(TransactionMessage, self).__init__('tx', header=header)
+        self.tx = tx
+
+    @classmethod
+    def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
+        (tx, bytes) = Transaction.parse(bytes)
+        return (cls(tx, header), bytes)
+
+    @property
+    def payload(self):
+        return self.tx.bytes
+
+    def __eq__(self, b):
+        return self.tx == b.tx
+
+    def __repr__(self):
+        return 'TransactionMessage(%r, %r)' % (self.header, self.tx)
+
+
 class GetHeaders(Message):
     def __init__(self):
         raise Error('Unimplemented')
@@ -537,5 +557,5 @@ COMMAND_CLASS_MAP = {
     'ping': Ping,
     'inv': Inventory,
     'addr': AddressList,
-    'tx': Transaction,
+    'tx': TransactionMessage,
 }

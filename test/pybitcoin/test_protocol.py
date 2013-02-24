@@ -39,7 +39,6 @@ class MessageTest(unittest.TestCase):
         (msg, bytes) = protocol.Message.parse(TX_BYTES + trailing)
         self.assertEqual(bytes, trailing)
 
-
     def test_parse_fails_with_bad_checksum(self):
         with self.assertRaises(protocol.ParseError):
             parts = protocol.splitn(TX_BYTES, struct.calcsize('<4s12sI'))
@@ -147,7 +146,7 @@ class TxOutTest(unittest.TestCase):
 
 class TransactionTest(unittest.TestCase):
     def test_parse(self):
-        (tx, bytes) = protocol.Transaction.parse(TX_BYTES)
+        (tx, bytes) = protocol.TransactionMessage.parse(TX_BYTES)
         self.assertEqual(bytes, '')
 
     def test_transaction(self):
@@ -165,17 +164,17 @@ class TransactionTest(unittest.TestCase):
         txout = [txout]
         lock = 12345678
 
-        tx1 = tx = protocol.Transaction(v, txin, txout, lock)
-        self.assertEquals(tx.version, v)
-        self.assertEquals(tx.tx_in, txin)
-        self.assertEquals(tx.tx_out, txout)
-        self.assertEquals(tx.lock_time, lock)
+        tx1 = tx = protocol.TransactionMessage(protocol.Transaction(v, txin, txout, lock))
+        self.assertEquals(tx.tx.version, v)
+        self.assertEquals(tx.tx.tx_in, txin)
+        self.assertEquals(tx.tx.tx_out, txout)
+        self.assertEquals(tx.tx.lock_time, lock)
 
-        (tx, bytes) = protocol.Transaction.parse(tx.bytes)
+        (tx, bytes) = protocol.TransactionMessage.parse(tx.bytes)
         self.assertEquals(bytes, '')
-        self.assertEquals(tx.version, v)
-        self.assertEquals(tx.tx_in, txin)
-        self.assertEquals(tx.tx_out, txout)
-        self.assertEquals(tx.lock_time, lock)
+        self.assertEquals(tx.tx.version, v)
+        self.assertEquals(tx.tx.tx_in, txin)
+        self.assertEquals(tx.tx.tx_out, txout)
+        self.assertEquals(tx.tx.lock_time, lock)
 
         self.assertEquals(tx1, tx)
