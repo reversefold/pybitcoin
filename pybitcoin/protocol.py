@@ -550,7 +550,7 @@ class Block(Message):
     HDR_FMT = fmt_w_size('<I32s32sIII')
 
     def __init__(self, version, prev_block_hash, merkle_root, timestamp, bits, nonce, txns, header=None):
-        super(Message, self).__init__('block', header=header)
+        super(Block, self).__init__('block', header=header)
         self.version = version
         self.prev_block_hash = prev_block_hash
         self.merkle_root = merkle_root
