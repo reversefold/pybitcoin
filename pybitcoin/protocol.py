@@ -5,12 +5,10 @@ import time
 
 from pybitcoin import util
 
-
 log = logging.getLogger(__name__)
 
 
 MAGIC = struct.pack('<I', 0xD9B4BEF9)
-
 
 base58_alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 

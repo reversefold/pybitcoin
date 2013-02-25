@@ -11,6 +11,29 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') a
     TX_BYTES = f.read().decode('hex')
 
 
+class TestSplitN(unittest.TestCase):
+    def test_splitn(self):
+        (a, b) = protocol.splitn('abcde', 2)
+        self.assertEqual(len(a), 2)
+        self.assertEqual(len(b), 3)
+        self.assertEqual(a, 'ab')
+        self.assertEqual(b, 'cde')
+
+    def test_splitn_0(self):
+        (a, b) = protocol.splitn('12', 0)
+        self.assertEqual(a, '')
+        self.assertEqual(b, '12')
+
+    def test_splitn_len(self):
+        (a, b) = protocol.splitn('12', 2)
+        self.assertEqual(a, '12')
+        self.assertEqual(b, '')
+
+    def test_splitn_gt_len(self):
+        with self.assertRaises(protocol.ParseError):
+            (a, b) = protocol.splitn('12', 3)
+
+
 class MessageHeaderTest(unittest.TestCase):
     def test_header(self):
         hdr = protocol.MessageHeader('header', 1024, '\x01\x12\xae\x97')
