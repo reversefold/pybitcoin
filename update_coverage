@@ -1,0 +1,14 @@
+#!/bin/sh
+set -ex
+git config --global user.email "automation@circleci.com"
+git checkout master
+./run_tests
+rm -rf tmp.htmlcov
+mv htmlcov tmp.htmlcov
+git checkout gh-pages
+rm -r htmlcov
+mv tmp.htmlcov htmlcov
+git add htmlcov
+git commit -m"Automated test run by ghci - $(date)"
+git push origin gh-pages
+git checkout master''',
