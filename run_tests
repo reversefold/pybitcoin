@@ -1,3 +1,2 @@
 #!/bin/sh
 nosetests --with-coverage
-coverage html --omit='test/*'

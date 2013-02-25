@@ -4,6 +4,7 @@ git config --global user.email "automation@circleci.com"
 git config --global user.name "CircleCI"
 git checkout master
 ./run_tests
+coverage html --include='pybitcoin/*'
 rm -rf tmp.htmlcov
 mv htmlcov tmp.htmlcov
 git checkout gh-pages
