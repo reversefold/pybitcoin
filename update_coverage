@@ -12,4 +12,4 @@ mv tmp.htmlcov htmlcov
 git add htmlcov
 git commit -m"Automated test run by ghci - $(date)"
 git push origin gh-pages
-git checkout master''',
+git checkout master
