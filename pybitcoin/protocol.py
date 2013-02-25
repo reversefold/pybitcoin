@@ -601,6 +601,17 @@ class Block(Message):
                 and self.nonce == b.nonce
                 and self.txns == b.txns)
 
+    def __repr__(self):
+        return 'Block(%r, %r, %s, %s, %r, %r, %r, %r)' % (
+            self.header,
+            self.version,
+            self.prev_block_hash.encode('hex'),
+            self.merkle_root.encode('hex'),
+            self.timestamp,
+            self.bits,
+            self.nonce,
+            self.txns)
+
 
 class GetHeaders(Message):
     def __init__(self):
