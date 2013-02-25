@@ -30,6 +30,11 @@ class MessageHeaderTest(unittest.TestCase):
         self.assertEqual(hdr.bytes, '\xf9\xbe\xb4\xd9header\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\x12\xae\x97')
 
 
+    def test_header_parse_bad_magic(self):
+        with self.assertRaises(protocol.ParseError):
+            (hdr, bytes) = protocol.MessageHeader.parse('\xe9\xbe\xb4\xd9header\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\x12\xae\x97')
+
+
 class MessageTest(unittest.TestCase):
     def test_parse(self):
         pass
