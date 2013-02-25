@@ -1,5 +1,6 @@
 """PyBitCoin tests"""
 import hashlib
+import mox
 import os
 import struct
 import unittest
@@ -33,7 +34,7 @@ class TestSplitN(unittest.TestCase):
         with self.assertRaises(protocol.ParseError):
             (a, b) = protocol.splitn('12', 3)
 
-class TestVarint(unittest.TestCase):
+class TestVarint(mox.MoxTestBase):
     def test_encode_varint_char(self):
         self.assertEquals(protocol.encode_varint(0xfc), '\xfc')
 
@@ -51,6 +52,28 @@ class TestVarint(unittest.TestCase):
     def test_encode_varint_too_long(self):
         with self.assertRaises(protocol.Error):
             protocol.encode_varint(0x10000000000000000)
+
+    def test_parse_varint_char(self):
+        self.assertEquals(protocol.parse_varint('\xfc'), (0xfc, ''))
+
+    def test_parse_varint_short(self):
+        self.assertEquals(protocol.parse_varint('\xfd\xfd\x00'), (0xfd, ''))
+        self.assertEquals(protocol.parse_varint('\xfd\xfe\x00'), (0xfe, ''))
+        self.assertEquals(protocol.parse_varint('\xfd\xff\x00'), (0xff, ''))
+
+    def test_parse_varint_int(self):
+        self.assertEquals(protocol.parse_varint('\xfe\x00\x00\x01\x00'), (0x10000, ''))
+
+    def test_parse_varint_long_long(self):
+        self.assertEquals(protocol.parse_varint('\xff\x00\x00\x00\x00\x01\x00\x00\x00'), (0x100000000, ''))
+
+    def test_parse_varint_too_long(self):
+        # since it's impossible to get > 0xff from a single byte, use mox to verify
+        self.mox.StubOutWithMock(struct, 'unpack')
+        struct.unpack('<B', '\x00').AndReturn((0x100,))
+        self.mox.ReplayAll()
+        with self.assertRaises(protocol.ParseError):
+            protocol.parse_varint('\x00')
 
 
 class MessageHeaderTest(unittest.TestCase):
