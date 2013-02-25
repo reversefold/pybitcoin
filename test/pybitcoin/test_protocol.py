@@ -33,6 +33,25 @@ class TestSplitN(unittest.TestCase):
         with self.assertRaises(protocol.ParseError):
             (a, b) = protocol.splitn('12', 3)
 
+class TestVarint(unittest.TestCase):
+    def test_encode_varint_char(self):
+        self.assertEquals(protocol.encode_varint(0xfc), '\xfc')
+
+    def test_encode_varint_short(self):
+        self.assertEquals(protocol.encode_varint(0xfd), '\xfd\xfd\x00')
+        self.assertEquals(protocol.encode_varint(0xfe), '\xfd\xfe\x00')
+        self.assertEquals(protocol.encode_varint(0xff), '\xfd\xff\x00')
+
+    def test_encode_varint_int(self):
+        self.assertEquals(protocol.encode_varint(0x10000), '\xfe\x00\x00\x01\x00')
+
+    def test_encode_varint_long_long(self):
+        self.assertEquals(protocol.encode_varint(0x100000000), '\xff\x00\x00\x00\x00\x01\x00\x00\x00')
+
+    def test_encode_varint_too_long(self):
+        with self.assertRaises(protocol.Error):
+            protocol.encode_varint(0x10000000000000000)
+
 
 class MessageHeaderTest(unittest.TestCase):
     def test_header(self):
