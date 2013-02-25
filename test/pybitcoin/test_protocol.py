@@ -76,6 +76,21 @@ class TestVarint(mox.MoxTestBase):
             protocol.parse_varint('\x00')
 
 
+class TestAddressMethods(unittest.TestCase):
+    def test_address_from_pk_hash(self):
+        self.assertEquals(
+            protocol.address_from_pk_hash(
+                '\xe9\x9f\xaa\x1b\x12\x8f\x13w\x8d"#\xa9\xd1\xd3~\x88\x92\x0b]B'),
+            '\x00\xe9\x9f\xaa\x1b\x12\x8f\x13w\x8d"#\xa9\xd1\xd3~\x88\x92\x0b]B\xe6\xf2\xf5Y')
+
+    def test_base58_encode_address(self):
+        self.assertEquals(
+            protocol.base58_encode(
+                protocol.address_from_pk_hash(
+                    '\xe9\x9f\xaa\x1b\x12\x8f\x13w\x8d"#\xa9\xd1\xd3~\x88\x92\x0b]B')),
+            '1NJHiNy5CS2heskf6bx3VuHm9zjXTGdtSt')
+
+
 class MessageHeaderTest(unittest.TestCase):
     def test_header(self):
         hdr = protocol.MessageHeader('header', 1024, '\x01\x12\xae\x97')
