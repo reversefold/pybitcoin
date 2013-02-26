@@ -1,4 +1,4 @@
-from hashlib import sha256
+from hashlib import sha256, new as new_hash
 import logging
 import struct
 import time
@@ -44,6 +44,11 @@ def string_to_natural(s, alphabet=None):
 def base58_encode(bindata):
     bindata2 = bindata.lstrip(chr(0))
     return base58_alphabet[0]*(len(bindata) - len(bindata2)) + natural_to_string(string_to_natural(bindata2), base58_alphabet)
+
+
+def base58_decode(b58data):
+    b58data2 = b58data.lstrip(base58_alphabet[0])
+    return chr(0)*(len(b58data) - len(b58data2)) + natural_to_string(string_to_natural(b58data2, base58_alphabet))
 
 
 class Error(Exception):
@@ -141,7 +146,7 @@ def parse_addr(bytes):
 
 
 def address_from_pubkey(bytes):
-    pass
+    return address_from_pk_hash(new_hash('ripemd160', sha256(bytes).digest()).digest())
 
 
 def address_from_pk_hash(bytes):
