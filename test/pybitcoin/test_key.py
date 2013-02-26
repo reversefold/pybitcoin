@@ -43,6 +43,11 @@ class TestAddressMethods(unittest.TestCase):
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'),
             int('7F3B6EAF1C8C3BFD8B0727B979746A932B6B9F9489898379DD65C1E3CCC3B4DF', 16))
 
+    def test_encode_privkey(self):
+        self.assertEqual(
+            key.encode_privkey(int('7F3B6EAF1C8C3BFD8B0727B979746A932B6B9F9489898379DD65C1E3CCC3B4DF', 16)),
+            '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps')
+
     def test_priv_to_pub(self):
         pub = key.priv_to_pub(
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))

@@ -61,6 +61,12 @@ def decode_privkey(priv):
     return int(bytes[1:-4].encode('hex'), 16)
 
 
+def encode_privkey(priv):
+    bytes = '\x80' + hex(priv)[2:].rstrip('L').decode('hex')
+    hash = sha256(sha256(bytes).digest()).digest()
+    return base58_encode(bytes + hash[:4])
+
+
 # secp256k1
 _p  = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2FL
 _r  = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141L
