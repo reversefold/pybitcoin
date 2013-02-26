@@ -1,54 +1,15 @@
-from hashlib import sha256, new as new_hash
+from hashlib import sha256
 import logging
 import struct
 import time
 
-from pybitcoin import util
+from pybitcoin import util, key
+
 
 log = logging.getLogger(__name__)
 
 
 MAGIC = struct.pack('<I', 0xD9B4BEF9)
-
-base58_alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-
-
-def natural_to_string(n, alphabet=None):
-    if n < 0:
-        raise TypeError('n must be a natural')
-    if alphabet is None:
-        s = ('%x' % (n,)).lstrip('0')
-        if len(s) % 2:
-            s = '0' + s
-        return s.decode('hex')
-    else:
-        assert len(set(alphabet)) == len(alphabet)
-        res = []
-        while n:
-            n, x = divmod(n, len(alphabet))
-            res.append(alphabet[x])
-        res.reverse()
-        return ''.join(res)
-
-
-def string_to_natural(s, alphabet=None):
-    if alphabet is None:
-        assert not s.startswith('\x00')
-        return int(s.encode('hex'), 16) if s else 0
-    else:
-        assert len(set(alphabet)) == len(alphabet)
-        assert not s.startswith(alphabet[0])
-        return sum(alphabet.index(char) * len(alphabet)**i for i, char in enumerate(reversed(s)))
-
-
-def base58_encode(bindata):
-    bindata2 = bindata.lstrip(chr(0))
-    return base58_alphabet[0]*(len(bindata) - len(bindata2)) + natural_to_string(string_to_natural(bindata2), base58_alphabet)
-
-
-def base58_decode(b58data):
-    b58data2 = b58data.lstrip(base58_alphabet[0])
-    return chr(0)*(len(b58data) - len(b58data2)) + natural_to_string(string_to_natural(b58data2, base58_alphabet))
 
 
 class Error(Exception):
@@ -143,15 +104,6 @@ def parse_addr(bytes):
     ((ts,), bytes) = parse(bytes, ADDR_FMT)
     (addr, bytes) = parse_addr_bare(bytes)
     return (ts, addr, bytes)
-
-
-def address_from_pubkey(bytes):
-    return address_from_pk_hash(new_hash('ripemd160', sha256(bytes).digest()).digest())
-
-
-def address_from_pk_hash(bytes):
-    ext_hash = '\x00' + bytes
-    return ext_hash + sha256(sha256(ext_hash).digest()).digest()[:4]
 
 
 class MessageHeader(object):
@@ -447,8 +399,8 @@ class PubKeyScript(object):
 
     def __repr__(self):
         if self.is_standard_transaction:
-            addr = address_from_pk_hash(self.bytes[3:-2])
-            addr_enc = base58_encode(addr)
+            addr = key.address_from_pk_hash(self.bytes[3:-2])
+            addr_enc = key.base58_encode(addr)
             return 'To Addr: %s' % (addr_enc,)
         return self.bytes.encode('hex')
 
