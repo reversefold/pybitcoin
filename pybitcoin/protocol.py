@@ -157,11 +157,8 @@ class Message(object):
 
     @property
     def header(self):
-        if self._header is None:
-            self._header = MessageHeader(self.command, len(self.payload), self.checksum)
-        else:
-            self._header.payload_length = len(self.payload)
-            self._header.checksum = self.checksum
+        self._header.payload_length = len(self.payload)
+        self._header.checksum = self.checksum
         return self._header
 
     @classmethod
