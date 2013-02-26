@@ -126,6 +126,12 @@ class MessageTest(unittest.TestCase):
             bytes = parts[0] + struct.pack('<I', newsize) + checksum + payload
             (msg, bytes) = protocol.Message.parse(bytes)
 
+    def test_unknown_command(self):
+        msg = protocol.Message('unknown')
+        msg.payload = ''
+        with self.assertRaises(protocol.ParseError):
+            protocol.Message.parse(msg.bytes)
+
 
 class VersionTest(unittest.TestCase):
     def test_version(self):
