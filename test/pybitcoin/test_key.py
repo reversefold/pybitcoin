@@ -30,3 +30,10 @@ class TestAddressMethods(unittest.TestCase):
     def test_address_from_compressed_pubkey(self):
         self.assertEquals(key.address_from_pubkey('\x02\x01\x00\xb9\xce\x1a\xcfg\x16\xa2\xd6Os\xb2\xa6%\xf2\xc1\x0c\xe9\x19\xe5(\xa9?`Z\xf1\xd7=M[A'),
                           '\x00\xc5\xf0\xf9\xb63\x08+b\xfe\xb5 \xb8\xea<L\x12)\x1c\xaae\xe7\xf6\xf30')
+
+    def test_natural_to_string_negative(self):
+        with self.assertRaises(TypeError):
+            key.natural_to_string(-1)
+
+    def test_natural_to_string_odd_length(self):
+        self.assertEquals(key.natural_to_string(2), '\x02')
