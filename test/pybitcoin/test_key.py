@@ -43,6 +43,18 @@ class TestAddressMethods(unittest.TestCase):
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'),
             int('7F3B6EAF1C8C3BFD8B0727B979746A932B6B9F9489898379DD65C1E3CCC3B4DF', 16))
 
+    def test_decode_privkey_checksum_mismatch(self):
+        priv = '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'
+        bytes = key.base58_decode(priv)[:-1] + '\x42'
+        with self.assertRaises(key.Error):
+            key.decode_privkey(key.base58_encode(bytes))
+
+    def test_decode_privkey_bad_version(self):
+        priv = '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'
+        bytes = '\x08' + key.base58_decode(priv)[1:]
+        with self.assertRaises(key.Error):
+            key.decode_privkey(key.base58_encode(bytes))
+
     def test_encode_privkey(self):
         self.assertEqual(
             key.encode_privkey(int('7F3B6EAF1C8C3BFD8B0727B979746A932B6B9F9489898379DD65C1E3CCC3B4DF', 16)),
