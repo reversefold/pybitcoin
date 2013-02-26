@@ -11,42 +11,38 @@ class Error(Exception):
     pass
 
 
-def natural_to_string(n, alphabet=None):
-    if n < 0:
-        raise TypeError('n must be a natural')
-    if alphabet is None:
-        s = ('%x' % (n,)).lstrip('0')
-        if len(s) % 2:
-            s = '0' + s
-        return s.decode('hex')
+def base58_chars(num):
+    while num > 0:
+        (num, remainder) = divmod(num, 58)
+        yield base58_alphabet[remainder]
+
+
+def base58_encode(bytes):
+    leading_zeros = 0
+    while leading_zeros < len(bytes) and bytes[leading_zeros] == '\x00':
+        leading_zeros += 1
+    num = int(bytes.encode('hex'), 16)
+    encoded = '%s%s' % (
+        ''.join(base58_chars(num)),
+        base58_alphabet[0] * leading_zeros)
+    return encoded[::-1]
+
+
+def base58_decode(bytes):
+    leading_zeros = 0
+    while leading_zeros < len(bytes) and bytes[leading_zeros] == '1':
+        leading_zeros += 1
+    bytes = bytes[leading_zeros:]
+    num = 0
+    for i in xrange(len(bytes)):
+        num = num * 58 + base58_alphabet.index(bytes[i])
+    if num > 0:
+        decoded_hex = hex(num)[2:].rstrip('L')
+        if len(decoded_hex) % 2:
+            decoded_hex = '0' + decoded_hex
     else:
-        assert len(set(alphabet)) == len(alphabet)
-        res = []
-        while n:
-            n, x = divmod(n, len(alphabet))
-            res.append(alphabet[x])
-        res.reverse()
-        return ''.join(res)
-
-
-def string_to_natural(s, alphabet=None):
-    if alphabet is None:
-        assert not s.startswith('\x00')
-        return int(s.encode('hex'), 16) if s else 0
-    else:
-        assert len(set(alphabet)) == len(alphabet)
-        assert not s.startswith(alphabet[0])
-        return sum(alphabet.index(char) * len(alphabet)**i for i, char in enumerate(reversed(s)))
-
-
-def base58_encode(bindata):
-    bindata2 = bindata.lstrip(chr(0))
-    return base58_alphabet[0]*(len(bindata) - len(bindata2)) + natural_to_string(string_to_natural(bindata2), base58_alphabet)
-
-
-def base58_decode(b58data):
-    b58data2 = b58data.lstrip(base58_alphabet[0])
-    return chr(0)*(len(b58data) - len(b58data2)) + natural_to_string(string_to_natural(b58data2, base58_alphabet))
+        decoded_hex = ''
+    return (leading_zeros * '\x00') + decoded_hex.decode('hex')
 
 
 def decode_privkey(priv):
