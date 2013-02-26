@@ -7,6 +7,10 @@ import struct
 base58_alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
 
+class Error(Exception):
+    pass
+
+
 def natural_to_string(n, alphabet=None):
     if n < 0:
         raise TypeError('n must be a natural')
@@ -43,6 +47,18 @@ def base58_encode(bindata):
 def base58_decode(b58data):
     b58data2 = b58data.lstrip(base58_alphabet[0])
     return chr(0)*(len(b58data) - len(b58data2)) + natural_to_string(string_to_natural(b58data2, base58_alphabet))
+
+
+def decode_privkey(priv):
+    bytes = base58_decode(priv)
+    version = bytes[0]
+    if version != '\x80':
+        raise Error('Version (%r) != \x80' % (version,))
+    checksum = bytes[-4:]
+    hash = sha256(sha256(bytes[:-4]).digest()).digest()
+    if hash[:4] != checksum:
+        raise Error('Checksum mismatch')
+    return int(bytes[1:-4].encode('hex'), 16)
 
 
 # secp256k1
