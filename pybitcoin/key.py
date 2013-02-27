@@ -113,3 +113,13 @@ def address_from_pubkey(bytes):
 def address_from_pk_hash(bytes):
     ext_hash = '\x00' + bytes
     return ext_hash + sha256(sha256(ext_hash).digest()).digest()[:4]
+
+
+def priv_to_address(priv):
+    return address_from_pubkey(
+        encode_pub(
+            priv_to_pub(priv)))
+
+
+def generate_priv():
+    return randrange(1, secp256k1.order)

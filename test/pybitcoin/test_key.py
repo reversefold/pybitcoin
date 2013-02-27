@@ -101,3 +101,15 @@ class TestKey(unittest.TestCase):
                         key.priv_to_pub(
                             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))))),
             '1EEaiQ4DXxf8seerjdNR69by8pwZeBJ6mJ')
+        self.assertEquals(
+            key.base58_encode(
+                key.priv_to_address(
+                    key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))),
+            '1EEaiQ4DXxf8seerjdNR69by8pwZeBJ6mJ')
+
+    def test_priv_addition_is_pub_addition(self):
+        # adding private keys gives the same address as adding their public keys
+        k1 = key.generate_priv()
+        k2 = key.generate_priv()
+        self.assertEquals(key.base58_encode(key.priv_to_address(k1 + k2)),
+                          key.base58_encode(key.address_from_pubkey(key.encode_pub(key.priv_to_pub(k1) + key.priv_to_pub(k2)))))
