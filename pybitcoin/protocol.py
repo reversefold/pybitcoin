@@ -254,7 +254,7 @@ class Verack(Message):
 
 class Ping(Message):
     def __init__(self, header=None):
-        super(Verack, self).__init__('ping', header=header)
+        super(Ping, self).__init__('ping', header=header)
 
     @property
     def payload(self):
