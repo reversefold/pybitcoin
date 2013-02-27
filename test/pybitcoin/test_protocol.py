@@ -2,6 +2,7 @@
 import hashlib
 import mox
 import os
+import random
 import struct
 import unittest
 
@@ -291,3 +292,31 @@ class AddressListTest(unittest.TestCase):
         self.assertEquals(parsed.addresses[1][1][2], 543)
 
         self.assertEquals(msg, parsed)
+
+
+def random_hash():
+    return ''.join(
+        chr(random.randrange(256)) for _ in xrange(32))
+
+
+class TestInventoryVectors(unittest.TestCase):
+    def test_inventory(self):
+        self._test_inventory_vector(protocol.Inventory)
+
+    def test_getdata(self):
+        self._test_inventory_vector(protocol.GetData)
+
+    def _test_inventory_vector(self, cls):
+        hash1 = random_hash()
+        hash2 = random_hash()
+        hash3 = random_hash()
+        msg = cls([
+            (0, hash1),
+            (2, hash2),
+            (1, hash3)])
+        (parsed, bytes) = cls.parse(msg.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(msg.bytes, parsed.bytes)
+        self.assertEquals(parsed.hashes[0], msg.hashes[0])
+        self.assertEquals(parsed.hashes[1], msg.hashes[1])
+        self.assertEquals(parsed.hashes[2], msg.hashes[2])
