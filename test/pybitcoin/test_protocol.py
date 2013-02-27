@@ -254,3 +254,19 @@ class TransactionTest(unittest.TestCase):
         self.assertEquals(tx.tx.lock_time, lock)
 
         self.assertEquals(tx1, tx)
+
+
+class VerackTest(unittest.TestCase):
+    def test_verack(self):
+        msg = protocol.Verack()
+        (parsed, bytes) = protocol.Verack.parse(msg.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(parsed.bytes, msg.bytes)
+
+
+class PingTest(unittest.TestCase):
+    def test_verack(self):
+        msg = protocol.Ping()
+        (parsed, bytes) = protocol.Ping.parse(msg.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(parsed.bytes, msg.bytes)
