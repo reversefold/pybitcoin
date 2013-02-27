@@ -320,3 +320,35 @@ class TestInventoryVectors(unittest.TestCase):
         self.assertEquals(parsed.hashes[0], msg.hashes[0])
         self.assertEquals(parsed.hashes[1], msg.hashes[1])
         self.assertEquals(parsed.hashes[2], msg.hashes[2])
+
+
+class TestBlock(unittest.TestCase):
+    def test_block(self):
+        v = 42
+        tx_hash = hashlib.sha256(hashlib.sha256('enigmaenigmaenigma').digest()).digest()
+        script = 'scriptscriptscript'
+        idx = 75
+        seq = 42
+        txin = protocol.TxIn((tx_hash, idx), script, seq)
+        txin = [txin]
+        val = 12345
+        pksbytes = '\x32' * 40
+        pks = protocol.PubKeyScript(pksbytes)
+        txout = protocol.TxOut(val, pks)
+        txout = [txout]
+        lock = 12345678
+
+        tx = protocol.Transaction(v, txin, txout, lock)
+
+        msg = protocol.Block(
+            0xffed34,
+            random_hash(),
+            random_hash(),
+            948576,
+            738571,
+            975670,
+            [tx, tx])
+        (parsed, bytes) = protocol.Block.parse(msg.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(msg.bytes, parsed.bytes)
+        self.assertEquals(msg, parsed)
