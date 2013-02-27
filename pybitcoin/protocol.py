@@ -329,10 +329,11 @@ class InventoryVector(Message):
     def __repr__(self):
         return 'Inventory(%r, [%s])' % (
             self.header,
-            ', '.join('(%s, %s)' % (
-                self.HASH_TYPES.get(i[0], '<UNKNOWN>'),
-                i[1].encode('hex')
-            ) for i in self.hashes))
+            ', '.join(
+                '(%s, %s)' % (
+                    self.HASH_TYPES.get(i[0], '<UNKNOWN>'),
+                    i[1].encode('hex'))
+                for i in self.hashes))
 
 
 class Inventory(InventoryVector):
