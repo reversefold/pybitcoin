@@ -270,3 +270,24 @@ class PingTest(unittest.TestCase):
         (parsed, bytes) = protocol.Ping.parse(msg.bytes)
         self.assertEquals(bytes, '')
         self.assertEquals(parsed.bytes, msg.bytes)
+
+
+class AddressListTest(unittest.TestCase):
+    def test_address_list(self):
+        msg = protocol.AddressList([
+            (12345, (54361, '53.69.86.123', 843)),
+            (63528, (95635, '153.169.204.123', 543))])
+        (parsed, bytes) = protocol.AddressList.parse(msg.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(parsed.bytes, msg.bytes)
+        self.assertEquals(parsed.addresses[0][0], 12345)
+        self.assertEquals(parsed.addresses[0][1][0], 54361)
+        self.assertEquals(parsed.addresses[0][1][1], '53.69.86.123')
+        self.assertEquals(parsed.addresses[0][1][2], 843)
+
+        self.assertEquals(parsed.addresses[1][0], 63528)
+        self.assertEquals(parsed.addresses[1][1][0], 95635)
+        self.assertEquals(parsed.addresses[1][1][1], '153.169.204.123')
+        self.assertEquals(parsed.addresses[1][1][2], 543)
+
+        self.assertEquals(msg, parsed)

@@ -292,6 +292,9 @@ class AddressList(Message):
         return 'AddressList(%r, [%s])' % (
             self.header, ', '.join(repr(a) for a in self.addresses))
 
+    def __eq__(self, b):
+        return self.addresses == b.addresses
+
 
 class InventoryVector(Message):
     HASH_TYPES = {
