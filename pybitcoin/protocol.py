@@ -573,6 +573,43 @@ class Block(Message):
 
 class GetHeaders(Message):
     def __init__(self):
+        'getheaders'
+        raise Error('Unimplemented')
+
+
+class Headers(Message):
+    def __init__(self):
+        'headers'
+        raise Error('Unimplemented')
+
+
+class GetAddresses(Message):
+    def __init__(self):
+        'getaddr'
+        raise Error('Unimplemented')
+
+
+class CheckOrder(Message):
+    def __init__(self):
+        'checkorder'
+        raise Error('Unimplemented')
+
+
+class SubmitOrder(Message):
+    def __init__(self):
+        'submitorder'
+        raise Error('Unimplemented')
+
+
+class Reply(Message):
+    def __init__(self):
+        'reply'
+        raise Error('Unimplemented')
+
+
+class Alert(Message):
+    def __init__(self):
+        'alert'
         raise Error('Unimplemented')
 
 
