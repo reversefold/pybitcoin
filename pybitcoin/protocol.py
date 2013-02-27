@@ -26,7 +26,6 @@ def fmt_w_size(fmt):
 
 UINT32_FMT = fmt_w_size('<I')
 INT64_FMT = fmt_w_size('<q')
-HASH_FMT = fmt_w_size('<I32s')
 
 
 def splitn(bytes, n):
@@ -297,6 +296,7 @@ class AddressList(Message):
 
 
 class InventoryVector(Message):
+    HASH_FMT = fmt_w_size('<I32s')
     HASH_TYPES = {
         0: 'ERROR',
         1: 'MSG_TX',
@@ -311,7 +311,7 @@ class InventoryVector(Message):
         return ''.join([
             encode_varint(len(self.hashes))]
             + [
-                struct.pack(HASH_FMT[0], *item)
+                struct.pack(self.HASH_FMT[0], *item)
                 for item in self.hashes
             ])
 
@@ -322,7 +322,7 @@ class InventoryVector(Message):
         (count, bytes) = parse_varint(bytes)
         hashes = []
         for _ in xrange(count):
-            (item, bytes) = parse(bytes, HASH_FMT)
+            (item, bytes) = parse(bytes, cls.HASH_FMT)
             hashes.append(item)
         return (cls(hashes, header), bytes)
 
