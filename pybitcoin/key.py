@@ -95,7 +95,11 @@ def priv_to_pub(priv):
 
 
 def encode_bigint(b):
-    return struct.pack('>QQQQ', (b >> 192) & 0xffffffffffffffff, (b >> 128) & 0xffffffffffffffff, (b >> 64) & 0xffffffffffffffff, b & 0xffffffffffffffff)
+    return struct.pack('>QQQQ',
+                       (b >> 192) & 0xffffffffffffffff,
+                       (b >> 128) & 0xffffffffffffffff,
+                       (b >> 64) & 0xffffffffffffffff,
+                       b & 0xffffffffffffffff)
 
 
 def encode_pub(pub):
