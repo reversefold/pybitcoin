@@ -571,6 +571,12 @@ class Block(Message):
             self.txns)
 
 
+class GetBlocks(Message):
+    def __init__(self):
+        'getblocks'
+        raise Error('Unimplemented')
+
+
 class GetHeaders(Message):
     def __init__(self):
         'getheaders'
