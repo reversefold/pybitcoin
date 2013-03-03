@@ -136,9 +136,9 @@ class MessageHeader(object):
 
 
 class Message(object):
-    def __init__(self, command=None, header=None):
+    def __init__(self, header=None):
         if header is None:
-            self._header = MessageHeader(command)
+            self._header = MessageHeader(self.COMMAND) # self.__class__.COMMAND
         else:
             self._header = header
 
@@ -179,10 +179,11 @@ class Message(object):
 
 
 class Version(Message):
+    COMMAND = 'version'
     BITS = [fmt_w_size(f) for f in ['<iQq', '<Q', '<i']]
 
     def __init__(self, version, addr_recv, addr_from, nonce, user_agent, start_height, services=0x01, timestamp=None, header=None):
-        super(Version, self).__init__('version', header=header)
+        super(Version, self).__init__(header=header)
         self.version = version
         self.services = services
         self.timestamp = timestamp if timestamp is not None else long(time.time())
@@ -237,8 +238,10 @@ class Version(Message):
 
 
 class Verack(Message):
+    COMMAND = 'verack'
+
     def __init__(self, header=None):
-        super(Verack, self).__init__('verack', header=header)
+        super(Verack, self).__init__(header=header)
 
     @property
     def payload(self):
@@ -252,8 +255,10 @@ class Verack(Message):
 
 
 class Ping(Message):
+    COMMAND = 'ping'
+
     def __init__(self, header=None):
-        super(Ping, self).__init__('ping', header=header)
+        super(Ping, self).__init__(header=header)
 
     @property
     def payload(self):
@@ -267,8 +272,10 @@ class Ping(Message):
 
 
 class AddressList(Message):
+    COMMAND = 'addr'
+
     def __init__(self, addresses=None, header=None):
-        super(AddressList, self).__init__('addr', header=header)
+        super(AddressList, self).__init__(header=header)
         self.addresses = addresses if addresses is not None else []
 
     @property
@@ -302,8 +309,8 @@ class InventoryVector(Message):
         1: 'MSG_TX',
         2: 'MSG_BLOCK'}
 
-    def __init__(self, command=None, hashes=None, header=None):
-        super(InventoryVector, self).__init__(command, header=header)
+    def __init__(self, hashes=None, header=None):
+        super(InventoryVector, self).__init__(header=header)
         self.hashes = hashes if hashes is not None else []
 
     @property
@@ -337,13 +344,17 @@ class InventoryVector(Message):
 
 
 class Inventory(InventoryVector):
+    COMMAND = 'inv'
+
     def __init__(self, hashes=None, header=None):
-        super(Inventory, self).__init__('inv', hashes=hashes, header=header)
+        super(Inventory, self).__init__(hashes=hashes, header=header)
 
 
 class GetData(InventoryVector):
+    COMMAND = 'getdata'
+
     def __init__(self, hashes=None, header=None):
-        super(GetData, self).__init__('getdata', hashes=hashes, header=header)
+        super(GetData, self).__init__(hashes=hashes, header=header)
 
 
 class TxIn(object):
@@ -480,8 +491,10 @@ class Transaction(object):
 
 
 class TransactionMessage(Message):
+    COMMAND = 'tx'
+
     def __init__(self, tx, header=None):
-        super(TransactionMessage, self).__init__('tx', header=header)
+        super(TransactionMessage, self).__init__(header=header)
         self.tx = tx
 
     @classmethod
@@ -503,10 +516,12 @@ class TransactionMessage(Message):
 
 
 class Block(Message):
+    COMMAND = 'block'
+
     HDR_FMT = fmt_w_size('<I32s32sIII')
 
     def __init__(self, version, prev_block_hash, merkle_root, timestamp, bits, nonce, txns, header=None):
-        super(Block, self).__init__('block', header=header)
+        super(Block, self).__init__(header=header)
         self.version = version
         self.prev_block_hash = prev_block_hash
         self.merkle_root = merkle_root
@@ -572,59 +587,78 @@ class Block(Message):
 
 
 class GetBlocks(Message):
+    COMMAND = 'getblocks'
+
     def __init__(self):
-        'getblocks'
         raise Error('Unimplemented')
 
 
 class GetHeaders(Message):
+    COMMAND = 'getheaders'
+
     def __init__(self):
-        'getheaders'
         raise Error('Unimplemented')
 
 
 class Headers(Message):
+    COMMAND = 'headers'
+
     def __init__(self):
-        'headers'
         raise Error('Unimplemented')
 
 
 class GetAddresses(Message):
+    COMMAND = 'getaddr'
+
     def __init__(self):
-        'getaddr'
         raise Error('Unimplemented')
 
 
 class CheckOrder(Message):
+    COMMAND = 'checkorder'
+
     def __init__(self):
-        'checkorder'
         raise Error('Unimplemented')
 
 
 class SubmitOrder(Message):
+    COMMAND = 'submitorder'
+
     def __init__(self):
-        'submitorder'
         raise Error('Unimplemented')
 
 
 class Reply(Message):
+    COMMAND = 'reply'
+
     def __init__(self):
-        'reply'
         raise Error('Unimplemented')
 
 
 class Alert(Message):
+    COMMAND = 'alert'
+
     def __init__(self):
-        'alert'
         raise Error('Unimplemented')
 
 
 COMMAND_CLASS_MAP = {
-    'version': Version,
-    'verack': Verack,
-    'ping': Ping,
-    'inv': Inventory,
-    'addr': AddressList,
-    'tx': TransactionMessage,
-    'block': Block,
+    cls.COMMAND: cls for cls in
+    [
+        Version,
+        Verack,
+        Ping,
+        Inventory,
+        AddressList,
+        TransactionMessage,
+        Block,
+        GetBlocks,
+        GetHeaders,
+        Headers,
+        GetAddresses,
+        CheckOrder,
+        SubmitOrder,
+        Reply,
+        Alert,
+    ]
 }

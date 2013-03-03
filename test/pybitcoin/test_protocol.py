@@ -128,7 +128,9 @@ class MessageTest(unittest.TestCase):
             (msg, bytes) = protocol.Message.parse(bytes)
 
     def test_unknown_command(self):
-        msg = protocol.Message('unknown')
+        class Unknown(protocol.Message):
+            COMMAND = 'unknown'
+        msg = Unknown()
         msg.payload = ''
         with self.assertRaises(protocol.ParseError):
             protocol.Message.parse(msg.bytes)
