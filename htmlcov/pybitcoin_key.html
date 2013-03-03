@@ -5,7 +5,7 @@
     
     
     <meta http-equiv='X-UA-Compatible' content='IE=emulateIE7' />
-    <title>Coverage for pybitcoin/key: 100%</title>
+    <title>Coverage for pybitcoin/key: 99%</title>
     <link rel='stylesheet' href='style.css' type='text/css'>
     
     <script type='text/javascript' src='jquery-1.4.3.min.js'></script>
@@ -21,13 +21,13 @@
 <div id='header'>
     <div class='content'>
         <h1>Coverage for <b>pybitcoin/key</b> :
-            <span class='pc_cov'>100%</span>
+            <span class='pc_cov'>99%</span>
         </h1>
         <img id='keyboard_icon' src='keybd_closed.png'>
         <h2 class='stats'>
-            78 statements &nbsp;
-            <span class='run hide_run shortkey_r button_toggle_run'>78 run</span>
-            <span class='mis shortkey_m button_toggle_mis'>0 missing</span>
+            80 statements &nbsp;
+            <span class='run hide_run shortkey_r button_toggle_run'>79 run</span>
+            <span class='mis shortkey_m button_toggle_mis'>1 missing</span>
             <span class='exc shortkey_x button_toggle_exc'>0 excluded</span>
             
         </h2>
@@ -189,7 +189,13 @@
 <p id='n126' class='pln'><a href='#n126'>126</a></p>
 <p id='n127' class='pln'><a href='#n127'>127</a></p>
 <p id='n128' class='stm run hide_run'><a href='#n128'>128</a></p>
-<p id='n129' class='stm run hide_run'><a href='#n129'>129</a></p>
+<p id='n129' class='stm mis'><a href='#n129'>129</a></p>
+<p id='n130' class='pln'><a href='#n130'>130</a></p>
+<p id='n131' class='pln'><a href='#n131'>131</a></p>
+<p id='n132' class='pln'><a href='#n132'>132</a></p>
+<p id='n133' class='pln'><a href='#n133'>133</a></p>
+<p id='n134' class='stm run hide_run'><a href='#n134'>134</a></p>
+<p id='n135' class='stm run hide_run'><a href='#n135'>135</a></p>
                 
             </td>
             <td class='text' valign='top'>
@@ -320,8 +326,14 @@
 <p id='t125' class='pln'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>priv_to_pub</span><span class='op'>(</span><span class='nam'>priv</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
 <p id='t126' class='pln'><span class='strut'>&nbsp;</span></p>
 <p id='t127' class='pln'><span class='strut'>&nbsp;</span></p>
-<p id='t128' class='stm run hide_run'><span class='key'>def</span> <span class='nam'>generate_priv</span><span class='op'>(</span><span class='op'>)</span><span class='op'>:</span><span class='strut'>&nbsp;</span></p>
-<p id='t129' class='stm run hide_run'>&nbsp; &nbsp; <span class='key'>return</span> <span class='nam'>randrange</span><span class='op'>(</span><span class='num'>1</span><span class='op'>,</span> <span class='nam'>secp256k1</span><span class='op'>.</span><span class='nam'>order</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
+<p id='t128' class='stm run hide_run'><span class='key'>def</span> <span class='nam'>priv_to_address_compressed</span><span class='op'>(</span><span class='nam'>priv</span><span class='op'>)</span><span class='op'>:</span><span class='strut'>&nbsp;</span></p>
+<p id='t129' class='stm mis'>&nbsp; &nbsp; <span class='key'>return</span> <span class='nam'>address_from_pubkey</span><span class='op'>(</span><span class='strut'>&nbsp;</span></p>
+<p id='t130' class='pln'>&nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>encode_pub_compressed</span><span class='op'>(</span><span class='strut'>&nbsp;</span></p>
+<p id='t131' class='pln'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>priv_to_pub</span><span class='op'>(</span><span class='nam'>priv</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
+<p id='t132' class='pln'><span class='strut'>&nbsp;</span></p>
+<p id='t133' class='pln'><span class='strut'>&nbsp;</span></p>
+<p id='t134' class='stm run hide_run'><span class='key'>def</span> <span class='nam'>generate_priv</span><span class='op'>(</span><span class='op'>)</span><span class='op'>:</span><span class='strut'>&nbsp;</span></p>
+<p id='t135' class='stm run hide_run'>&nbsp; &nbsp; <span class='key'>return</span> <span class='nam'>randrange</span><span class='op'>(</span><span class='num'>1</span><span class='op'>,</span> <span class='nam'>secp256k1</span><span class='op'>.</span><span class='nam'>order</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
                 
             </td>
         </tr>
