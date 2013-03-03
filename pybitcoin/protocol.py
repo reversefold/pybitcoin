@@ -588,16 +588,38 @@ class Block(Message):
 
 class GetBlocks(Message):
     COMMAND = 'getblocks'
+    HASH_FMT = fmt_w_size('<32s')
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    def __init__(self, version, hashes, hash_stop):
+        self.version = version
+        self.hashes = hashes
+        self.hash_stop = hash_stop
+
+    @property
+    def payload(self):
+        return ''.join([
+            struct.pack(UINT32_FMT[0], self.version),
+            encode_varint(len(self.hashes)),
+            ''.join(struct.pack(self.HASH_FMT[0], hash) for hash in self.hashes),
+            struct.pack(self.HASH_FMT[0], self.hash_stop),
+            ])
+
+    @classmethod
+    def parse(cls, bytes, header=None):
+        if header is None:
+            (header, bytes) = MessageHeader.parse(bytes)
+        (version, bytes) = parse(bytes, UINT32_FMT)
+        (num_hashes, bytes) = parse_varint(bytes)
+        hashes = []
+        for _ in xrange(num_hashes):
+            (hash, bytes) = parse(bytes, cls.HASH_FMT)
+            hashes.append(hash)
+        (hash_stop, bytes) = parse(cls.HASH_FMT)
+        return (cls(version, hashes, hash_stop), bytes)
 
 
-class GetHeaders(Message):
+class GetHeaders(GetBlocks):
     COMMAND = 'getheaders'
-
-    def __init__(self):
-        raise Error('Unimplemented')
 
 
 class Headers(Message):
