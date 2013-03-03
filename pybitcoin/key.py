@@ -125,5 +125,11 @@ def priv_to_address(priv):
             priv_to_pub(priv)))
 
 
+def priv_to_address_compressed(priv):
+    return address_from_pubkey(
+        encode_pub_compressed(
+            priv_to_pub(priv)))
+
+
 def generate_priv():
     return randrange(1, secp256k1.order)
