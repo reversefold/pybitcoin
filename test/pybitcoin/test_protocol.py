@@ -354,3 +354,14 @@ class TestBlock(unittest.TestCase):
         self.assertEquals(bytes, '')
         self.assertEquals(msg.bytes, parsed.bytes)
         self.assertEquals(msg, parsed)
+
+
+class TestGetBlocks(unittest.TestCase):
+    def test_get_blocks(self):
+        msg = protocol.GetBlocks(
+            76485,
+            [random_hash(), random_hash(), random_hash()],
+            random_hash())
+        (parsed, bytes) = protocol.GetBlocks.parse(msg.bytes)
+        self.assertEquals(bytes, '')
+        self.assertEquals(msg, parsed)

@@ -590,7 +590,8 @@ class GetBlocks(Message):
     COMMAND = 'getblocks'
     HASH_FMT = fmt_w_size('<32s')
 
-    def __init__(self, version, hashes, hash_stop):
+    def __init__(self, version, hashes, hash_stop, header=None):
+        super(GetBlocks, self).__init__(header=header)
         self.version = version
         self.hashes = hashes
         self.hash_stop = hash_stop
@@ -608,14 +609,26 @@ class GetBlocks(Message):
     def parse(cls, bytes, header=None):
         if header is None:
             (header, bytes) = MessageHeader.parse(bytes)
-        (version, bytes) = parse(bytes, UINT32_FMT)
+        ((version,), bytes) = parse(bytes, UINT32_FMT)
         (num_hashes, bytes) = parse_varint(bytes)
         hashes = []
         for _ in xrange(num_hashes):
-            (hash, bytes) = parse(bytes, cls.HASH_FMT)
+            ((hash,), bytes) = parse(bytes, cls.HASH_FMT)
             hashes.append(hash)
-        (hash_stop, bytes) = parse(cls.HASH_FMT)
-        return (cls(version, hashes, hash_stop), bytes)
+        ((hash_stop,), bytes) = parse(bytes, cls.HASH_FMT)
+        return (cls(version, hashes, hash_stop, header=header), bytes)
+
+    def __eq__(self, b):
+        return (self.version == b.version
+                and self.hashes == b.hashes
+                and self.hash_stop == b.hash_stop)
+
+    def __repr__(self):
+        return 'GetBlocks(%r, %r, %s, %s)' % (
+            self.header,
+            self.version,
+            '[%s]' % (', '.join(hash.encode('hex') for hash in self.hashes)),
+            self.hash_stop.encode('hex'))
 
 
 class GetHeaders(GetBlocks):
