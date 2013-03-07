@@ -304,6 +304,9 @@ class AddressList(Message):
 
 class InventoryVector(Message):
     HASH_FMT = fmt_w_size('<I32s')
+    ERROR = 0
+    MSG_TX = 1
+    MSG_BLOCK = 2
     HASH_TYPES = {
         0: 'ERROR',
         1: 'MSG_TX',
@@ -450,6 +453,9 @@ class Transaction(object):
         self.tx_out = tx_out
         self.lock_time = lock_time
 
+    def hash(self):
+        return sha256(sha256(self.bytes).digest()).digest()
+
     @classmethod
     def parse(cls, bytes):
         ((version,), bytes) = parse(bytes, UINT32_FMT)
@@ -483,7 +489,8 @@ class Transaction(object):
                 and self.lock_time == b.lock_time)
 
     def __repr__(self):
-        return 'Transaction(%r, [%s], [%s], %r)' % (
+        return 'Transaction(%s, %r, [%s], [%s], %r)' % (
+            self.hash().encode('hex'),
             self.version,
             ', '.join(repr(tx) for tx in self.tx_in),
             ', '.join(repr(tx) for tx in self.tx_out),
