@@ -109,13 +109,15 @@ def handle_inv(msg):
 
 
 _waiting_for = {}
+_stored = {}
 
 
 def get_transaction(hash):
     item = (protocol.InventoryVector.MSG_TX, hash)
+    if item in _stored:
+        return _stored[item]
     if item not in _waiting_for:
         event = _waiting_for[item] = threading.Event()
-        event.waiting = 0
     else:
         event = _waiting_for[item]
     while True:
@@ -125,14 +127,11 @@ def get_transaction(hash):
         else:
             break
     sock.sendall(protocol.GetData([item]).bytes)
-    event.waiting += 1
     while True:
         if not event.wait(1):
             break
         log.debug('Still waiting for tx %s' % (hash.encode('hex'),))
-    event.waiting -= 1
-    tx = event.tx
-    return tx
+    return _stored[item]
 
 
 def handle_tx(msg):
@@ -143,18 +142,8 @@ def handle_tx(msg):
     if not event:
         return
     log.debug('Someone is waiting for tx %s' % (hashhex,))
-    event.tx = msg.tx
-    # TODO: only one will get it? never switch back?
-    while True:
-        # TODO: needed?
-        #if event.waiting > 1:
-        #    scheduler.schedule(compat.getcurrent())
-        log.debug('%r waiting for tx %s' % (event.waiting, hashhex))
-        waiting = event.waiting
-        event.set()
-        if waiting <= 1:
-            log.debug('No more waiting')
-            break
+    _stored[(protocol.InventoryVector.MSG_TX, hash)] = msg.tx
+    event.set()
 
 
 COMMAND_HANDLE_MAP = {
