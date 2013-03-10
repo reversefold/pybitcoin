@@ -26,22 +26,22 @@ def recv_bytes(sock, num_bytes):
     data_list = []
     remaining_len = num_bytes
     while remaining_len > 0:
-        log.debug("read loop %i", remaining_len)
+        log.debug('read loop %i', remaining_len)
         try:
             buf = sock.recv(remaining_len)
         except socket.error, e:
             if e.errno == 104:
-                log.warn("Connection reset by peer")
+                log.warn('Connection reset by peer')
                 buf = None
             else:
                 raise
         if not buf:
-            raise ConnectionClosedError("Connection closed from the other side while reading")
+            raise ConnectionClosedError('Connection closed from the other side while reading')
         data_list.append(buf)
         remaining_len -= len(buf)
     data = ''.join(data_list)
     if len(data) != num_bytes:
-        raise SocketError("Length of data (%r) is not equal to expected length (%r)" % (len(data), num_bytes))
+        raise SocketError('Length of data (%r) is not equal to expected length (%r)' % (len(data), num_bytes))
     return data
 
 
@@ -130,7 +130,7 @@ def get_transaction(hash):
     while True:
         if not event.wait(1):
             break
-        log.debug('Still waiting for tx %s' % (hash.encode('hex'),))
+        log.debug('Still waiting for tx %s', hash.encode('hex'))
     return _stored[item]
 
 
@@ -141,7 +141,7 @@ def handle_tx(msg):
     event = _waiting_for.get((protocol.InventoryVector.MSG_TX, hash))
     if not event:
         return
-    log.debug('Someone is waiting for tx %s' % (hashhex,))
+    log.debug('Someone is waiting for tx %s', hashhex)
     _stored[(protocol.InventoryVector.MSG_TX, hash)] = msg.tx
     event.set()
 
