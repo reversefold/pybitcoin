@@ -6,8 +6,6 @@ import logging
 import logging.config
 #import threading
 
-from greenhouse import scheduler
-
 
 log = logging.getLogger(__name__)
 
@@ -15,15 +13,17 @@ log = logging.getLogger(__name__)
 def main():
     logging.config.fileConfig('logging.ini')
 
+    # imported here to make sure logging is set up
     from pybitcoin import io
 
-#    ioloop_thread = threading.Thread(target=ioloop)
-#    ioloop_thread.start()
-    log.info('Scheduling pybitcoin ioloop')
-    scheduler.schedule(io.ioloop)
-    tx_hash = '6bb14743792a481e7b15a1b5d73a7fb58943efdd61e3599ebd08d8d5fb2d3bf1'.decode('hex')
+    #ioloop_thread = threading.Thread(target=ioloop)
+    #ioloop_thread.start()
+    log.info('Starting pybitcoin ioloop')
+    ioloop = io.IOLoop()
+    ioloop.start()
+    tx_hash = '63c72b003e92e429fa02bcf57adc2a1bdd088ae4d86745e1d41984323500075f'.decode('hex')
     log.info('Asking for transaction %s', tx_hash.encode('hex'))
-    tx = io.get_transaction(tx_hash)
+    tx = ioloop.get_transaction(tx_hash)
     log.info('Got transaction: %r', tx)
     log.info('Exiting')
 
