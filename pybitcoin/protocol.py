@@ -641,6 +641,9 @@ class GetBlocks(Message):
 class GetHeaders(GetBlocks):
     COMMAND = 'getheaders'
 
+    def __init__(self):
+        raise Error('Unimplemented')
+
 
 class Headers(Message):
     COMMAND = 'headers'
