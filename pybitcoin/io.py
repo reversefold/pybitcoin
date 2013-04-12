@@ -2,7 +2,6 @@ from Queue import Queue
 import random
 import socket
 import threading
-import time
 import logging
 import logging.config
 
