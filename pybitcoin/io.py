@@ -62,7 +62,7 @@ class IOLoop(threading.Thread):
         self.sock = socket.socket()
         try:
             self.sock.connect(('localhost', 8333))
-            outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 212672, 1, 1355854353)
+            outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
             self.send_msg(outmsg)
             while True:
                 while not self.out_queue.empty():
