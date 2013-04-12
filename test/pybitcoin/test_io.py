@@ -31,7 +31,7 @@ class TestRecvBytes(mox.MoxTestBase):
     def test_recv_bytes_2_split(self):
         sock = self.mox.CreateMock(socket.socket)
         self.mox.StubOutWithMock(sock, 'recv')
-        sock.recv(1).AndReturn('a')
+        sock.recv(2).AndReturn('a')
         sock.recv(1).AndReturn('b')
         self.mox.ReplayAll()
-        self.assertEqual(io.recv_bytes(sock, 1), 'ab')
+        self.assertEqual(io.recv_bytes(sock, 2), 'ab')
