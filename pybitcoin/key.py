@@ -94,16 +94,41 @@ def priv_to_pub(priv):
     return secp256k1.generator * priv
 
 
+BIGINT_ENCODING = '>QQQQ'
+BIGINT_BYTES = struct.calcsize(BIGINT_ENCODING)
+
+
 def encode_bigint(b):
-    return struct.pack('>QQQQ',
+    return struct.pack(BIGINT_ENCODING,
                        (b >> 192) & 0xffffffffffffffff,
                        (b >> 128) & 0xffffffffffffffff,
                        (b >> 64) & 0xffffffffffffffff,
                        b & 0xffffffffffffffff)
 
 
+def decode_bigint(bytes):
+    (a, b, c, d) = struct.unpack(BIGINT_ENCODING, bytes)
+    return (a << 192) | (b << 128) | (c << 64) | d
+
+
 def encode_pub(pub):
     return '\x04%s%s' % (encode_bigint(pub.x()), encode_bigint(pub.y()))
+
+
+def _decode_pub(bytes):
+    if bytes[0] != '\x04':
+        raise Error('byte 0 should be 0x04')
+    x = decode_bigint(bytes[1:BIGINT_BYTES + 1])
+    y = decode_bigint(bytes[BIGINT_BYTES + 1:])
+    return ecdsa.ellipticcurve.Point(
+        curve_secp256k1, x, y, secp256k1.order)
+
+
+def decode_pub(pub):
+    if pub[0] == '\x04':
+        return _decode_pub(pub)
+    elif pub[0] in ['\x02', '\x03']:
+        return _decode_pub_compressed(pub)
 
 
 def encode_pub_compressed(pub):
@@ -119,16 +144,20 @@ def address_from_pk_hash(bytes):
     return ext_hash + sha256(sha256(ext_hash).digest()).digest()[:4]
 
 
+def pub_to_address(pub):
+    return address_from_pubkey(encode_pub(pub))
+
+
 def priv_to_address(priv):
-    return address_from_pubkey(
-        encode_pub(
-            priv_to_pub(priv)))
+    return pub_to_address(priv_to_pub(priv))
+
+
+def pub_to_address_compressed(pub):
+    return address_from_pubkey(encode_pub_compressed(pub))
 
 
 def priv_to_address_compressed(priv):
-    return address_from_pubkey(
-        encode_pub_compressed(
-            priv_to_pub(priv)))
+    return pub_to_address_compressed(priv_to_pub(priv))
 
 
 def generate_priv():
