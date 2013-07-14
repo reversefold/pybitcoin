@@ -132,3 +132,14 @@ class TestKey(unittest.TestCase):
         pub = ('04EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B387DDFA'
          '56684EF2F4E2325F298F5F418ADCB00F560B75F4DEEAF90ABD5A3CEB0').decode('hex')
         self.assertEquals(key.encode_pub(key.decode_pub(pub)), pub)
+
+    def test_decode_pub_compressed(self):
+        pub = key.priv_to_pub(
+            key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))
+        self.assertEquals(key.decode_pub(key.encode_pub_compressed(pub)), pub)
+
+        for _ in xrange(100):
+            print _
+            priv = key.generate_priv()
+            pub = key.priv_to_pub(priv)
+            self.assertEquals(key.decode_pub(key.encode_pub_compressed(pub)), pub)

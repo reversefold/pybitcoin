@@ -1,5 +1,6 @@
 import ecdsa
 from hashlib import sha256, new as new_hash
+from pybitcoin import msqr
 import random
 import struct
 
@@ -96,14 +97,14 @@ def priv_to_pub(priv):
 
 BIGINT_ENCODING = '>QQQQ'
 BIGINT_BYTES = struct.calcsize(BIGINT_ENCODING)
-
+QMASK = 0xffffffffffffffff
 
 def encode_bigint(b):
     return struct.pack(BIGINT_ENCODING,
-                       (b >> 192) & 0xffffffffffffffff,
-                       (b >> 128) & 0xffffffffffffffff,
-                       (b >> 64) & 0xffffffffffffffff,
-                       b & 0xffffffffffffffff)
+                       (b >> 192) & QMASK,
+                       (b >> 128) & QMASK,
+                       (b >> 64) & QMASK,
+                       b & QMASK)
 
 
 def decode_bigint(bytes):
@@ -124,15 +125,27 @@ def _decode_pub(bytes):
         curve_secp256k1, x, y, secp256k1.order)
 
 
-def decode_pub(pub):
-    if pub[0] == '\x04':
-        return _decode_pub(pub)
-    elif pub[0] in ['\x02', '\x03']:
-        return _decode_pub_compressed(pub)
+def _decode_pub_compressed(bytes):
+    if bytes[0] not in ['\x02', '\x03']:
+        raise Error('first byte not x02 or \x03')
+    x = decode_bigint(bytes[1:])
+    alpha = (x * x * x  + curve_secp256k1.a() * x + curve_secp256k1.b()) % curve_secp256k1.p()
+    beta = msqr.modular_sqrt(alpha, curve_secp256k1.p())
+    y = beta if (beta - ord(bytes[0])) % 2 == 0 else curve_secp256k1.p() - beta
+    return ecdsa.ellipticcurve.Point(
+        curve_secp256k1, x, y, secp256k1.order)
+
+
+def decode_pub(bytes):
+    if bytes[0] == '\x04':
+        return _decode_pub(bytes)
+    elif bytes[0] in ['\x02', '\x03']:
+        return _decode_pub_compressed(bytes)
 
 
 def encode_pub_compressed(pub):
-    return '%s%s' % ('\x02' if pub.y() % 2 == 0 else '\x03', encode_bigint(pub.x()))
+    return '%s%s' % ('\x02' if pub.y() % 2 == 0 else '\x03', # chr(2 + (pub.y() & 1))
+                     encode_bigint(pub.x()))
 
 
 def address_from_pubkey(bytes):
