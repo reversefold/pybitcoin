@@ -127,3 +127,8 @@ class TestKey(unittest.TestCase):
         k2 = key.generate_priv()
         self.assertEquals(key.base58_encode(key.priv_to_address(k1 + k2)),
                           key.base58_encode(key.address_from_pubkey(key.encode_pub(key.priv_to_pub(k1) + key.priv_to_pub(k2)))))
+
+    def test_decode_pub_encode_pub_symmetric(self):
+        pub = ('04EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B387DDFA'
+         '56684EF2F4E2325F298F5F418ADCB00F560B75F4DEEAF90ABD5A3CEB0').decode('hex')
+        self.assertEquals(key.encode_pub(key.decode_pub(pub)), pub)
