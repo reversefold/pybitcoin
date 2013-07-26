@@ -59,13 +59,13 @@ def decode_privkey(priv):
 
 
 def encode_privkey(priv):
-    bytes = '\x80' + hex(priv)[2:].rstrip('L').decode('hex')
+    bytes = '\x80' + hex(priv)[2:].rstrip('L').zfill(64).decode('hex')
     hash = sha256(sha256(bytes).digest()).digest()
     return base58_encode(bytes + hash[:4])
 
 
 def encode_privkey_compressed(priv):
-    bytes = '\x80' + hex(priv)[2:].rstrip('L').decode('hex') + '\x01'
+    bytes = '\x80' + hex(priv)[2:].rstrip('L').zfill(64).decode('hex') + '\x01'
     hash = sha256(sha256(bytes).digest()).digest()
     return base58_encode(bytes + hash[:4])
 
