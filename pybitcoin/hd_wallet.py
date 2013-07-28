@@ -53,33 +53,11 @@ class HDKey(object):
     @classmethod
     def unserialize(cls, raw):
         version = raw[:4]
-        #key_id = raw[45]
-        #if key_id == '\x00':
-        #    if version not in HDPrivKey.VERSIONS:
-        #        raise Error('version (%r) does not match key prefix (%r)' % (version, key_id))
-        #elif key_id in ('\x02', '\x03'):
-        #    if version not in HDPubKey.VERSIONS:
-        #        raise Error('version (%r) does not match key prefix (%r)' % (version, key_id))
-        #else:
-        #    raise Error('key_id not recognized (%r)' % key_id)
         depth = struct.unpack('>B', raw[4:5])[0]
         parent_fingerprint = raw[5:9]
         child_number = struct.unpack('>L', raw[9:13])[0]
         chain_code = raw[13:45]
-        #key = raw[46:]
-        #if key_id == '\x00':
-        #    key = HDPrivKey.unserialize_key(key_id, key)
-        #    return HDPrivKey(key, chain_code, depth, child_number, parent_fingerprint, HDPrivKey.V_T[version])
-        #elif key_id in ('\x02', '\x03'):
-        #    key = HDPubKey.unserialize_key(key_id, key)
-        #    return HDPubKey(key, chain_code, depth, child_number, parent_fingerprint, version == '\x04\x35\x87\xCF')
         raw_key = raw[45:]
-        #if version in HDPubKey.VERSIONS:
-        #    key = HDPubKey.unserialize_key(raw_key)
-        #    return  HDPubKey(key, chain_code, depth, child_number, parent_fingerprint, HDPubKey.V_T[version])
-        #elif version in HDPrivKey.VERSIONS:
-        #    key = HDPrivKey.unserialize_key(raw_key)
-        #    return  HDPrivKey(key, chain_code, depth, child_number, parent_fingerprint, HDPrivKey.V_T[version])
         if version in VERSION_KEY_MAP:
             key_cls = VERSION_KEY_MAP[version]
             key = key_cls.unserialize_key(raw_key)
@@ -102,7 +80,7 @@ class HDPrivKey(HDKey):
             depth, child_number, parent_fingerprint)
 
     def serialized_key(self):
-        return '\x00' + encode_bigint(self.key)  # should this be encode_bigint?
+        return '\x00' + encode_bigint(self.key)
 
     def derive_child(self, i):
         high_bit = i & 0x80000000
@@ -131,7 +109,7 @@ class HDPrivKey(HDKey):
         key_type = raw[0]
         if key_type != '\x00':
             raise TypeError('key_type should be \\x00, not %r' % (key_type,))
-        return decode_bigint(raw[1:])  # should this be decode_bigint?
+        return decode_bigint(raw[1:])
 
 
 class HDPubKey(HDKey):
@@ -144,7 +122,7 @@ class HDPubKey(HDKey):
             depth, child_number, parent_fingerprint)
 
     def serialized_key(self):
-        return encode_pub_compressed(self.key)  # ('\x02' if self.key.x % 2 == 0 else '\x03') + long_to_bytes(self.key.x)  # should this be encode_bigint?
+        return encode_pub_compressed(self.key)
 
     def fingerprint(self):
         return new_hash('ripemd160', sha256(self.serialized_key()).digest()).digest()[:4]
@@ -168,10 +146,6 @@ class HDPubKey(HDKey):
     @classmethod
     def unserialize_key(cls, raw):
         return _decode_pub_compressed(raw)
-        #key_type = raw[0]
-        #if key_type not in ['\x02', '\x03']:
-        #    raise TypeError('key_type should be \\x02 or \\x03, not %r' % (key_type,))
-        #x = bytes_to_long(raw[1:])  # or should this be decode_bigint?
 
 
 VERSION_KEY_MAP = {}
