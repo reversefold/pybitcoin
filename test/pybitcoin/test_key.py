@@ -1,25 +1,26 @@
 import unittest
 
 from pybitcoin import key
+from pybitcoin import byte_util
 
 
 class TestBase58(unittest.TestCase):
     def test_base58_encode_zero(self):
-        self.assertEquals(key.base58_encode('\x00'), '1')
+        self.assertEquals(byte_util.base58_encode('\x00'), '1')
 
     def test_base58_decode_zero(self):
-        self.assertEquals(key.base58_decode('1'), '\x00')
+        self.assertEquals(byte_util.base58_decode('1'), '\x00')
 
     def test_base58_encode_address(self):
         self.assertEquals(
-            key.base58_encode(
+            byte_util.base58_encode(
                 key.address_from_pk_hash(
                     '\xe9\x9f\xaa\x1b\x12\x8f\x13w\x8d"#\xa9\xd1\xd3~\x88\x92\x0b]B')),
             '1NJHiNy5CS2heskf6bx3VuHm9zjXTGdtSt')
 
     def test_base58_decode_address(self):
         self.assertEquals(
-            key.base58_decode('1NJHiNy5CS2heskf6bx3VuHm9zjXTGdtSt'),
+            byte_util.base58_decode('1NJHiNy5CS2heskf6bx3VuHm9zjXTGdtSt'),
             key.address_from_pk_hash(
                 '\xe9\x9f\xaa\x1b\x12\x8f\x13w\x8d"#\xa9\xd1\xd3~\x88\x92\x0b]B'))
 
@@ -56,15 +57,15 @@ class TestKey(unittest.TestCase):
 
     def test_decode_privkey_checksum_mismatch(self):
         priv_enc = '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'
-        priv = key.base58_decode(priv_enc)[:-1] + '\x42'
+        priv = byte_util.base58_decode(priv_enc)[:-1] + '\x42'
         with self.assertRaises(key.Error):
-            key.decode_privkey(key.base58_encode(priv))
+            key.decode_privkey(byte_util.base58_encode(priv))
 
     def test_decode_privkey_bad_version(self):
         priv_enc = '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'
-        priv = '\x08' + key.base58_decode(priv_enc)[1:]
+        priv = '\x08' + byte_util.base58_decode(priv_enc)[1:]
         with self.assertRaises(key.Error):
-            key.decode_privkey(key.base58_encode(priv))
+            key.decode_privkey(byte_util.base58_encode(priv))
 
     def test_encode_privkey(self):
         self.assertEqual(
@@ -117,7 +118,7 @@ class TestKey(unittest.TestCase):
 
     def test_priv_key_to_address(self):
         self.assertEquals(
-            key.base58_encode(
+            byte_util.base58_encode(
                 key.address_from_pubkey(
                     key.encode_pub(
                         key.priv_to_pub(
@@ -125,14 +126,14 @@ class TestKey(unittest.TestCase):
                                 '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))))),
             '1EEaiQ4DXxf8seerjdNR69by8pwZeBJ6mJ')
         self.assertEquals(
-            key.base58_encode(
+            byte_util.base58_encode(
                 key.priv_to_address(
                     key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))),
             '1EEaiQ4DXxf8seerjdNR69by8pwZeBJ6mJ')
 
     def test_priv_key_to_address_compressed(self):
         self.assertEquals(
-            key.base58_encode(
+            byte_util.base58_encode(
                 key.address_from_pubkey(
                     key.encode_pub_compressed(
                         key.priv_to_pub(
@@ -140,7 +141,7 @@ class TestKey(unittest.TestCase):
                                 '5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))))),
             '19ufHMz2mhGHhSSQEmqBsqZUTMHB79urP9')
         self.assertEquals(
-            key.base58_encode(
+            byte_util.base58_encode(
                 key.priv_to_address_compressed(
                     key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))),
             '19ufHMz2mhGHhSSQEmqBsqZUTMHB79urP9')
@@ -150,8 +151,8 @@ class TestKey(unittest.TestCase):
         key1 = key.generate_priv()
         key2 = key.generate_priv()
         self.assertEquals(
-            key.base58_encode(key.priv_to_address(key1 + key2)),
-            key.base58_encode(
+            byte_util.base58_encode(key.priv_to_address(key1 + key2)),
+            byte_util.base58_encode(
                 key.address_from_pubkey(
                     key.encode_pub(key.priv_to_pub(key1) + key.priv_to_pub(key2)))))
 

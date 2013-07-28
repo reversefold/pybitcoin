@@ -3,7 +3,8 @@ import logging
 import struct
 import time
 
-from pybitcoin import util, key
+from pybitcoin import util, key, byte_util
+from pybitcoin.byte_util import Error, ParseError, fmt_w_size, splitn, parse
 
 
 log = logging.getLogger(__name__)
@@ -12,31 +13,8 @@ log = logging.getLogger(__name__)
 MAGIC = struct.pack('<I', 0xD9B4BEF9)
 
 
-class Error(Exception):
-    pass
-
-
-class ParseError(Error):
-    pass
-
-
-def fmt_w_size(fmt):
-    return (fmt, struct.calcsize(fmt))
-
-
 UINT32_FMT = fmt_w_size('<I')
 INT64_FMT = fmt_w_size('<q')
-
-
-def splitn(bytes, n):
-    if len(bytes) < n:
-        raise ParseError('Expected %r+ bytes, got %r: %r' % (n, len(bytes), bytes))
-    return bytes[:n], bytes[n:]
-
-
-def parse(bytes, fmt):
-    (bit, bytes) = splitn(bytes, fmt[1])
-    return (struct.unpack(fmt[0], bit), bytes)
 
 
 def encode_varint(i):
@@ -415,7 +393,7 @@ class PubKeyScript(object):
     def __repr__(self):
         if self.is_standard_transaction:
             addr = key.address_from_pk_hash(self.bytes[3:-2])
-            addr_enc = key.base58_encode(addr)
+            addr_enc = byte_util.base58_encode(addr)
             return 'To Addr: %s' % (addr_enc,)
         return self.bytes.encode('hex')
 

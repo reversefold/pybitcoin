@@ -6,7 +6,8 @@ import random
 import struct
 import unittest
 
-from pybitcoin import protocol, key
+from pybitcoin import protocol, key, byte_util
+from pybitcoin.byte_util import Error, ParseError, splitn
 
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') as f:
@@ -15,25 +16,25 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') a
 
 class TestSplitN(unittest.TestCase):
     def test_splitn(self):
-        (a, b) = protocol.splitn('abcde', 2)
+        (a, b) = splitn('abcde', 2)
         self.assertEqual(len(a), 2)
         self.assertEqual(len(b), 3)
         self.assertEqual(a, 'ab')
         self.assertEqual(b, 'cde')
 
     def test_splitn_0(self):
-        (a, b) = protocol.splitn('12', 0)
+        (a, b) = splitn('12', 0)
         self.assertEqual(a, '')
         self.assertEqual(b, '12')
 
     def test_splitn_len(self):
-        (a, b) = protocol.splitn('12', 2)
+        (a, b) = splitn('12', 2)
         self.assertEqual(a, '12')
         self.assertEqual(b, '')
 
     def test_splitn_gt_len(self):
-        with self.assertRaises(protocol.ParseError):
-            (a, b) = protocol.splitn('12', 3)
+        with self.assertRaises(ParseError):
+            (a, b) = splitn('12', 3)
 
 class TestVarint(mox.MoxTestBase):
     def test_encode_varint_char(self):
@@ -51,7 +52,7 @@ class TestVarint(mox.MoxTestBase):
         self.assertEquals(protocol.encode_varint(0x100000000), '\xff\x00\x00\x00\x00\x01\x00\x00\x00')
 
     def test_encode_varint_too_long(self):
-        with self.assertRaises(protocol.Error):
+        with self.assertRaises(Error):
             protocol.encode_varint(0x10000000000000000)
 
     def test_parse_varint_char(self):
@@ -73,7 +74,7 @@ class TestVarint(mox.MoxTestBase):
         self.mox.StubOutWithMock(struct, 'unpack')
         struct.unpack('<B', '\x00').AndReturn((0x100,))
         self.mox.ReplayAll()
-        with self.assertRaises(protocol.ParseError):
+        with self.assertRaises(ParseError):
             protocol.parse_varint('\x00')
 
 
@@ -97,7 +98,7 @@ class MessageHeaderTest(unittest.TestCase):
 
 
     def test_header_parse_bad_magic(self):
-        with self.assertRaises(protocol.ParseError):
+        with self.assertRaises(ParseError):
             (hdr, bytes) = protocol.MessageHeader.parse('\xe9\xbe\xb4\xd9header\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\x12\xae\x97')
 
 
@@ -111,17 +112,17 @@ class MessageTest(unittest.TestCase):
         self.assertEqual(bytes, trailing)
 
     def test_parse_fails_with_bad_checksum(self):
-        with self.assertRaises(protocol.ParseError):
-            parts = protocol.splitn(TX_BYTES, struct.calcsize('<4s12sI'))
+        with self.assertRaises(ParseError):
+            parts = splitn(TX_BYTES, struct.calcsize('<4s12sI'))
             bytes = parts[0] + '\x98' + parts[1][1:]
             (msg, bytes) = protocol.Message.parse(bytes)
 
     def test_parse_fails_with_extra_bytes(self):
-        with self.assertRaises(protocol.ParseError):
-            parts = protocol.splitn(TX_BYTES, struct.calcsize('<4s12s'))
+        with self.assertRaises(ParseError):
+            parts = splitn(TX_BYTES, struct.calcsize('<4s12s'))
             isize = struct.calcsize('<I')
             newsize = struct.unpack('<I', parts[1][:isize])[0] + 1
-            (checksum, payload) = protocol.splitn(parts[1][isize:], 4)
+            (checksum, payload) = splitn(parts[1][isize:], 4)
             payload += '\x42'
             checksum = protocol.Message.calc_checksum(payload)
             bytes = parts[0] + struct.pack('<I', newsize) + checksum + payload
@@ -132,7 +133,7 @@ class MessageTest(unittest.TestCase):
             COMMAND = 'unknown'
         msg = Unknown()
         msg.payload = ''
-        with self.assertRaises(protocol.ParseError):
+        with self.assertRaises(ParseError):
             protocol.Message.parse(msg.bytes)
 
 
@@ -200,7 +201,7 @@ class PubKeyScriptTest(unittest.TestCase):
         self.assertEquals(pks.bytes, script)
         self.assertEquals(
             repr(pks),
-            'To Addr: ' + key.base58_encode(key.address_from_pk_hash(addr)))
+            'To Addr: ' + byte_util.base58_encode(key.address_from_pk_hash(addr)))
         self.assertTrue(pks.is_standard_transaction)
 
         self.assertEquals(pks, pks)

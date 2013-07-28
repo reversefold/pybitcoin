@@ -1,73 +1,28 @@
 import ecdsa
 from hashlib import sha256, new as new_hash
-from pybitcoin import msqr
 import random
 import struct
 
-
-base58_alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-
-
-class Error(Exception):
-    pass
-
-
-def base58_chars(num):
-    while num > 0:
-        (num, remainder) = divmod(num, 58)
-        yield base58_alphabet[remainder]
-
-
-def base58_encode(bytes):
-    leading_zeros = 0
-    while leading_zeros < len(bytes) and bytes[leading_zeros] == '\x00':
-        leading_zeros += 1
-    num = int(bytes.encode('hex'), 16)
-    encoded = '%s%s' % (
-        ''.join(base58_chars(num)),
-        base58_alphabet[0] * leading_zeros)
-    return encoded[::-1]
-
-
-def base58_decode(bytes):
-    leading_zeros = 0
-    while leading_zeros < len(bytes) and bytes[leading_zeros] == '1':
-        leading_zeros += 1
-    bytes = bytes[leading_zeros:]
-    num = 0
-    for i in xrange(len(bytes)):
-        num = num * 58 + base58_alphabet.index(bytes[i])
-    if num > 0:
-        decoded_hex = hex(num)[2:].rstrip('L')
-        if len(decoded_hex) % 2:
-            decoded_hex = '0' + decoded_hex
-    else:
-        decoded_hex = ''
-    return (leading_zeros * '\x00') + decoded_hex.decode('hex')
+from pybitcoin import msqr
+from pybitcoin.byte_util import Error, base58_encode_checksum, base58_decode_checksum
 
 
 def decode_privkey(priv):
-    bytes = base58_decode(priv)
-    version = bytes[0]
+    raw = base58_decode_checksum(priv)
+    version = raw[0]
     if version != '\x80':
         raise Error('Version (%r) != \x80' % (version,))
-    checksum = bytes[-4:]
-    hash = sha256(sha256(bytes[:-4]).digest()).digest()
-    if hash[:4] != checksum:
-        raise Error('Checksum mismatch')
-    return int(bytes[1:-4].encode('hex'), 16)
+    return decode_bigint(raw[1:])
 
 
 def encode_privkey(priv):
-    bytes = '\x80' + hex(priv)[2:].rstrip('L').zfill(64).decode('hex')
-    hash = sha256(sha256(bytes).digest()).digest()
-    return base58_encode(bytes + hash[:4])
+    raw = '\x80' + encode_bigint(priv)
+    return base58_encode_checksum(raw)
 
 
 def encode_privkey_compressed(priv):
-    bytes = '\x80' + hex(priv)[2:].rstrip('L').zfill(64).decode('hex') + '\x01'
-    hash = sha256(sha256(bytes).digest()).digest()
-    return base58_encode(bytes + hash[:4])
+    raw = '\x80' + encode_bigint(priv) + '\x01'
+    return base58_encode_checksum(raw)
 
 
 # secp256k1
