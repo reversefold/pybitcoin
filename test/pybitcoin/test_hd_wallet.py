@@ -31,7 +31,7 @@ class TestHDWallet(unittest.TestCase):
           'xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEj'
           'WgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw')
 
-    def test_m_0_priv(self):
+    def test_m_0p_priv(self):
         raw_key = ('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPP'
                    'qjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
         expected = ('xprv9uHRZZhk6KAJC1avXpDAp4MDc3sQKNxDiPvvkX8Br5ngLNv1TxvU'
@@ -46,7 +46,29 @@ class TestHDWallet(unittest.TestCase):
                     'WgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw')
         self.assertEqual(child.pub().encoded(), expected)
 
-    def test_m_0_pub(self):
+    def test_private_m_0_public_derivation(self):
+        encoded = ('xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtAL'
+                   'Gdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U')
+        expected = ('xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQ'
+                    'RUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt')
+        key = hd_wallet.HDKey.decode(encoded)
+        child = key.derive_child(0)
+        self.assertEqual(
+            child.encoded(),
+            expected)
+
+    def test_public_m_0_public_derivation_from_priv(self):
+        encoded = ('xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtAL'
+                   'Gdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U')
+        expected = ('xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9Lgpe'
+                    'yGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH')
+        key = hd_wallet.HDKey.decode(encoded)
+        child = key.derive_child(0)
+        self.assertEqual(
+            child.pub().encoded(),
+            expected)
+
+    def test_public_m_0_public_derivation_from_pub(self):
         encoded = ('xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUa'
                    'pSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB')
         expected = ('xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9Lgpe'
