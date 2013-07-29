@@ -5,7 +5,7 @@
     
     
     <meta http-equiv='X-UA-Compatible' content='IE=emulateIE7' />
-    <title>Coverage for pybitcoin/hd_wallet: 90%</title>
+    <title>Coverage for pybitcoin/hd_wallet: 91%</title>
     <link rel='stylesheet' href='style.css' type='text/css'>
     
     <script type='text/javascript' src='jquery-1.4.3.min.js'></script>
@@ -21,13 +21,13 @@
 <div id='header'>
     <div class='content'>
         <h1>Coverage for <b>pybitcoin/hd_wallet</b> :
-            <span class='pc_cov'>90%</span>
+            <span class='pc_cov'>91%</span>
         </h1>
         <img id='keyboard_icon' src='keybd_closed.png'>
         <h2 class='stats'>
             97 statements &nbsp;
-            <span class='run hide_run shortkey_r button_toggle_run'>87 run</span>
-            <span class='mis shortkey_m button_toggle_mis'>10 missing</span>
+            <span class='run hide_run shortkey_r button_toggle_run'>88 run</span>
+            <span class='mis shortkey_m button_toggle_mis'>9 missing</span>
             <span class='exc shortkey_x button_toggle_exc'>0 excluded</span>
             
         </h2>
@@ -150,7 +150,7 @@
 <p id='n87' class='stm run hide_run'><a href='#n87'>87</a></p>
 <p id='n88' class='stm run hide_run'><a href='#n88'>88</a></p>
 <p id='n89' class='pln'><a href='#n89'>89</a></p>
-<p id='n90' class='stm mis'><a href='#n90'>90</a></p>
+<p id='n90' class='stm run hide_run'><a href='#n90'>90</a></p>
 <p id='n91' class='stm run hide_run'><a href='#n91'>91</a></p>
 <p id='n92' class='stm run hide_run'><a href='#n92'>92</a></p>
 <p id='n93' class='stm mis'><a href='#n93'>93</a></p>
@@ -310,7 +310,7 @@
 <p id='t87' class='stm run hide_run'>&nbsp; &nbsp; &nbsp; &nbsp; <span class='key'>if</span> <span class='nam'>high_bit</span><span class='op'>:</span><span class='strut'>&nbsp;</span></p>
 <p id='t88' class='stm run hide_run'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>I</span> <span class='op'>=</span> <span class='nam'>hmac_sha512</span><span class='op'>(</span><span class='nam'>self</span><span class='op'>.</span><span class='nam'>chain_code</span><span class='op'>,</span> <span class='str'>&#39;\x00&#39;</span> <span class='op'>+</span> <span class='nam'>encode_bigint</span><span class='op'>(</span><span class='nam'>self</span><span class='op'>.</span><span class='nam'>key</span><span class='op'>)</span> <span class='op'>+</span> <span class='nam'>struct</span><span class='op'>.</span><span class='nam'>pack</span><span class='op'>(</span><span class='str'>&#39;&gt;L&#39;</span><span class='op'>,</span> <span class='nam'>i</span><span class='op'>)</span><span class='op'>)</span><span class='op'>.</span><span class='nam'>digest</span><span class='op'>(</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
 <p id='t89' class='pln'>&nbsp; &nbsp; &nbsp; &nbsp; <span class='key'>else</span><span class='op'>:</span><span class='strut'>&nbsp;</span></p>
-<p id='t90' class='stm mis'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>I</span> <span class='op'>=</span> <span class='nam'>hmac_sha512</span><span class='op'>(</span><span class='nam'>self</span><span class='op'>.</span><span class='nam'>chain_code</span><span class='op'>,</span> <span class='nam'>encode_pub_compressed</span><span class='op'>(</span><span class='nam'>priv_to_pub</span><span class='op'>(</span><span class='nam'>self</span><span class='op'>.</span><span class='nam'>key</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='nam'>struct</span><span class='op'>.</span><span class='nam'>pack</span><span class='op'>(</span><span class='str'>&#39;&gt;L&#39;</span><span class='op'>,</span> <span class='nam'>i</span><span class='op'>)</span><span class='op'>)</span><span class='op'>.</span><span class='nam'>digest</span><span class='op'>(</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
+<p id='t90' class='stm run hide_run'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>I</span> <span class='op'>=</span> <span class='nam'>hmac_sha512</span><span class='op'>(</span><span class='nam'>self</span><span class='op'>.</span><span class='nam'>chain_code</span><span class='op'>,</span> <span class='nam'>encode_pub_compressed</span><span class='op'>(</span><span class='nam'>priv_to_pub</span><span class='op'>(</span><span class='nam'>self</span><span class='op'>.</span><span class='nam'>key</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='nam'>struct</span><span class='op'>.</span><span class='nam'>pack</span><span class='op'>(</span><span class='str'>&#39;&gt;L&#39;</span><span class='op'>,</span> <span class='nam'>i</span><span class='op'>)</span><span class='op'>)</span><span class='op'>.</span><span class='nam'>digest</span><span class='op'>(</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
 <p id='t91' class='stm run hide_run'>&nbsp; &nbsp; &nbsp; &nbsp; <span class='nam'>IL</span> <span class='op'>=</span> <span class='nam'>decode_bigint</span><span class='op'>(</span><span class='nam'>I</span><span class='op'>[</span><span class='op'>:</span><span class='num'>32</span><span class='op'>]</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
 <p id='t92' class='stm run hide_run'>&nbsp; &nbsp; &nbsp; &nbsp; <span class='key'>if</span> <span class='nam'>IL</span> <span class='op'>&gt;=</span> <span class='nam'>secp256k1</span><span class='op'>.</span><span class='nam'>order</span><span class='op'>:</span><span class='strut'>&nbsp;</span></p>
 <p id='t93' class='stm mis'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class='key'>raise</span> <span class='nam'>Error</span><span class='op'>(</span><span class='str'>&#39;invalid key&#39;</span><span class='op'>)</span><span class='strut'>&nbsp;</span></p>
