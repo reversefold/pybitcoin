@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from hashlib import sha256, sha512, new as new_hash
 import hmac
+import os
 import struct
 
 from pybitcoin.byte_util import base58_encode_checksum, base58_decode_checksum
@@ -110,6 +111,16 @@ class HDPrivKey(HDKey):
         if key_type != '\x00':
             raise TypeError('key_type should be \\x00, not %r' % (key_type,))
         return decode_bigint(raw[1:])
+
+    @classmethod
+    def generate_master(cls, seed=None, testnet=False, num_random_bytes=32):
+        if seed is None:
+            seed = os.urandom(num_random_bytes)
+        I = hmac_sha512('Bitcoin seed', seed).digest()
+        IL = I[:32]
+        IR = I[32:]
+        ki = decode_bigint(IL)
+        return HDPrivKey(ki, IR, testnet=testnet)
 
 
 class HDPubKey(HDKey):

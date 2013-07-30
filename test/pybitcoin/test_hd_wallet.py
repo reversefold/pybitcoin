@@ -4,6 +4,27 @@ from pybitcoin import hd_wallet
 
 
 class TestHDWallet(unittest.TestCase):
+    def test_generate_128_bits(self):
+        seed = '000102030405060708090a0b0c0d0e0f'.decode('hex')
+        expected = ('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPP'
+                    'qjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
+        key = hd_wallet.HDPrivKey.generate_master(seed)
+        self.assertEqual(key.encoded(), expected)
+
+    def test_generate_512_bits(self):
+        seed = ('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f'
+                '9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542').decode('hex')
+        expected = ('xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtAL'
+                    'Gdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U')
+        key = hd_wallet.HDPrivKey.generate_master(seed)
+        self.assertEqual(key.encoded(), expected)
+
+    def test_generate_random(self):
+        hd_wallet.HDPrivKey.generate_master()
+
+    def test_generate_random_128_bytes(self):
+        hd_wallet.HDPrivKey.generate_master(num_random_bytes=128)        
+
     def test_decode_encode_priv(self):
         key = ('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPP'
                'qjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
