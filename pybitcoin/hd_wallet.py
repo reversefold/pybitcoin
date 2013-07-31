@@ -8,6 +8,9 @@ from pybitcoin.byte_util import base58_encode_checksum, base58_decode_checksum
 from pybitcoin.key import _decode_pub_compressed, encode_pub_compressed, encode_bigint, decode_bigint, priv_to_pub, secp256k1
 
 
+PUBLIC_DERIVATION_BIT = 0x80000000
+
+
 def hmac_sha512(key, msg):
     return hmac.new(key, msg, sha512)
 
@@ -84,7 +87,7 @@ class HDPrivKey(HDKey):
         return '\x00' + encode_bigint(self.key)
 
     def derive_child(self, i):
-        high_bit = i & 0x80000000
+        high_bit = i & PUBLIC_DERIVATION_BIT
         if high_bit:
             I = hmac_sha512(self.chain_code, '\x00' + encode_bigint(self.key) + struct.pack('>L', i)).digest()
         else:
@@ -139,7 +142,7 @@ class HDPubKey(HDKey):
         return new_hash('ripemd160', sha256(self.serialized_key()).digest()).digest()[:4]
 
     def derive_child(self, i):
-        if i & 0x80000000:
+        if i & PUBLIC_DERIVATION_BIT:
             raise Error('Invalid i (%r)' % (i,))
         else:
             I = hmac_sha512(self.chain_code, encode_pub_compressed(self.key) + struct.pack('>L', i)).digest()
