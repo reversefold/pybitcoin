@@ -13,8 +13,9 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(), expected)
 
     def test_generate_512_bits(self):
-        seed = binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f'
-                                  '9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542')
+        seed = binascii.unhexlify(
+            'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
+            '9f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542')
         expected = ('xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtAL'
                     'Gdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U')
         key = hd_wallet.HDPrivKey.generate_master(seed)
@@ -102,93 +103,130 @@ class TestHDWallet(unittest.TestCase):
             expected)
 
     def test_m_0p_1(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
                .derive_child(hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1))
         self.assertEqual(key.encoded(),
-            'xprv9wTYmMFdV23N2TdNG573QoEsfRrWKQgWeibmLntzniatZvR9BmLnvSxqu53Kw1UmYPxLgboyZQaXwTCg8MSY3H2EU4pWcQDnRnrVA1xe8fs')
+            'xprv9wTYmMFdV23N2TdNG573QoEsfRrWKQgWeibmLntzniatZvR9BmLn'
+            'vSxqu53Kw1UmYPxLgboyZQaXwTCg8MSY3H2EU4pWcQDnRnrVA1xe8fs')
         self.assertEquals(key.pub().encoded(),
-            'xpub6ASuArnXKPbfEwhqN6e3mwBcDTgzisQN1wXN9BJcM47sSikHjJf3UFHKkNAWbWMiGj7Wf5uMash7SyYq527Hqck2AxYysAA7xmALppuCkwQ')
+            'xpub6ASuArnXKPbfEwhqN6e3mwBcDTgzisQN1wXN9BJcM47sSikHjJf3'
+            'UFHKkNAWbWMiGj7Wf5uMash7SyYq527Hqck2AxYysAA7xmALppuCkwQ')
 
     def test_m_0p_1_2p(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
                .derive_child(hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1)
                .derive_child(2 | hd_wallet.PUBLIC_DERIVATION_BIT))
         self.assertEqual(key.encoded(),
-            'xprv9z4pot5VBttmtdRTWfWQmoH1taj2axGVzFqSb8C9xaxKymcFzXBDptWmT7FwuEzG3ryjH4ktypQSAewRiNMjANTtpgP4mLTj34bhnZX7UiM')
+            'xprv9z4pot5VBttmtdRTWfWQmoH1taj2axGVzFqSb8C9xaxKymcFzXBD'
+            'ptWmT7FwuEzG3ryjH4ktypQSAewRiNMjANTtpgP4mLTj34bhnZX7UiM')
         self.assertEquals(key.pub().encoded(),
-            'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5')
+            'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VU'
+            'NgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5')
 
     def test_m_0p_1_2p_2(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
                .derive_child(hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1)
                .derive_child(2 | hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(2))
         self.assertEqual(key.encoded(),
-            'xprvA2JDeKCSNNZky6uBCviVfJSKyQ1mDYahRjijr5idH2WwLsEd4Hsb2Tyh8RfQMuPh7f7RtyzTtdrbdqqsunu5Mm3wDvUAKRHSC34sJ7in334')
+            'xprvA2JDeKCSNNZky6uBCviVfJSKyQ1mDYahRjijr5idH2WwLsEd4Hsb'
+            '2Tyh8RfQMuPh7f7RtyzTtdrbdqqsunu5Mm3wDvUAKRHSC34sJ7in334')
         self.assertEquals(key.pub().encoded(),
-            'xpub6FHa3pjLCk84BayeJxFW2SP4XRrFd1JYnxeLeU8EqN3vDfZmbqBqaGJAyiLjTAwm6ZLRQUMv1ZACTj37sR62cfN7fe5JnJ7dh8zL4fiyLHV')
+            'xpub6FHa3pjLCk84BayeJxFW2SP4XRrFd1JYnxeLeU8EqN3vDfZmbqBq'
+            'aGJAyiLjTAwm6ZLRQUMv1ZACTj37sR62cfN7fe5JnJ7dh8zL4fiyLHV')
 
     def test_m_0p_1_2p_2_1000000000(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
                .derive_child(hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1)
                .derive_child(2 | hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(2)
                .derive_child(1000000000))
         self.assertEqual(key.encoded(),
-            'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76')
+            'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8F'
+            'Ha8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76')
         self.assertEquals(key.pub().encoded(),
-            'xpub6H1LXWLaKsWFhvm6RVpEL9P4KfRZSW7abD2ttkWP3SSQvnyA8FSVqNTEcYFgJS2UaFcxupHiYkro49S8yGasTvXEYBVPamhGW6cFJodrTHy')
+            'xpub6H1LXWLaKsWFhvm6RVpEL9P4KfRZSW7abD2ttkWP3SSQvnyA8FSV'
+            'qNTEcYFgJS2UaFcxupHiYkro49S8yGasTvXEYBVPamhGW6cFJodrTHy')
 
     def test_m_0(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc'
+                '9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7'
+                'b7875726f6c696663605d5a5754514e4b484542'))
                .derive_child(0))
         self.assertEqual(key.encoded(),
-            'xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQRUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt')
+            'xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQ'
+            'RUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt')
         self.assertEquals(key.pub().encoded(),
-            'xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH')
+            'xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9Lgpe'
+            'yGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH')
 
     def test_m_0_2147483647p(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc'
+                '9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7'
+                'b7875726f6c696663605d5a5754514e4b484542'))
                .derive_child(0)
                .derive_child(2147483647 | hd_wallet.PUBLIC_DERIVATION_BIT))
         self.assertEqual(key.encoded(),
-            'xprv9wSp6B7kry3Vj9m1zSnLvN3xH8RdsPP1Mh7fAaR7aRLcQMKTR2vidYEeEg2mUCTAwCd6vnxVrcjfy2kRgVsFawNzmjuHc2YmYRmagcEPdU9')
+            'xprv9wSp6B7kry3Vj9m1zSnLvN3xH8RdsPP1Mh7fAaR7aRLcQMKTR2vi'
+            'dYEeEg2mUCTAwCd6vnxVrcjfy2kRgVsFawNzmjuHc2YmYRmagcEPdU9')
         self.assertEquals(key.pub().encoded(),
-            'xpub6ASAVgeehLbnwdqV6UKMHVzgqAG8Gr6riv3Fxxpj8ksbH9ebxaEyBLZ85ySDhKiLDBrQSARLq1uNRts8RuJiHjaDMBU4Zn9h8LZNnBC5y4a')
+            'xpub6ASAVgeehLbnwdqV6UKMHVzgqAG8Gr6riv3Fxxpj8ksbH9ebxaEy'
+            'BLZ85ySDhKiLDBrQSARLq1uNRts8RuJiHjaDMBU4Zn9h8LZNnBC5y4a')
 
     def test_m_0_2147483647p_1(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc'
+                '9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7'
+                'b7875726f6c696663605d5a5754514e4b484542'))
                .derive_child(0)
                .derive_child(2147483647 | hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1))
         self.assertEqual(key.encoded(),
-            'xprv9zFnWC6h2cLgpmSA46vutJzBcfJ8yaJGg8cX1e5StJh45BBciYTRXSd25UEPVuesF9yog62tGAQtHjXajPPdbRCHuWS6T8XA2ECKADdw4Ef')
+            'xprv9zFnWC6h2cLgpmSA46vutJzBcfJ8yaJGg8cX1e5StJh45BBciYTR'
+            'XSd25UEPVuesF9yog62tGAQtHjXajPPdbRCHuWS6T8XA2ECKADdw4Ef')
         self.assertEquals(key.pub().encoded(),
-            'xpub6DF8uhdarytz3FWdA8TvFSvvAh8dP3283MY7p2V4SeE2wyWmG5mg5EwVvmdMVCQcoNJxGoWaU9DCWh89LojfZ537wTfunKau47EL2dhHKon')
+            'xpub6DF8uhdarytz3FWdA8TvFSvvAh8dP3283MY7p2V4SeE2wyWmG5mg'
+            '5EwVvmdMVCQcoNJxGoWaU9DCWh89LojfZ537wTfunKau47EL2dhHKon')
 
     def test_m_0_2147483647p_1_2147483646p(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc'
+                '9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7'
+                'b7875726f6c696663605d5a5754514e4b484542'))
                .derive_child(0)
                .derive_child(2147483647 | hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1)
                .derive_child(2147483646 | hd_wallet.PUBLIC_DERIVATION_BIT))
         self.assertEqual(key.encoded(),
-            'xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc')
+            'xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS'
+            '3xz7iAxn8L39njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc')
         self.assertEquals(key.pub().encoded(),
-            'xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL')
+            'xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhg'
+            'bmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL')
 
     def test_m_0_2147483647p_1_2147483646p_2(self):
-        key = (hd_wallet.HDPrivKey.generate_master(binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'))
+        key = (hd_wallet.HDPrivKey.generate_master(
+            binascii.unhexlify('fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc'
+                '9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7'
+                'b7875726f6c696663605d5a5754514e4b484542'))
                .derive_child(0)
                .derive_child(2147483647 | hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(1)
                .derive_child(2147483646 | hd_wallet.PUBLIC_DERIVATION_BIT)
                .derive_child(2))
         self.assertEqual(key.encoded(),
-            'xprvA2nrNbFZABcdryreWet9Ea4LvTJcGsqrMzxHx98MMrotbir7yrKCEXw7nadnHM8Dq38EGfSh6dqA9QWTyefMLEcBYJUuekgW4BYPJcr9E7j')
+            'xprvA2nrNbFZABcdryreWet9Ea4LvTJcGsqrMzxHx98MMrotbir7yrKC'
+            'EXw7nadnHM8Dq38EGfSh6dqA9QWTyefMLEcBYJUuekgW4BYPJcr9E7j')
         self.assertEquals(key.pub().encoded(),
-            'xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdSnLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt')
+            'xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdS'
+            'nLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt')
