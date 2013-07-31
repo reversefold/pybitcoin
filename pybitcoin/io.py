@@ -80,10 +80,10 @@ class IOLoop(threading.Thread):
 
                 hdr_bytes = recv_bytes(self.sock, protocol.MessageHeader.HEADER_FMT[1])
                 (hdr, _) = protocol.MessageHeader.parse(hdr_bytes)
-                assert(not _, _)
+                assert not _, _
                 payload_bytes = recv_bytes(self.sock, hdr.payload_length)
                 (inmsg, _) = protocol.Message.parse(payload_bytes, hdr)
-                assert(not _, _)
+                assert not _, _
                 if inmsg is None:
                     log.warn('No parser for command %r, skipping', hdr.command)
                 log.info('Received %s' % (inmsg.header.command,))
