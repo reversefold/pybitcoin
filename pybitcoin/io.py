@@ -2,6 +2,7 @@ from Queue import Queue
 import random
 import socket
 import threading
+import time
 import logging
 import logging.config
 
@@ -22,6 +23,10 @@ class ConnectionClosedError(SocketError):
     pass
 
 
+class TimeoutError(Error):
+    pass
+
+
 def recv_bytes(sock, num_bytes):
     data_list = []
     remaining_len = num_bytes
@@ -37,6 +42,7 @@ def recv_bytes(sock, num_bytes):
                 raise
         if not buf:
             raise ConnectionClosedError('Connection closed from the other side while reading')
+        log.debug('Got bytes: %s', buf.encode('hex'))
         data_list.append(buf)
         remaining_len -= len(buf)
     data = ''.join(data_list)
@@ -62,7 +68,9 @@ class IOLoop(threading.Thread):
         self.sock = socket.socket()
         try:
             self.sock.connect(('localhost', 8333))
-            outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
+            # 70001
+#            outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
+            outmsg = protocol.Version(60400, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
             self.send_msg(outmsg)
             while True:
                 while not self.out_queue.empty():
@@ -119,10 +127,16 @@ class IOLoop(threading.Thread):
         else:
             event = self.waiting_for[item]
         self.out_queue.put(protocol.GetData([item]))
+        start = time.time()
         while True:
-            if not event.wait(1):
+            if not event.wait(5):
                 break
             log.debug('Still waiting for tx %s', hash.encode('hex'))
+            now = time.time()
+            if now - start > 30:
+                log.info('Waited 30s for tx %s, re-requesting', hash.encode('hex'))
+                self.out_queue.put(protocol.GetData([item]))
+                start = now
         return self.stored[item]
 
     def handle_tx(self, msg):
@@ -135,6 +149,12 @@ class IOLoop(threading.Thread):
         log.debug('Someone is waiting for tx %s', hashhex)
         self.stored[(protocol.InventoryVector.MSG_TX, hash)] = msg.tx
         event.set()
+
+    def handle_block(self, msg):
+        hash = msg.block_hash
+        hashhex = hash.encode('hex')
+        log.info('Handling Block %s', hashhex)
+        import sys; sys.exit()
 
     def handle_message(self, msg):
         handle_name = 'handle_' + msg.COMMAND
