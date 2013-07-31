@@ -12,7 +12,7 @@ import requests
 import sys
 import traceback
 
-from pybitcoin import key
+from pybitcoin import key, byte_util
 
 GETWORK_URL = 'https://vanitypool.appspot.com/getWork'
 SOLVE_URL = 'https://vanitypool.appspot.com/solve'
@@ -26,8 +26,8 @@ def mine(g_num, work):
         try:
             priv = key.generate_priv()
             pub = key.priv_to_pub(priv)
-            addr = key.base58_encode(key.pub_to_address(pub))
-            addr_comp = key.base58_encode(key.pub_to_address_compressed(pub))
+            addr = byte_util.base58_encode(key.pub_to_address(pub))
+            addr_comp = byte_util.base58_encode(key.pub_to_address_compressed(pub))
             num += 1
             if num % 5 == 0:
                 g_num.value += 5
@@ -47,8 +47,8 @@ def mine(g_num, work):
 
             for rec in work:
                 pub_sum = pub + rec['public_key']
-                addr = key.base58_encode(key.pub_to_address(pub_sum))
-                addr_comp = key.base58_encode(key.pub_to_address_compressed(pub_sum))
+                addr = byte_util.base58_encode(key.pub_to_address(pub_sum))
+                addr_comp = byte_util.base58_encode(key.pub_to_address_compressed(pub_sum))
                 if not any(a.startswith(rec['pattern']) for a in [addr, addr_comp]):
                     continue
 
