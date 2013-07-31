@@ -1,4 +1,5 @@
 import binascii
+import random
 import unittest
 
 from pybitcoin import hd_wallet
@@ -22,10 +23,14 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(), expected)
 
     def test_generate_random(self):
-        hd_wallet.HDPrivKey.generate_master()
+        key = hd_wallet.HDPrivKey.generate_master()
+        self.assertEqual(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
+        self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
 
     def test_generate_random_128_bytes(self):
-        hd_wallet.HDPrivKey.generate_master(num_random_bytes=128)
+        key = hd_wallet.HDPrivKey.generate_master(num_random_bytes=128)
+        self.assertEqual(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
+        self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
 
     def test_decode_encode_priv(self):
         key = ('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPP'
@@ -230,3 +235,18 @@ class TestHDWallet(unittest.TestCase):
         self.assertEquals(key.pub().encoded(),
             'xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdS'
             'nLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt')
+
+    def test_random_keys(self):
+        for _ in xrange(5):
+            key = hd_wallet.HDPrivKey.generate_master(num_random_bytes=(random.randint(1, 1000)))
+            self.assertEquals(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
+            self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
+            for __ in xrange(10):
+                key = key.derive_child(
+                    random.randint(0, hd_wallet.PUBLIC_DERIVATION_BIT - 1)
+                    | (hd_wallet.PUBLIC_DERIVATION_BIT if bool(random.getrandbits(1)) else 0))
+                self.assertEquals(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
+                self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
+
+#for _ in xrange(9):
+#    setattr(TestHDWallet, 'test_random_keys_%s' % (_,), TestHDWallet.test_random_keys)
