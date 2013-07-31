@@ -1,3 +1,4 @@
+import binascii
 from hashlib import sha256
 import struct
 
@@ -38,7 +39,7 @@ def base58_encode(bytes):
     leading_zeros = 0
     while leading_zeros < len(bytes) and bytes[leading_zeros] == '\x00':
         leading_zeros += 1
-    num = int(bytes.encode('hex'), 16)
+    num = int(binascii.hexlify(bytes), 16)
     encoded = '%s%s' % (
         ''.join(base58_chars(num)),
         base58_alphabet[0] * leading_zeros)
@@ -59,7 +60,7 @@ def base58_decode(bytes):
             decoded_hex = '0' + decoded_hex
     else:
         decoded_hex = ''
-    return (leading_zeros * '\x00') + decoded_hex.decode('hex')
+    return (leading_zeros * '\x00') + binascii.unhexlify(decoded_hex)
 
 
 def base58_encode_checksum(raw):
@@ -79,9 +80,9 @@ def base58_decode_checksum(enc):
 
 # while clever, these are equivalent to encode_bigint and decode_bigint and much slower
 #def long_to_bytes(num):
-#    return hex(num)[2:].rstrip('L').zfill(64).decode('hex')
+#    return binascii.unhexlify(hex(num)[2:].rstrip('L').zfill(64))
 #
 #
 #def bytes_to_long(raw):
-#    return int(raw.encode('hex'), 16)
+#    return int(binascii.hexlify(raw), 16)
 

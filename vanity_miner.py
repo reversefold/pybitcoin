@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import binascii
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -104,7 +105,7 @@ def getwork():
             continue
         rec['reward'] = float(rec['reward'])
         rec['work_to_reward'] = pow(58, len(rec['pattern']) - 1) / rec['reward']
-        rec['public_key_enc'] = rec['public_key_hex'].decode('hex')
+        rec['public_key_enc'] = binascii.unhexlify(rec['public_key_hex'])
         rec['public_key'] = key.decode_pub(rec['public_key_enc'])
         work.append(rec)
     return work

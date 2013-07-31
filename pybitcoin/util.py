@@ -1,5 +1,8 @@
+import binascii
+
+
 def visual(bytes):
-    return ' '.join(c.encode('hex') for c in bytes).upper()
+    return ' '.join(binascii.hexlify(c) for c in bytes).upper()
 
 
 def visual2(msg):

@@ -1,3 +1,4 @@
+import binascii
 from hashlib import sha256
 import logging
 import struct
@@ -320,7 +321,7 @@ class InventoryVector(Message):
             ', '.join(
                 '(%s, %s)' % (
                     self.HASH_TYPES.get(i[0], '<UNKNOWN>'),
-                    i[1].encode('hex'))
+                    binascii.hexlify(i[1]))
                 for i in self.hashes))
 
 
@@ -369,8 +370,8 @@ class TxIn(object):
 
     def __repr__(self):
         return 'TxIn((%s, %r), %s, %r)' % (
-            self.previous_output[0].encode('hex'), self.previous_output[1],
-            self.signature_script.encode('hex'),
+            binascii.hexlify(self.previous_output[0]), self.previous_output[1],
+            binascii.hexlify(self.signature_script),
             self.sequence)
 
 
@@ -395,7 +396,7 @@ class PubKeyScript(object):
             addr = key.address_from_pk_hash(self.bytes[3:-2])
             addr_enc = byte_util.base58_encode(addr)
             return 'To Addr: %s' % (addr_enc,)
-        return self.bytes.encode('hex')
+        return binascii.hexlify(self.bytes)
 
 
 class TxOut(object):
@@ -468,7 +469,7 @@ class Transaction(object):
 
     def __repr__(self):
         return 'Transaction(%s, %r, [%s], [%s], %r)' % (
-            self.hash().encode('hex'),
+            binascii.hexlify(self.hash()),
             self.version,
             ', '.join(repr(tx) for tx in self.tx_in),
             ', '.join(repr(tx) for tx in self.tx_out),
@@ -563,8 +564,8 @@ class Block(Message):
         return 'Block(%r, %r, %s, %s, %r, %r, %r, %r)' % (
             self.header,
             self.version,
-            self.prev_block_hash.encode('hex'),
-            self.merkle_root.encode('hex'),
+            binascii.hexlify(self.prev_block_hash),
+            binascii.hexlify(self.merkle_root),
             self.timestamp,
             self.bits,
             self.nonce,
@@ -612,8 +613,8 @@ class GetBlocks(Message):
         return 'GetBlocks(%r, %r, %s, %s)' % (
             self.header,
             self.version,
-            '[%s]' % (', '.join(hash.encode('hex') for hash in self.hashes)),
-            self.hash_stop.encode('hex'))
+            '[%s]' % (', '.join(binascii.hexlify(hash) for hash in self.hashes)),
+            binascii.hexlify(self.hash_stop))
 
 
 class GetHeaders(GetBlocks):

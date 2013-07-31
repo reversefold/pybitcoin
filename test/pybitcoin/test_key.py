@@ -1,3 +1,4 @@
+import binascii
 import unittest
 
 from pybitcoin import key
@@ -106,15 +107,15 @@ class TestKey(unittest.TestCase):
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))
         self.assertEquals(
             key.encode_pub(pub),
-            ('04EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B387DDFA'
-             '56684EF2F4E2325F298F5F418ADCB00F560B75F4DEEAF90ABD5A3CEB0').decode('hex'))
+            binascii.unhexlify('04EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B387DDFA'
+                               '56684EF2F4E2325F298F5F418ADCB00F560B75F4DEEAF90ABD5A3CEB0'))
 
     def test_encode_pub_compressed(self):
         pub = key.priv_to_pub(
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))
         self.assertEquals(
             key.encode_pub_compressed(pub),
-            '02EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B'.decode('hex'))
+            binascii.unhexlify('02EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B'))
 
     def test_priv_key_to_address(self):
         self.assertEquals(
@@ -157,8 +158,8 @@ class TestKey(unittest.TestCase):
                     key.encode_pub(key.priv_to_pub(key1) + key.priv_to_pub(key2)))))
 
     def test_decode_pub_encode_pub_symmetric(self):
-        pub = ('04EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B387DDFA'
-               '56684EF2F4E2325F298F5F418ADCB00F560B75F4DEEAF90ABD5A3CEB0').decode('hex')
+        pub = binascii.unhexlify('04EAB82662C4A329F573E96801CCFCF9337446D2742EFDC5A6E8EA8F617AD0197B387DDFA'
+                                 '56684EF2F4E2325F298F5F418ADCB00F560B75F4DEEAF90ABD5A3CEB0')
         self.assertEquals(key.encode_pub(key.decode_pub(pub)), pub)
 
     def test_decode_pub_compressed(self):

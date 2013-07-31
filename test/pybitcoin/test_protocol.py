@@ -1,4 +1,5 @@
 """PyBitCoin tests"""
+import binascii
 import hashlib
 import mox
 import os
@@ -11,7 +12,7 @@ from pybitcoin.byte_util import Error, ParseError, splitn
 
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tx'), 'r') as f:
-    TX_BYTES = f.read().decode('hex')
+    TX_BYTES = binascii.unhexlify(f.read())
 
 
 class TestSplitN(unittest.TestCase):
@@ -192,7 +193,7 @@ class PubKeyScriptTest(unittest.TestCase):
         script = '\x42' * 5
         pks = protocol.PubKeyScript(script)
         self.assertEquals(pks.bytes, script)
-        self.assertEquals(repr(pks), script.encode('hex'))
+        self.assertEquals(repr(pks), binascii.hexlify(script))
         self.assertFalse(pks.is_standard_transaction)
 
         addr = '\x42' * 20

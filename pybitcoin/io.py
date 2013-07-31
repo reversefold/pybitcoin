@@ -1,3 +1,4 @@
+import binascii
 from Queue import Queue
 import random
 import socket
@@ -42,7 +43,7 @@ def recv_bytes(sock, num_bytes):
                 raise
         if not buf:
             raise ConnectionClosedError('Connection closed from the other side while reading')
-        log.debug('Got bytes: %s', buf.encode('hex'))
+        log.debug('Got bytes: %s', binascii.hexlify(buf))
         data_list.append(buf)
         remaining_len -= len(buf)
     data = ''.join(data_list)
@@ -131,17 +132,17 @@ class IOLoop(threading.Thread):
         while True:
             if not event.wait(5):
                 break
-            log.debug('Still waiting for tx %s', hash.encode('hex'))
+            log.debug('Still waiting for tx %s', binascii.hexlify(hash))
             now = time.time()
             if now - start > 30:
-                log.info('Waited 30s for tx %s, re-requesting', hash.encode('hex'))
+                log.info('Waited 30s for tx %s, re-requesting', binascii.hexlify(hash))
                 self.out_queue.put(protocol.GetData([item]))
                 start = now
         return self.stored[item]
 
     def handle_tx(self, msg):
         hash = msg.tx.hash()
-        hashhex = hash.encode('hex')
+        hashhex = binascii.hexlify(hash)
         log.info('Handling TX %s', hashhex)
         event = self.waiting_for.get((protocol.InventoryVector.MSG_TX, hash))
         if not event:
@@ -152,7 +153,7 @@ class IOLoop(threading.Thread):
 
     def handle_block(self, msg):
         hash = msg.block_hash
-        hashhex = hash.encode('hex')
+        hashhex = binascii.hexlify(hash)
         log.info('Handling Block %s', hashhex)
         import sys; sys.exit()
 

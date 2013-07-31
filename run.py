@@ -2,9 +2,11 @@
 import greenhouse.emulation
 greenhouse.emulation.patch()
 
+import binascii
 import logging
 import logging.config
 #import threading
+import time
 
 
 log = logging.getLogger(__name__)
@@ -21,10 +23,12 @@ def main():
     log.info('Starting pybitcoin ioloop')
     ioloop = io.IOLoop()
     ioloop.start()
-    tx_hash = '63c72b003e92e429fa02bcf57adc2a1bdd088ae4d86745e1d41984323500075f'.decode('hex')
-    log.info('Asking for transaction %s', tx_hash.encode('hex'))
-    tx = ioloop.get_transaction(tx_hash)
-    log.info('Got transaction: %r', tx)
+#    tx_hash = binascii.unhexlify('63c72b003e92e429fa02bcf57adc2a1bdd088ae4d86745e1d41984323500075f')
+#    log.info('Asking for transaction %s', binascii.hexlify(tx_hash))
+#    tx = ioloop.get_transaction(tx_hash)
+#    log.info('Got transaction: %r', tx)
+    while True:
+        time.sleep(1)
     log.info('Exiting')
 
 
