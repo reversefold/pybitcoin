@@ -127,7 +127,12 @@ class IOLoop(threading.Thread):
 
     def handle_inv(self, msg):
         log.info('Handling inv %r', msg)
-        return protocol.GetData(msg.hashes)
+        block_hashes = []
+        for entry in msg.hashes:
+            if entry[0] == protocol.InventoryVector.MSG_BLOCK:
+                block_hashes.append(entry)
+        if block_hashes:
+            return protocol.GetData(block_hashes)
 
     def get_block(self, block_hash):
         self.out_queue.put(protocol.GetData([(protocol.InventoryVector.MSG_BLOCK, block_hash)]))
