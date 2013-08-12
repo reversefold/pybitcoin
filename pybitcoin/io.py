@@ -154,11 +154,11 @@ class IOLoop(threading.Thread):
         return self.stored[item]
 
     def handle_tx(self, msg):
-#        db.session.add(db.Transaction.from_protocol(msg.tx))
-#        db.session.commit()
         tx_hash = msg.tx.tx_hash()
         hashhex = binascii.hexlify(tx_hash)
         log.info('Handling TX %s', hashhex)
+#        db.session.add(db.Transaction.from_protocol(msg.tx))
+#        db.session.commit()
         event = self.waiting_for.get((protocol.InventoryVector.MSG_TX, tx_hash))
         if not event:
             return
@@ -167,13 +167,13 @@ class IOLoop(threading.Thread):
         event.set()
 
     def handle_block(self, msg):
+        block_hash = msg.block_hash
+        hashhex = binascii.hexlify(block_hash)
+        log.info('Handling Block %s', hashhex)
         db.session.add(db.Block.from_protocol(msg))
         db.session.commit()
         self.num_blocks += 1
         log.info('Block database has %r blocks', self.num_blocks)
-        block_hash = msg.block_hash
-        hashhex = binascii.hexlify(block_hash)
-        log.info('Handling Block %s', hashhex)
         if not db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
             log.info('Previous block not found %s' % (binascii.hexlify(msg.prev_block_hash),))
             self.get_block(msg.prev_block_hash)
