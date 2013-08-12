@@ -7,7 +7,7 @@ import time
 import logging
 import logging.config
 
-from pybitcoin import protocol
+from pybitcoin import db, protocol
 
 log = logging.getLogger(__name__)
 
@@ -68,10 +68,10 @@ class IOLoop(threading.Thread):
     def run(self):
         self.sock = socket.socket()
         try:
-            self.sock.connect(('localhost', 8333))
+            self.sock.connect(('127.0.0.1', 8333))
             # 70001
 #            outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
-            outmsg = protocol.Version(60400, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
+            outmsg = protocol.Version(70000, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
             self.send_msg(outmsg)
             while True:
                 while not self.out_queue.empty():
@@ -119,8 +119,8 @@ class IOLoop(threading.Thread):
     def handle_inv(self, msg):
         return protocol.GetData(msg.hashes)
 
-    def get_transaction(self, hash):
-        item = (protocol.InventoryVector.MSG_TX, hash)
+    def get_transaction(self, tx_hash):
+        item = (protocol.InventoryVector.MSG_TX, tx_hash)
         if item in self.stored:
             return self.stored[item]
         if item not in self.waiting_for:
@@ -132,30 +132,33 @@ class IOLoop(threading.Thread):
         while True:
             if not event.wait(5):
                 break
-            log.debug('Still waiting for tx %s', binascii.hexlify(hash))
+            log.debug('Still waiting for tx %s', binascii.hexlify(tx_hash))
             now = time.time()
             if now - start > 30:
-                log.info('Waited 30s for tx %s, re-requesting', binascii.hexlify(hash))
+                log.info('Waited 30s for tx %s, re-requesting', binascii.hexlify(tx_hash))
                 self.out_queue.put(protocol.GetData([item]))
                 start = now
         return self.stored[item]
 
     def handle_tx(self, msg):
-        hash = msg.tx.hash()
-        hashhex = binascii.hexlify(hash)
+#        db.session.add(db.Transaction.from_protocol(msg.tx))
+#        db.session.commit()
+        tx_hash = msg.tx.tx_hash()
+        hashhex = binascii.hexlify(tx_hash)
         log.info('Handling TX %s', hashhex)
-        event = self.waiting_for.get((protocol.InventoryVector.MSG_TX, hash))
+        event = self.waiting_for.get((protocol.InventoryVector.MSG_TX, tx_hash))
         if not event:
             return
         log.debug('Someone is waiting for tx %s', hashhex)
-        self.stored[(protocol.InventoryVector.MSG_TX, hash)] = msg.tx
+        self.stored[(protocol.InventoryVector.MSG_TX, tx_hash)] = msg.tx
         event.set()
 
     def handle_block(self, msg):
-        hash = msg.block_hash
-        hashhex = binascii.hexlify(hash)
+        db.session.add(db.Block.from_protocol(msg))
+        db.session.commit()
+        tx_hash = msg.block_hash
+        hashhex = binascii.hexlify(tx_hash)
         log.info('Handling Block %s', hashhex)
-        import sys; sys.exit()
 
     def handle_message(self, msg):
         handle_name = 'handle_' + msg.COMMAND

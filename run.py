@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import greenhouse.emulation
-greenhouse.emulation.patch()
+#import greenhouse.emulation
+#greenhouse.emulation.patch()
 
 import binascii
 import logging

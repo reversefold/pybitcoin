@@ -385,6 +385,14 @@ class PubKeyScript(object):
                 and self.bytes.endswith('\x88\xac')
                 and len(self.bytes) == 25)
 
+    @property
+    def to_address(self):
+        if self.is_standard_transaction:
+            return byte_util.base58_encode(
+                key.address_from_pk_hash(self.bytes[3:-2]))
+        else:
+            return None
+
     def __eq__(self, b):
         return self.bytes == b.bytes
 
@@ -393,9 +401,7 @@ class PubKeyScript(object):
 
     def __repr__(self):
         if self.is_standard_transaction:
-            addr = key.address_from_pk_hash(self.bytes[3:-2])
-            addr_enc = byte_util.base58_encode(addr)
-            return 'To Addr: %s' % (addr_enc,)
+            return 'To Addr: %s' % (self.to_address,)
         return binascii.hexlify(self.bytes)
 
 
@@ -432,7 +438,7 @@ class Transaction(object):
         self.tx_out = tx_out
         self.lock_time = lock_time
 
-    def hash(self):
+    def tx_hash(self):
         return sha256(sha256(self.bytes).digest()).digest()
 
     @classmethod
@@ -469,7 +475,7 @@ class Transaction(object):
 
     def __repr__(self):
         return 'Transaction(%s, %r, [%s], [%s], %r)' % (
-            binascii.hexlify(self.hash()),
+            binascii.hexlify(self.tx_hash()),
             self.version,
             ', '.join(repr(tx) for tx in self.tx_in),
             ', '.join(repr(tx) for tx in self.tx_out),
