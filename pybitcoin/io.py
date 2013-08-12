@@ -86,7 +86,7 @@ class IOLoop(threading.Thread):
                 assert not _, _
                 if inmsg is None:
                     log.warn('No parser for command %r, skipping', hdr.command)
-                log.info('Received %s' % (inmsg.header.command,))
+                log.debug('Received %s' % (inmsg.header.command,))
                 log.debug('%r', inmsg)
                 #print bc.visual2(inmsg)
                 outmsg = self.handle_message(inmsg)
@@ -108,16 +108,29 @@ class IOLoop(threading.Thread):
         log.warn('No handler for %s message', msg.header.command)
 
     def handle_verack(self, msg):
-        pass
+        log.info('Handling verack %r', msg)
+        self.get_missing_blocks()
+        self.num_blocks = db.session.query(db.Block).count()
+        log.info('Block database has %r blocks', self.num_blocks)
+
+    def get_missing_blocks(self):
+        log.info('Requesting missing blocks')
+        for (block_hash,) in db.session.connection().execute('select prev_block_hash from block where prev_block_hash not in (select block_hash from block);'):
+            self.get_block(bytes(block_hash))
 
     def handle_ping(self, msg):
-        pass
+        log.info('Handling ping %r', msg)
 
     def handle_version(self, msg):
+        log.info('Handling version %r', msg)
         return protocol.Verack()
 
     def handle_inv(self, msg):
+        log.info('Handling inv %r', msg)
         return protocol.GetData(msg.hashes)
+
+    def get_block(self, block_hash):
+        self.out_queue.put(protocol.GetData([(protocol.InventoryVector.MSG_BLOCK, block_hash)]))
 
     def get_transaction(self, tx_hash):
         item = (protocol.InventoryVector.MSG_TX, tx_hash)
@@ -156,9 +169,14 @@ class IOLoop(threading.Thread):
     def handle_block(self, msg):
         db.session.add(db.Block.from_protocol(msg))
         db.session.commit()
-        tx_hash = msg.block_hash
-        hashhex = binascii.hexlify(tx_hash)
+        self.num_blocks += 1
+        log.info('Block database has %r blocks', self.num_blocks)
+        block_hash = msg.block_hash
+        hashhex = binascii.hexlify(block_hash)
         log.info('Handling Block %s', hashhex)
+        if not db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
+            log.info('Previous block not found %s' % (binascii.hexlify(msg.prev_block_hash),))
+            self.get_block(msg.prev_block_hash)
 
     def handle_message(self, msg):
         handle_name = 'handle_' + msg.COMMAND
