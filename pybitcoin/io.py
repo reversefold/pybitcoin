@@ -59,6 +59,9 @@ class IOLoop(threading.Thread):
         self.out_queue = Queue()
         self.waiting_for = {}
         self.stored = {}
+        self.max_height = 0
+        self.num_blocks = db.session.query(db.Block).count()
+        log.info('Block database starting with %r blocks', self.num_blocks)
 
     def send_msg(self, msg):
         log.info('Sending %s', msg.header.command)
@@ -110,8 +113,6 @@ class IOLoop(threading.Thread):
     def handle_verack(self, msg):
         log.info('Handling verack %r', msg)
         self.get_missing_blocks()
-        self.num_blocks = db.session.query(db.Block).count()
-        log.info('Block database has %r blocks', self.num_blocks)
 
     def get_missing_blocks(self):
         log.info('Requesting missing blocks')
@@ -123,6 +124,7 @@ class IOLoop(threading.Thread):
 
     def handle_version(self, msg):
         log.info('Handling version %r', msg)
+        self.max_height = msg.start_height
         return protocol.Verack()
 
     def handle_inv(self, msg):
@@ -178,7 +180,7 @@ class IOLoop(threading.Thread):
         db.session.add(db.Block.from_protocol(msg))
         db.session.commit()
         self.num_blocks += 1
-        log.info('Block database has %r blocks', self.num_blocks)
+        log.info('Block database has %r/%r blocks', self.num_blocks, self.max_height)
         if not db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
             log.info('Previous block not found %s' % (binascii.hexlify(msg.prev_block_hash),))
             self.get_block(msg.prev_block_hash)
