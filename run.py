@@ -1,6 +1,13 @@
 #!/usr/bin/env python
-#import greenhouse.emulation
-#greenhouse.emulation.patch()
+import greenhouse.emulation
+greenhouse.emulation.patch()
+
+#import os
+#import sys
+#if hasattr(sys.stdout, 'fileno'):
+#    # Force stdout/stderr to be line-buffered
+#    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+#    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 1)
 
 import binascii
 import logging
