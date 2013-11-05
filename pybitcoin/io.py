@@ -1,4 +1,7 @@
 import binascii
+import datetime
+import multiprocessing
+import os
 from Queue import Queue
 import random
 import socket
@@ -59,9 +62,21 @@ class IOLoop(threading.Thread):
         self.out_queue = Queue()
         self.waiting_for = {}
         self.stored = {}
-        self.max_height = 0
-        self.num_blocks = db.session.query(db.Block).count()
-        log.info('Block database starting with %r blocks', self.num_blocks)
+        self.max_height = multiprocessing.Value('i', 0)
+        self.known_blocks = set(block.block_hash for block in db.session.query(db.Block.block_hash).all())
+        self.num_blocks = multiprocessing.Value('i', len(self.known_blocks))
+        log.info('Block database starting with %r blocks', self.num_blocks.value)
+
+        self.process_queue = Queue()
+
+        self.block_queue = multiprocessing.Queue()
+        self.db_write_thread_stop_event = multiprocessing.Event()
+
+        self.process_thread = None
+        self.write_thread = None
+        self.read_thread = None
+
+        self.shutdown_event = threading.Event()
 
     def send_msg(self, msg):
         log.info('Sending %s', msg.header.command)
@@ -69,18 +84,99 @@ class IOLoop(threading.Thread):
         self.sock.sendall(msg.bytes)
 
     def run(self):
-        self.sock = socket.socket()
+        db_write_thread = multiprocessing.Process(target=self.db_write_loop)
+        db_write_thread.start()
         try:
-            self.sock.connect(('127.0.0.1', 8333))
-            # 70001
-#            outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
-            outmsg = protocol.Version(70000, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
-            self.send_msg(outmsg)
-            while True:
-                while not self.out_queue.empty():
-                    outmsg = self.out_queue.get()
-                    self.send_msg(outmsg)
+            self._do_run()
+        finally:
+            self.db_write_thread_stop_event.set()
+            db_write_thread.join()
 
+    def _do_run(self):
+        while True:
+            self.process_thread = threading.Thread(target=self.process_loop)
+            self.process_thread.start()
+            self.write_thread = threading.Thread(target=self.write_loop)
+            self.write_thread.start()
+            self.read_thread = threading.Thread(target=self.read_loop)
+            self.read_thread.start()
+            try:
+                self.sock = socket.socket()
+                try:
+                    self.sock.connect(('127.0.0.1', 8333))
+                    #self.sock.connect(('10.0.76.98', 8333))
+                    # 70001
+                    #outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
+
+                    outmsg = protocol.Version(70000, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.2/', 0)
+                    self.out_queue.put(outmsg)
+
+                    self.read_thread.join()
+                    self.process_thread.join()
+                    self.write_thread.join()
+
+                finally:
+                    try:
+                        self.sock.shutdown(socket.SHUTDOWN_RDWR)
+                    except:
+                        pass
+                    try:
+                        self.sock.close()
+                    except:
+                        pass
+                    self.sock = None
+                    self.shutdown_event.set()
+                    try:
+                        self.read_thread.join()
+                    except:
+                        pass
+                    try:
+                        self.process_thread.join()
+                    except:
+                        pass
+                    try:
+                        self.write_thread.join()
+                    except:
+                        pass
+            except Exception:
+                log.exception('Exception in IO loop, reconnecting')
+
+    def process_loop(self):
+        while True:
+            try:
+                if self.shutdown_event.is_set():
+                    return
+                #print bc.visual2(inmsg)
+                inmsg = self.process_queue.get()
+                outmsg = self.handle_message(inmsg)
+                if outmsg:
+                    self.out_queue.put(outmsg)
+            except Exception:
+                log.exception('Exception in process_loop')
+                time.sleep(1)
+
+    def write_loop(self):
+        while True:
+            try:
+                if self.shutdown_event.is_set():
+                    return
+                if self.sock is None:
+                    time.sleep(1)
+                    continue
+                outmsg = self.out_queue.get()
+                self.send_msg(outmsg)
+            except Exception:
+                log.exception('Exception in write_loop')
+                time.sleep(1)
+
+    def read_loop(self):
+        while True:
+            try:
+                if self.shutdown_event.is_set():
+                    return
+                if self.sock is None:
+                    time.sleep(1)
+                    continue
                 hdr_bytes = recv_bytes(self.sock, protocol.MessageHeader.HEADER_FMT[1])
                 (hdr, _) = protocol.MessageHeader.parse(hdr_bytes)
                 assert not _, _
@@ -89,23 +185,12 @@ class IOLoop(threading.Thread):
                 assert not _, _
                 if inmsg is None:
                     log.warn('No parser for command %r, skipping', hdr.command)
-                log.debug('Received %s' % (inmsg.header.command,))
+                log.debug('Received %s', inmsg.header.command)
                 log.debug('%r', inmsg)
-                #print bc.visual2(inmsg)
-                outmsg = self.handle_message(inmsg)
-                if outmsg:
-                    self.out_queue.put(outmsg)
-
-        finally:
-            try:
-                self.sock.shutdown(socket.SHUTDOWN_RDWR)
-            except:
-                pass
-            try:
-                self.sock.close()
-            except:
-                pass
-
+                self.process_queue.put(inmsg)
+            except Exception:
+                log.exception('Exception in read_loop')
+                time.sleep(1)
 
     def handle_default(self, msg):
         log.warn('No handler for %s message', msg.header.command)
@@ -115,8 +200,11 @@ class IOLoop(threading.Thread):
         self.get_missing_blocks()
 
     def get_missing_blocks(self):
+        log.info('Calculating missing blocks')
+        prev_block_hashes = set(block.prev_block_hash for block in db.session.query(db.Block.prev_block_hash).all())
+        missing_block_hashes = prev_block_hashes - self.known_blocks - set([32 * '\x00'])
         log.info('Requesting missing blocks')
-        for (block_hash,) in db.session.connection().execute('select prev_block_hash from block where prev_block_hash not in (select block_hash from block);'):
+        for block_hash in missing_block_hashes:
             self.get_block(bytes(block_hash))
 
     def handle_ping(self, msg):
@@ -124,7 +212,7 @@ class IOLoop(threading.Thread):
 
     def handle_version(self, msg):
         log.info('Handling version %r', msg)
-        self.max_height = msg.start_height
+        self.max_height.value = msg.start_height
         return protocol.Verack()
 
     def handle_inv(self, msg):
@@ -177,16 +265,60 @@ class IOLoop(threading.Thread):
         block_hash = msg.block_hash
         hashhex = binascii.hexlify(block_hash)
         log.info('Handling Block %s', hashhex)
-        db.session.add(db.Block.from_protocol(msg))
-        db.session.commit()
-        self.num_blocks += 1
-        log.info('Block database has %r/%r blocks', self.num_blocks, self.max_height)
-        if not db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
-            log.info('Previous block not found %s' % (binascii.hexlify(msg.prev_block_hash),))
+        #if db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
+
+        self.known_blocks.add(msg.block_hash)
+
+        if msg.prev_block_hash in self.known_blocks:
+            self.max_height.value += 1
+        else:
+            log.info('Previous block not found %s', binascii.hexlify(msg.prev_block_hash))
             self.get_block(msg.prev_block_hash)
+
+        blktmpfilename = 'blocktmp/' + hashhex + '.rawblk'
+        with open(blktmpfilename, 'w') as blktmpfile:
+            blktmpfile.write(msg.bytes)
+        self.block_queue.put(blktmpfilename)
+
+        log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
+
+    def write_block_to_db(self, msg):
+        hexhash = binascii.hexlify(msg.block_hash)
+        log.info('Writing block %s to DB', hexhash)
+        self.num_blocks.value += 1
+        db.session.add(db.Block.from_protocol(msg))
+        #db.Block.from_protocol(msg).bulk_insert(db.session)
+        log.debug('Flushing DB session')
+        start = datetime.datetime.now()
+        db.session.flush()
+        log.debug('DB Flush took %s', datetime.datetime.now() - start)
+        self.known_blocks.add(msg.block_hash)
+        log.debug('Committing DB session')
+        start = datetime.datetime.now()
+        db.session.commit()
+        log.debug('DB Commit took %s', datetime.datetime.now() - start)
+        log.info('Block %s committed', hexhash)
+        log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
 
     def handle_message(self, msg):
         handle_name = 'handle_' + msg.COMMAND
         if hasattr(self, handle_name):
             return getattr(self, handle_name)(msg)
         return self.handle_default(msg)
+
+    def db_write_loop(self):
+        try:
+            while not self.db_write_thread_stop_event.is_set():
+                if self.block_queue.empty():
+                    time.sleep(1)
+                else:
+                    blktmpfilename = self.block_queue.get()
+                    log.info('Reading block file %s', blktmpfilename)
+                    with open(blktmpfilename, 'r') as blktmpfile:
+                        (msg, _) = protocol.Message.parse(blktmpfile.read())
+                        assert not _, _
+                    os.remove(blktmpfilename)
+                    self.write_block_to_db(msg)
+        except:
+            log.exception('exception in db_write_loop')
+            raise
