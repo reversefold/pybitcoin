@@ -2,21 +2,21 @@ import datetime
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy import Column, BigInteger, Integer, LargeBinary, ForeignKey, String, Sequence  #, BINARY
+from sqlalchemy import Column, BigInteger, Integer, LargeBinary, ForeignKey, String, Sequence, BINARY
 from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from sqlalchemy.dialects.postgresql import BYTEA as BINARY
+#from sqlalchemy.dialects.postgresql import BYTEA as BINARY
 
 from pybitcoin import protocol
 
 
 log = logging.getLogger(__name__)
 
-#engine = create_engine('sqlite:///pybitcoin.sqlite')  #, echo=True)
-engine = create_engine('postgresql+psycopg2://127.0.0.1:5432/pybitcoin', connect_args={'user': 'pybitcoin', 'password': 'password'})  #, echo=True)
+engine = create_engine('sqlite:///pybitcoin.sqlite')  #, echo=True)
+#engine = create_engine('postgresql+psycopg2://127.0.0.1:5432/pybitcoin', connect_args={'user': 'pybitcoin', 'password': 'password'})  #, echo=True)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
