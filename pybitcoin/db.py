@@ -1,22 +1,20 @@
+import binascii
 import datetime
 import logging
 
-from sqlalchemy import create_engine
-from sqlalchemy import Column, BigInteger, Integer, LargeBinary, ForeignKey, String, Sequence, BINARY
+from sqlalchemy import Column, BigInteger, Integer, LargeBinary, ForeignKey, String, Sequence
 from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.orderinglist import ordering_list
 
-#from sqlalchemy.dialects.postgresql import BYTEA as BINARY
-
 from pybitcoin import protocol
 
+#from .db_postgres import BINARY, engine
+from .db_sqlite import BINARY, engine
 
 log = logging.getLogger(__name__)
 
-engine = create_engine('sqlite:///pybitcoin.sqlite')  #, echo=True)
-#engine = create_engine('postgresql+psycopg2://127.0.0.1:5432/pybitcoin', connect_args={'user': 'pybitcoin', 'password': 'password'})  #, echo=True)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -34,6 +32,7 @@ class TxIn(Base):
     signature_script = Column(LargeBinary, nullable=False)
     sequence = Column(BigInteger, nullable=False)
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
+    transaction_index = Column(Integer, nullable=False)
 
     __table_args__ = (Index('txin_tx_hash_idx', 'previous_output_transaction_hash', 'previous_output_index'),)
 
@@ -62,6 +61,12 @@ class TxIn(Base):
         ret.sequence = obj.sequence
         ret.transaction_id = obj.transaction_id
         return ret
+
+    def __repr__(self):
+        return 'TxIn((%s, %r), %s, %r)' % (
+            binascii.hexlify(self.previous_output_transaction_hash), self.previous_output_index,
+            binascii.hexlify(self.signature_script),
+            self.sequence)
 
 
 class TxOut(Base):
@@ -96,6 +101,9 @@ class TxOut(Base):
         ret.transaction_id = obj.transaction_id
         return ret
 
+    def __repr__(self):
+        return 'TxOut(%r, %r)' % (self.value, self.pk_script)
+
 
 class Transaction(Base):
     __tablename__ = 'transaction'
@@ -103,16 +111,18 @@ class Transaction(Base):
     tx_hash = Column(BINARY(32), nullable=False, index=True)  #, unique=True?
     version = Column(BigInteger, nullable=False)
     lock_time = Column(Integer, nullable=False)
-    tx_inputs = relationship('TxIn')
+    tx_inputs = relationship('TxIn', order_by='TxIn.transaction_index',
+                             collection_class=ordering_list('transaction_index'))
     tx_outputs = relationship('TxOut', order_by='TxOut.transaction_index',
                               collection_class=ordering_list('transaction_index'))
     block_id = Column(Integer, ForeignKey('block.id'), index=True)
-    block = relationship('Block')
+    block_index = Column(Integer, nullable=False)
+#    block = relationship('Block')
 
     @classmethod
     def from_protocol(cls, in_tx):
         out_tx = cls()
-        out_tx.tx_hash = in_tx.tx_hash()
+        out_tx.tx_hash = in_tx.tx_hash
         out_tx.version = in_tx.version
         out_tx.lock_time = in_tx.lock_time
         out_tx.tx_inputs = [
@@ -142,6 +152,14 @@ class Transaction(Base):
         ret.block_id = obj.block_id
         return ret
 
+    def __repr__(self):
+        return 'Transaction(%s, %r, [%s], [%s], %r)' % (
+            binascii.hexlify(self.tx_hash),
+            self.version,
+            ', '.join(repr(tx) for tx in self.tx_inputs),
+            ', '.join(repr(tx) for tx in self.tx_outputs),
+            self.lock_time)
+
 
 class Block(Base):
     __tablename__ = 'block'
@@ -153,7 +171,8 @@ class Block(Base):
     timestamp = Column(BigInteger, nullable=False)
     bits = Column(BigInteger, nullable=False)
     nonce = Column(BigInteger, nullable=False)
-    transactions = relationship('Transaction')
+    transactions = relationship('Transaction', order_by='Transaction.block_index',
+                                collection_class=ordering_list('block_index'))
 
     def bulk_insert(self, session):
         conn = session.connection()
@@ -205,7 +224,7 @@ class Block(Base):
             Transaction.from_protocol(tx) for tx in block.txns]
         return out_block
 
-    def to_procotol(self):
+    def to_protocol(self):
         return protocol.Block(
             self.version, self.prev_block_hash, self.merkle_root, self.timestamp,
             self.bits, self.nonce, [tx.to_protocol() for tx in self.transactions])
@@ -224,6 +243,16 @@ class Block(Base):
         ret.transactions = [Transaction.copy_obj(tx) for tx in obj.transactions]
         return ret
 
+    def __repr__(self):
+        return 'Block(%r, %s, %s, %r, %r, %r, %r)' % (
+            self.version,
+            binascii.hexlify(self.prev_block_hash),
+            binascii.hexlify(self.merkle_root),
+            self.timestamp,
+            self.bits,
+            self.nonce,
+            self.transactions)
+
 
 Base.metadata.create_all(engine)
 
@@ -235,3 +264,7 @@ for table in Base.metadata.tables.itervalues():
             log.info('Created %r', idx)
         except Exception as exc:
             log.debug('exc, probably already exists: %r', exc)
+
+
+# unspent sum for an address
+#  select sum(value) from txout join transaction t on txout.transaction_id = t.id left join txin on txout.transaction_index = txin.previous_output_index and t.tx_hash = txin.previous_output_transaction_hash where txout.to_address = '1ADDRESS' and txin.id is null;

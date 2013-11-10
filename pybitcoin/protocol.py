@@ -438,6 +438,7 @@ class Transaction(object):
         self.tx_out = tx_out
         self.lock_time = lock_time
 
+    @property
     def tx_hash(self):
         return sha256(sha256(self.bytes).digest()).digest()
 
@@ -462,9 +463,9 @@ class Transaction(object):
         return ''.join([
             struct.pack(UINT32_FMT[0], self.version),
             encode_varint(len(self.tx_in)),
-            ''.join(tx.bytes for tx in self.tx_in),
+            ''.join(txin.bytes for txin in self.tx_in),
             encode_varint(len(self.tx_out)),
-            ''.join(tx.bytes for tx in self.tx_out),
+            ''.join(txout.bytes for txout in self.tx_out),
             struct.pack(UINT32_FMT[0], self.lock_time)])
 
     def __eq__(self, b):
@@ -475,7 +476,7 @@ class Transaction(object):
 
     def __repr__(self):
         return 'Transaction(%s, %r, [%s], [%s], %r)' % (
-            binascii.hexlify(self.tx_hash()),
+            binascii.hexlify(self.tx_hash),
             self.version,
             ', '.join(repr(tx) for tx in self.tx_in),
             ', '.join(repr(tx) for tx in self.tx_out),
@@ -567,8 +568,7 @@ class Block(Message):
                 and self.txns == b.txns)
 
     def __repr__(self):
-        return 'Block(%r, %r, %s, %s, %r, %r, %r, %r)' % (
-            self.header,
+        return 'Block(%r, %s, %s, %r, %r, %r, %r)' % (
             self.version,
             binascii.hexlify(self.prev_block_hash),
             binascii.hexlify(self.merkle_root),

@@ -249,7 +249,7 @@ class IOLoop(threading.Thread):
         return self.stored[item]
 
     def handle_tx(self, msg):
-        tx_hash = msg.tx.tx_hash()
+        tx_hash = msg.tx.tx_hash
         hashhex = binascii.hexlify(tx_hash)
         log.info('Handling TX %s', hashhex)
 #        db.session.add(db.Transaction.from_protocol(msg.tx))
@@ -265,6 +265,7 @@ class IOLoop(threading.Thread):
         block_hash = msg.block_hash
         hashhex = binascii.hexlify(block_hash)
         log.info('Handling Block %s', hashhex)
+
         #if db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
 
         self.known_blocks.add(msg.block_hash)

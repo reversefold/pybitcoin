@@ -22,14 +22,14 @@
 #        block_hash = block.block_hash()
 #        self.shelf['bk_%s' % (block_hash,)] = block
 #        for txn in block.txns:
-#            self.shelf['tx_bk_%s' % (txn.tx_hash(),)] = block_hash
+#            self.shelf['tx_bk_%s' % (txn.tx_hash,)] = block_hash
 #            self.put_tx(txn)
 #
 #    def get_transaction(self, txn_hash):
-#        return self.shelf.get('tx_%s' % (tx_hash,))
+#        return self.shelf.get('tx_%s' % (txn_hash,))
 #
 #    def put_transaction(self, txn):
-#        txn_hash = txn.tx_hash()
+#        txn_hash = txn.tx_hash
 #        self.shelf['tx_%s' % (txn_hash,)] = txn
 #        # I'm not sure what the best way to do this is as the list of transactions an address
 #        # can be used in are potentially unbounded. Might want to do some kind of limited list
