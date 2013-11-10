@@ -77,6 +77,13 @@ class IOLoop(threading.Thread):
         self.read_thread = None
 
         self.shutdown_event = threading.Event()
+        self._internal_shutdown_event = threading.Event()
+
+    def shutdown(self):
+        if self.shutdown_event.is_set():
+            return
+        self.shutdown_event.set()
+        self.join()
 
     def send_msg(self, msg):
         log.info('Sending %s', msg.header.command)
@@ -93,7 +100,7 @@ class IOLoop(threading.Thread):
             db_write_thread.join()
 
     def _do_run(self):
-        while True:
+        while not self.shutdown_event.is_set():
             self.process_thread = threading.Thread(target=self.process_loop)
             self.process_thread.start()
             self.write_thread = threading.Thread(target=self.write_loop)
@@ -125,7 +132,7 @@ class IOLoop(threading.Thread):
                     except:
                         pass
                     self.sock = None
-                    self.shutdown_event.set()
+                    self._internal_shutdown_event.set()
                     try:
                         self.read_thread.join()
                     except:
@@ -138,13 +145,14 @@ class IOLoop(threading.Thread):
                         self.write_thread.join()
                     except:
                         pass
+                    self._internal_shutdown_event.clear()
             except Exception:
                 log.exception('Exception in IO loop, reconnecting')
 
     def process_loop(self):
         while True:
             try:
-                if self.shutdown_event.is_set():
+                if self._internal_shutdown_event.is_set():
                     return
                 #print bc.visual2(inmsg)
                 inmsg = self.process_queue.get()
@@ -158,7 +166,7 @@ class IOLoop(threading.Thread):
     def write_loop(self):
         while True:
             try:
-                if self.shutdown_event.is_set():
+                if self._internal_shutdown_event.is_set():
                     return
                 if self.sock is None:
                     time.sleep(1)
@@ -172,7 +180,7 @@ class IOLoop(threading.Thread):
     def read_loop(self):
         while True:
             try:
-                if self.shutdown_event.is_set():
+                if self._internal_shutdown_event.is_set():
                     return
                 if self.sock is None:
                     time.sleep(1)

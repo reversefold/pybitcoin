@@ -27,13 +27,13 @@ def main():
 
     # imported here to make sure logging is set up
     from pybitcoin import io
+    ioloop = io.IOLoop()
     from pybitcoin import db
 
     try:
         #ioloop_thread = threading.Thread(target=ioloop)
         #ioloop_thread.start()
         log.info('Starting pybitcoin ioloop')
-        ioloop = io.IOLoop()
         ioloop.start()
     #    tx_hash = binascii.unhexlify('63c72b003e92e429fa02bcf57adc2a1bdd088ae4d86745e1d41984323500075f')
     #    log.info('Asking for transaction %s', binascii.hexlify(tx_hash))
@@ -42,6 +42,7 @@ def main():
         while True:
             time.sleep(1)
     finally:
+        ioloop.shutdown()
         db.session.commit()
     log.info('Exiting')
 
