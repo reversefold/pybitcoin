@@ -211,9 +211,12 @@ class IOLoop(threading.Thread):
         log.info('Calculating missing blocks')
         prev_block_hashes = set(block.prev_block_hash for block in db.session.query(db.Block.prev_block_hash).all())
         missing_block_hashes = prev_block_hashes - self.known_blocks - set([32 * '\x00'])
-        log.info('Requesting missing blocks')
-        for block_hash in missing_block_hashes:
-            self.get_block(bytes(block_hash))
+        if missing_block_hashes:
+            log.info('Requesting %d missing blocks', len(missing_block_hashes))
+            for block_hash in missing_block_hashes:
+                self.get_block(bytes(block_hash))
+        else:
+            log.info('No blocks missing from the stored blockchain')
 
     def handle_ping(self, msg):
         log.info('Handling ping %r', msg)
