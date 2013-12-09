@@ -10,8 +10,11 @@ from sqlalchemy.ext.orderinglist import ordering_list
 
 from pybitcoin import protocol
 
-#from .db_postgres import BINARY, engine
-from .db_sqlite import BINARY, engine
+try:
+    from .db_local import BINARY, engine
+except ImportError:
+    print 'Using default sqlite DB, create db_local.py to customize'
+    from .db_sqlite import BINARY, engine
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +36,8 @@ class TxIn(Base):
     sequence = Column(BigInteger, nullable=False)
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
     transaction_index = Column(Integer, nullable=False)
+
+    txout_id = Column(Integer, nullable=True, index=True)  #ForeignKey('txout.id'),
 
     __table_args__ = (Index('txin_tx_hash_idx', 'previous_output_transaction_hash', 'previous_output_index'),)
 
@@ -166,13 +171,15 @@ class Block(Base):
     id = Column(Integer, Sequence('block_id'), primary_key=True, nullable=False, unique=True, index=True)
     block_hash = Column(BINARY(32), nullable=False, index=True)  #, unique=True?
     version = Column(BigInteger, nullable=False)
-    prev_block_hash = Column(BINARY(32), nullable=False, index=True)
+    prev_block_hash = Column(BINARY(32), nullable=False)  #, index=True)
     merkle_root = Column(BINARY(32), nullable=False)
     timestamp = Column(BigInteger, nullable=False)
     bits = Column(BigInteger, nullable=False)
     nonce = Column(BigInteger, nullable=False)
     transactions = relationship('Transaction', order_by='Transaction.block_index',
                                 collection_class=ordering_list('block_index'))
+
+    prev_block_id = Column(Integer, nullable=True, index=True)
 
     def bulk_insert(self, session):
         conn = session.connection()
@@ -254,16 +261,16 @@ class Block(Base):
             self.transactions)
 
 
-Base.metadata.create_all(engine)
-
-for table in Base.metadata.tables.itervalues():
-    for idx in table.indexes:
-        try:
-            log.debug('Creating %r', idx)
-            idx.create(engine)
-            log.info('Created %r', idx)
-        except Exception as exc:
-            log.debug('exc, probably already exists: %r', exc)
+#Base.metadata.create_all(engine)
+#
+#for table in Base.metadata.tables.itervalues():
+#    for idx in table.indexes:
+#        try:
+#            log.debug('Creating %r', idx)
+#            idx.create(engine)
+#            log.info('Created %r', idx)
+#        except Exception as exc:
+#            log.debug('exc, probably already exists: %r', exc)
 
 
 # unspent sum for an address
