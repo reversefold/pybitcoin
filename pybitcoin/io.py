@@ -76,17 +76,16 @@ class IOLoop(threading.Thread):
         self.write_thread = None
         self.read_thread = None
 
-        self.shutdown_event = threading.Event()
+        self.shutdown_event = multiprocessing.Event()
         self._internal_shutdown_event = threading.Event()
 
     def shutdown(self):
         if self.shutdown_event.is_set():
             return
         self.shutdown_event.set()
-        self.join()
 
     def send_msg(self, msg):
-        log.info('Sending %s', msg.header.command)
+        log.debug('Sending %s', msg.header.command)
         log.debug('%r', msg)
         self.sock.sendall(msg.bytes)
 
@@ -113,14 +112,19 @@ class IOLoop(threading.Thread):
                     self.sock.connect(('127.0.0.1', 8333))
                     #self.sock.connect(('10.0.76.98', 8333))
                     # 70001
-                    #outmsg = protocol.Version(60002, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.1/', 0)
-
                     outmsg = protocol.Version(70000, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.2/', 0)
                     self.out_queue.put(outmsg)
 
-                    self.read_thread.join()
-                    self.process_thread.join()
-                    self.write_thread.join()
+                    while not self.shutdown_event.is_set():
+                        self.read_thread.join(0.5)
+                        if not self.read_thread.isAlive():
+                            break
+                        self.process_thread.join(0.5)
+                        if not self.process_thread.isAlive():
+                            break
+                        self.write_thread.join(0.5)
+                        if not self.write_thread.isAlive():
+                            break
 
                 finally:
                     try:
@@ -150,8 +154,8 @@ class IOLoop(threading.Thread):
                 log.exception('Exception in IO loop, reconnecting')
 
     def process_loop(self):
-        while True:
-            try:
+        try:
+            while True:
                 if self._internal_shutdown_event.is_set():
                     return
                 #print bc.visual2(inmsg)
@@ -159,13 +163,14 @@ class IOLoop(threading.Thread):
                 outmsg = self.handle_message(inmsg)
                 if outmsg:
                     self.out_queue.put(outmsg)
-            except Exception:
-                log.exception('Exception in process_loop')
-                time.sleep(1)
+        except Exception:
+            log.exception('Exception in process_loop')
+            self.shutdown()
+            raise
 
     def write_loop(self):
-        while True:
-            try:
+        try:
+            while True:
                 if self._internal_shutdown_event.is_set():
                     return
                 if self.sock is None:
@@ -173,13 +178,14 @@ class IOLoop(threading.Thread):
                     continue
                 outmsg = self.out_queue.get()
                 self.send_msg(outmsg)
-            except Exception:
-                log.exception('Exception in write_loop')
-                time.sleep(1)
+        except Exception:
+            log.exception('Exception in write_loop')
+            self.shutdown()
+            raise
 
     def read_loop(self):
-        while True:
-            try:
+        try:
+            while True:
                 if self._internal_shutdown_event.is_set():
                     return
                 if self.sock is None:
@@ -196,12 +202,13 @@ class IOLoop(threading.Thread):
                 log.debug('Received %s', inmsg.header.command)
                 log.debug('%r', inmsg)
                 self.process_queue.put(inmsg)
-            except Exception:
-                log.exception('Exception in read_loop')
-                time.sleep(1)
+        except Exception:
+            log.exception('Exception in read_loop')
+            self.shutdown()
+            raise
 
     def handle_default(self, msg):
-        log.warn('No handler for %s message', msg.header.command)
+        log.debug('No handler for %s message', msg.header.command)
 
     def handle_verack(self, msg):
         log.info('Handling verack %r', msg)
@@ -227,12 +234,13 @@ class IOLoop(threading.Thread):
         return protocol.Verack()
 
     def handle_inv(self, msg):
-        log.info('Handling inv %r', msg)
+        log.debug('Handling inv %r', msg)
         block_hashes = []
         for entry in msg.hashes:
             if entry[0] == protocol.InventoryVector.MSG_BLOCK:
                 block_hashes.append(entry)
         if block_hashes:
+            log.info('Requesting blocks [%s]', ', '.join(binascii.hexlify(block_hash) for (_, block_hash) in block_hashes))
             return protocol.GetData(block_hashes)
 
     def get_block(self, block_hash):
@@ -275,7 +283,12 @@ class IOLoop(threading.Thread):
     def handle_block(self, msg):
         block_hash = msg.block_hash
         hashhex = binascii.hexlify(block_hash)
-        log.info('Handling Block %s', hashhex)
+        txins = 0
+        txouts = 0
+        for tx in msg.txns:
+            txins += len(tx.tx_in)
+            txouts += len(tx.tx_out)
+        log.info('Handling Block %s %u txns %u txins %u txouts', hashhex, len(msg.txns), txins, txouts)
 
         #if db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
 
@@ -288,6 +301,7 @@ class IOLoop(threading.Thread):
             self.get_block(msg.prev_block_hash)
 
         blktmpfilename = 'blocktmp/' + hashhex + '.rawblk'
+        log.info('Queueing block, writing to disk %s', blktmpfilename)
         with open(blktmpfilename, 'w') as blktmpfile:
             blktmpfile.write(msg.bytes)
         self.block_queue.put(blktmpfilename)
@@ -334,3 +348,5 @@ class IOLoop(threading.Thread):
         except:
             log.exception('exception in db_write_loop')
             raise
+        finally:
+            self.shutdown()
