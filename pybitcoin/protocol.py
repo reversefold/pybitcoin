@@ -316,13 +316,12 @@ class InventoryVector(Message):
         return (cls(hashes, header), bytes)
 
     def __repr__(self):
-        return 'Inventory(%r, [%s])' % (
-            self.header,
+        return 'Inventory([%s])' % (
             ', '.join(
                 '(%s, %s)' % (
                     self.HASH_TYPES.get(i[0], '<UNKNOWN>'),
                     binascii.hexlify(i[1]))
-                for i in self.hashes))
+                for i in self.hashes),)
 
 
 class Inventory(InventoryVector):
@@ -568,7 +567,15 @@ class Block(Message):
                 and self.txns == b.txns)
 
     def __repr__(self):
-        return 'Block(%r, %s, %s, %r, %r, %r, %r)' % (
+        txins = 0
+        txouts = 0
+        for tx in self.txns:
+            txins += len(tx.tx_in)
+            txouts += len(tx.tx_out)
+        return 'Block(%u txns, %u txins, %u txouts, %r, %s, %s, %r, %r, %r, %r)' % (
+            len(self.txns),
+            txins,
+            txouts,
             self.version,
             binascii.hexlify(self.prev_block_hash),
             binascii.hexlify(self.merkle_root),
