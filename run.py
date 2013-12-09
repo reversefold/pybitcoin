@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import greenhouse.emulation
-greenhouse.emulation.patch()
+#import greenhouse.emulation
+#greenhouse.emulation.patch()
 
 #import os
 #import sys
@@ -43,6 +43,7 @@ def main():
             time.sleep(1)
     finally:
         ioloop.shutdown()
+        ioloop.join()
         db.session.commit()
     log.info('Exiting')
 
