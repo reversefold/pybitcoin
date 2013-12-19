@@ -304,9 +304,11 @@ class IOLoop(threading.Thread):
 
         blktmpfilename = 'blocktmp/' + hashhex + '.rawblk'
         log.info('Queueing block, writing to disk %s', blktmpfilename)
-        with open(blktmpfilename, 'w') as blktmpfile:
+        with open(blktmpfilename, 'wb') as blktmpfile:
             blktmpfile.write(msg.bytes)
         self.block_queue.put(blktmpfilename)
+
+        #self.write_block_to_db(msg)
 
         log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
 
@@ -345,7 +347,7 @@ class IOLoop(threading.Thread):
                 else:
                     blktmpfilename = self.block_queue.get()
                     log.info('Reading block file %s', blktmpfilename)
-                    with open(blktmpfilename, 'r') as blktmpfile:
+                    with open(blktmpfilename, 'rb') as blktmpfile:
                         (msg, _) = protocol.Message.parse(blktmpfile.read())
                         assert not _, _
                     os.remove(blktmpfilename)
