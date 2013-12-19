@@ -224,6 +224,8 @@ class IOLoop(threading.Thread):
                 self.get_block(bytes(block_hash))
         else:
             log.info('No blocks missing from the stored blockchain')
+            #self.get_block(bytes(binascii.unhexlify('28872449d988d43a8b0246fc43a2b97e50b64d422f3b2bc10100000000000000')))
+        ## TODO: implement merkle-root syncing with the other side
 
     def handle_ping(self, msg):
         log.info('Handling ping %r', msg)
@@ -312,7 +314,8 @@ class IOLoop(threading.Thread):
         hexhash = binascii.hexlify(msg.block_hash)
         log.info('Writing block %s to DB', hexhash)
         self.num_blocks.value += 1
-        db.session.add(db.Block.from_protocol(msg))
+        db_block = db.Block.from_protocol(msg)
+        db.session.add(db_block)
         #db.Block.from_protocol(msg).bulk_insert(db.session)
         log.debug('Flushing DB session')
         start = datetime.datetime.now()
@@ -323,6 +326,8 @@ class IOLoop(threading.Thread):
         start = datetime.datetime.now()
         db.session.commit()
         log.debug('DB Commit took %s', datetime.datetime.now() - start)
+        log.debug('Running block post-commit cleanup')
+        db_block.update_metadata()
         log.info('Block %s committed', hexhash)
         log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
 

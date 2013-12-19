@@ -7,6 +7,7 @@ from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.sql import text
 
 from pybitcoin import protocol
 
@@ -180,6 +181,9 @@ class Block(Base):
                                 collection_class=ordering_list('block_index'))
 
     prev_block_id = Column(Integer, nullable=True, index=True)
+    depth = Column(Integer, nullable=True)
+
+    pending_meta_updates = []
 
     def bulk_insert(self, session):
         conn = session.connection()
@@ -216,6 +220,92 @@ class Block(Base):
                 data.append(row)
         conn.execute(txout.__table__.insert().values(data))
         log.info('Processing txouts took %s', datetime.datetime.now() - start)
+
+    def update_metadata(self, _update_pending=True):
+        log.info('Updating links from txin to txout in this block')
+        with engine.begin() as conn:
+            start = datetime.datetime.now()
+            # match up previously committed txins to newly committed txouts
+            # (blocks committed out of order)
+            res = conn.execute(
+                text("""
+                    UPDATE txin SET txout_id = txout.id
+                    FROM txout
+                    JOIN transaction txo ON txout.transaction_id = txo.id
+                    WHERE txo.tx_hash = txin.previous_output_transaction_hash
+                    AND txout.transaction_index = txin.previous_output_index
+                    AND txin.txout_id IS NULL
+                    AND txo.block_id = :block_id"""),
+                block_id=self.id)
+            log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
+            log.info('Updating links from txin in this block to txout')
+            # match up new txins to the txouts in previous transactions
+            # (blocks committed in order)
+            start = datetime.datetime.now()
+            res = conn.execute(
+                text("""
+                    UPDATE txin SET txout_id = txout.id
+                    FROM txout
+                    JOIN transaction txo ON txout.transaction_id = txo.id
+                    , transaction txi
+                    WHERE txo.tx_hash = txin.previous_output_transaction_hash
+                    AND txout.transaction_index = txin.previous_output_index
+                    AND txin.txout_id IS NULL
+                    AND txin.transaction_id = txi.id
+                    AND txi.block_id = :block_id"""),
+               block_id=self.id)
+            log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
+            res = session.query(Block.depth, Block.id).filter(Block.block_hash == self.prev_block_hash).first()
+            if res is None:
+                log.warn('Previous block not found, queueing metadata update (%s)', binascii.hexlify(self.block_hash))
+                self.pending_meta_updates.append(self)
+                return False
+            else:
+                depth, self.prev_block_id = res
+                self.depth = depth + 1 if depth is not None else None
+                session.query(Block).filter(Block.id == self.id).update(
+                    values={'depth': self.depth, 'prev_block_id': self.prev_block_id})
+
+                if self.depth is None:
+                    self.pending_meta_updates.append(self)
+
+                if _update_pending and self.pending_meta_updates:
+                    success = True
+                    while success:
+                        success = False
+
+                        for to_update in self.pending_meta_updates[:]:
+                            log.info('Running pending meta update for %s', binascii.hexlify(to_update.block_hash))
+                            if to_update.update_metadata(False):
+                                success = True
+                                log.error('Pending metadata update succeeded for %s', binascii.hexlify(to_update.block_hash))
+                                self.pending_meta_updates.remove(to_update)
+                            else:
+                                log.error('Pending metadata update failed for %s', binascii.hexlify(to_update.block_hash))
+                return True
+
+        #These don't work as expected...:-(
+        #(db.session.query(db.TxIn)
+        # .select_from(db.TxOut)
+        # .join(db.Transaction, db.TxOut.transaction_id == db.Transaction.id)
+        # .filter(
+        #     (db.Transaction.tx_hash == db.TxIn.previous_output_transaction_hash)
+        #     & (db.TxOut.transaction_index == db.TxIn.previous_output_index)
+        #     & (db.TxIn.txout_id == None)
+        #     & (db.Transaction.block_id == db_block.id))
+        # .update(values={'txout_id': db.TxOut.id}, synchronize_session=False)
+        #)
+        #(db.session.query(db.TxIn)
+        # .select_from(db.TxOut)
+        # .join(db.Transaction, db.TxOut.transaction_id == db.Transaction.id)
+        # .filter(
+        #     (db.Transaction.tx_hash == db.TxIn.previous_output_transaction_hash)
+        #     & (db.TxOut.transaction_index == db.TxIn.previous_output_index)
+        #     & (db.TxIn.txout_id == None)
+        #     & (db.TxIn.transaction_id.in_(
+        #         db.session.query(db.Transaction.id).filter(db.Block.id == db_block.id))))
+        # .update(values={'txout_id': db.TxOut.id}, synchronize_session=False)
+        #)
 
     @classmethod
     def from_protocol(cls, block):

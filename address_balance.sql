@@ -127,7 +127,8 @@ CREATE OR REPLACE FUNCTION public.update_txin_txout_id_by_txin_id(in_id integer)
     BEGIN
       UPDATE txin SET txout_id = txout.id
       FROM txout JOIN transaction t ON txout.transaction_id = t.id
-      WHERE t.tx_hash = txin.previous_output_transaction_hash
+      WHERE txout_id IS NULL
+      AND t.tx_hash = txin.previous_output_transaction_hash
       AND txout.transaction_index = txin.previous_output_index
       AND txin.id = in_id;
     END;
@@ -159,6 +160,7 @@ CREATE TRIGGER txin_insert_trigger
   FOR EACH ROW
   EXECUTE PROCEDURE public.on_txin_insert();
 
+ALTER TABLE public.txin ENABLE TRIGGER txin_insert_trigger;
 
 
 
@@ -168,7 +170,8 @@ CREATE OR REPLACE FUNCTION public.update_txin_txout_id_by_txout_id_tx_id(in_txou
   $$
     BEGIN
       UPDATE txin SET txout_id = in_txout_id
-      WHERE previous_output_transaction_hash = (SELECT tx_hash FROM transaction WHERE id = in_transaction_id)
+      WHERE txout_id IS NULL
+      AND previous_output_transaction_hash = (SELECT tx_hash FROM transaction WHERE id = in_transaction_id)
       AND previous_output_index = in_txout_index;
     END;
   $$
@@ -202,7 +205,7 @@ CREATE TRIGGER txout_insert_trigger
   FOR EACH ROW
   EXECUTE PROCEDURE public.on_txout_insert();
 
-
+ALTER TABLE public.txout ENABLE TRIGGER txout_insert_trigger;
 
 
 

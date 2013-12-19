@@ -35,10 +35,10 @@ def main():
         #ioloop_thread.start()
         log.info('Starting pybitcoin ioloop')
         ioloop.start()
-    #    tx_hash = binascii.unhexlify('63c72b003e92e429fa02bcf57adc2a1bdd088ae4d86745e1d41984323500075f')
-    #    log.info('Asking for transaction %s', binascii.hexlify(tx_hash))
-    #    tx = ioloop.get_transaction(tx_hash)
-    #    log.info('Got transaction: %r', tx)
+        #tx_hash = binascii.unhexlify('63c72b003e92e429fa02bcf57adc2a1bdd088ae4d86745e1d41984323500075f')
+        #log.info('Asking for transaction %s', binascii.hexlify(tx_hash))
+        #tx = ioloop.get_transaction(tx_hash)
+        #log.info('Got transaction: %r', tx)
         while True:
             time.sleep(1)
     finally:
