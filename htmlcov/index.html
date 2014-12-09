@@ -5,7 +5,7 @@
     <title>Coverage report</title>
     <link rel='stylesheet' href='style.css' type='text/css'>
     
-    <script type='text/javascript' src='jquery-1.4.3.min.js'></script>
+    <script type='text/javascript' src='jquery.min.js'></script>
     <script type='text/javascript' src='jquery.tablesorter.min.js'></script>
     <script type='text/javascript' src='jquery.hotkeys.js'></script>
     <script type='text/javascript' src='coverage_html.js'></script>
@@ -18,7 +18,7 @@
 <div id='header'>
     <div class='content'>
         <h1>Coverage report:
-            <span class='pc_cov'>78%</span>
+            <span class='pc_cov'>63%</span>
         </h1>
         <img id='keyboard_icon' src='keybd_closed.png'>
     </div>
@@ -56,11 +56,11 @@
         <tfoot>
             <tr class='total'>
                 <td class='name left'>Total</td>
-                <td>909</td>
-                <td>197</td>
+                <td>1191</td>
+                <td>438</td>
                 <td>0</td>
                 
-                <td class='right'>78%</td>
+                <td class='right'>63%</td>
             </tr>
         </tfoot>
         <tbody>
@@ -85,11 +85,20 @@
             
             <tr class='file'>
                 <td class='name left'><a href='pybitcoin_db.html'>pybitcoin/db</a></td>
-                <td>86</td>
-                <td>32</td>
+                <td>219</td>
+                <td>137</td>
                 <td>0</td>
                 
-                <td class='right'>63%</td>
+                <td class='right'>37%</td>
+            </tr>
+            
+            <tr class='file'>
+                <td class='name left'><a href='pybitcoin_db_sqlite.html'>pybitcoin/db_sqlite</a></td>
+                <td>3</td>
+                <td>0</td>
+                <td>0</td>
+                
+                <td class='right'>100%</td>
             </tr>
             
             <tr class='file'>
@@ -103,11 +112,11 @@
             
             <tr class='file'>
                 <td class='name left'><a href='pybitcoin_io.html'>pybitcoin/io</a></td>
-                <td>154</td>
-                <td>100</td>
+                <td>295</td>
+                <td>231</td>
                 <td>0</td>
                 
-                <td class='right'>35%</td>
+                <td class='right'>22%</td>
             </tr>
             
             <tr class='file'>
@@ -130,11 +139,11 @@
             
             <tr class='file'>
                 <td class='name left'><a href='pybitcoin_protocol.html'>pybitcoin/protocol</a></td>
-                <td>386</td>
-                <td>21</td>
+                <td>391</td>
+                <td>26</td>
                 <td>0</td>
                 
-                <td class='right'>95%</td>
+                <td class='right'>93%</td>
             </tr>
             
             <tr class='file'>
@@ -153,7 +162,7 @@
 <div id='footer'>
     <div class='content'>
         <p>
-            <a class='nav' href='http://nedbatchelder.com/code/coverage'>coverage.py v3.6</a>
+            <a class='nav' href='http://nedbatchelder.com/code/coverage'>coverage.py v3.7.1</a>
         </p>
     </div>
 </div>
