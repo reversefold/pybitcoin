@@ -10,7 +10,7 @@ mv htmlcov tmp.htmlcov
 git checkout --force gh-pages
 rm -r htmlcov
 mv tmp.htmlcov htmlcov
-git add htmlcov || true
+git add --all htmlcov || true
 git commit -m"Automated test run by CircleCI - $(date)" || true
 git push origin gh-pages
 git checkout master
