@@ -111,8 +111,7 @@ class IOLoop(threading.Thread):
                 try:
                     self.sock.connect(('127.0.0.1', 8333))
                     #self.sock.connect(('10.0.76.98', 8333))
-                    # 70001
-                    outmsg = protocol.Version(70000, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.2/', 0)
+                    outmsg = protocol.Version(70001, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.2/', 0, False)
                     self.out_queue.put(outmsg)
 
                     while not self.shutdown_event.is_set():
