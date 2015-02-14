@@ -52,7 +52,7 @@ p24
 I0
 sbssS'hash'
 p25
-S'\x02\xfc\x15\xdc\xa4xO\xdc\xd51g\xd1\x99*\xd3\x99'
+S'\xd4,\xe6%\x94 \x188A\xf5\xc9\xddZyd1'
 p26
 ssS'pybitcoin_db_sqlite'
 p27
@@ -212,17 +212,17 @@ I1
 sg19
 I0
 sg20
-I219
+I223
 sg21
 I0
 sg22
 I0
 sg23
-I137
+I140
 sg24
 I0
 sbssg25
-S'R$q\xe8Ge\xb9\xb4=&H\xa7\x91tfW'
+S'\xef \x88\xa9t.#\xbe\xa2\xce\x9d:\x94\x12\xbdH'
 p66
 ssS'pybitcoin_hd_wallet'
 p67
