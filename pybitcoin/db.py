@@ -116,7 +116,7 @@ class Transaction(Base):
     id = Column(Integer, Sequence('transaction_id'), primary_key=True, nullable=False, unique=True, index=True)
     tx_hash = Column(BINARY(32), nullable=False, index=True)  #, unique=True?
     version = Column(BigInteger, nullable=False)
-    lock_time = Column(Integer, nullable=False)
+    lock_time = Column(BigInteger, nullable=False)
     tx_inputs = relationship('TxIn', order_by='TxIn.transaction_index',
                              collection_class=ordering_list('transaction_index'))
     tx_outputs = relationship('TxOut', order_by='TxOut.transaction_index',
