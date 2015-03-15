@@ -37,7 +37,7 @@ p19
 I0
 sS'n_statements'
 p20
-I295
+I305
 sS'n_excluded'
 p21
 I0
@@ -46,13 +46,13 @@ p22
 I0
 sS'n_missing'
 p23
-I231
+I240
 sS'n_missing_branches'
 p24
 I0
 sbssS'hash'
 p25
-S'\xd4,\xe6%\x94 \x188A\xf5\xc9\xddZyd1'
+S'\xb2\x05N\x1aS\x81\x08D\x8eF\xa8\xfba\xbe\x99\x86'
 p26
 ssS'pybitcoin_db_sqlite'
 p27
@@ -144,17 +144,17 @@ I1
 sg19
 I0
 sg20
-I391
+I404
 sg21
 I0
 sg22
 I0
 sg23
-I26
+I27
 sg24
 I0
 sbssg25
-S'onXAO*p\x83Sx!\xbb\xf0\x97v\xef'
+S'i\x80\xbdwj\xcb\xb9\x81\xbd\x17\x9f\xc1\xfa\x85\x88k'
 p50
 ssS'pybitcoin_key'
 p51
