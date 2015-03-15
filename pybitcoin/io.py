@@ -79,13 +79,17 @@ class IOLoop(threading.Thread):
         self.shutdown_event = multiprocessing.Event()
         self._internal_shutdown_event = threading.Event()
 
+        self.ping_timing = 30
+        self.last_ping = time.time()
+        self.last_pong = None
+
     def shutdown(self):
         if self.shutdown_event.is_set():
             return
         self.shutdown_event.set()
 
     def send_msg(self, msg):
-        log.debug('Sending %s', msg.header.command)
+        log.info('Sending %s', msg.header.command)
         log.debug('%r', msg)
         self.sock.sendall(msg.bytes)
 
@@ -115,15 +119,19 @@ class IOLoop(threading.Thread):
                     self.out_queue.put(outmsg)
 
                     while not self.shutdown_event.is_set():
-                        self.read_thread.join(0.5)
+                        self.read_thread.join(0.05)
                         if not self.read_thread.isAlive():
                             break
-                        self.process_thread.join(0.5)
+                        self.process_thread.join(0.05)
                         if not self.process_thread.isAlive():
                             break
-                        self.write_thread.join(0.5)
+                        self.write_thread.join(0.05)
                         if not self.write_thread.isAlive():
                             break
+                        # TODO: keep track of last_pong and disconnect if too long
+                        if time.time() - self.last_ping > self.ping_timing:
+                            self.out_queue.put(protocol.Ping())
+                            self.last_ping = time.time()
 
                 finally:
                     try:
@@ -228,6 +236,11 @@ class IOLoop(threading.Thread):
 
     def handle_ping(self, msg):
         log.info('Handling ping %r', msg)
+        return protocol.Pong()
+
+    def handle_pong(self, msg):
+        log.info('Handling pong %r', msg)
+        self.last_pong = time.time()
 
     def handle_version(self, msg):
         log.info('Handling version %r', msg)

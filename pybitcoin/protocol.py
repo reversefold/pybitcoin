@@ -1,6 +1,7 @@
 import binascii
 from hashlib import sha256
 import logging
+import random
 import struct
 import time
 
@@ -143,6 +144,7 @@ class Message(object):
     def parse(cls, bytes, header=None):
         if header is None:
             (header, bytes) = MessageHeader.parse(bytes)
+        log.info('Parsing message %s' % (header.command,))
         (payload, bytes) = splitn(bytes, header.payload_length)
         if header.checksum != cls.calc_checksum(payload):
             raise ParseError('Checksum is incorrect')
@@ -150,7 +152,7 @@ class Message(object):
             raise ParseError('Unknown command %s' % (header.command,))
         (msg, empty) = COMMAND_CLASS_MAP[header.command].parse(payload, header)
         if empty != '':
-            raise ParseError('Trailing bytes after parsing payload')
+            raise ParseError('Trailing bytes after parsing payload for command %s' % (header.command,))
         return (msg, bytes)
 
     def __repr__(self):
@@ -159,9 +161,9 @@ class Message(object):
 
 class Version(Message):
     COMMAND = 'version'
-    BITS = [fmt_w_size(f) for f in ['<iQq', '<Q', '<i']]
+    BITS = [fmt_w_size(f) for f in ['<iQq', '<Q', '<i?']]
 
-    def __init__(self, version, addr_recv, addr_from, nonce, user_agent, start_height, services=0x01, timestamp=None, header=None):
+    def __init__(self, version, addr_recv, addr_from, nonce, user_agent, start_height, relay, services=0x01, timestamp=None, header=None):
         super(Version, self).__init__(header=header)
         self.version = version
         self.services = services
@@ -171,6 +173,7 @@ class Version(Message):
         self.nonce = nonce
         self.user_agent = user_agent
         self.start_height = start_height
+        self.relay = relay
 
     @property
     def payload(self):
@@ -180,7 +183,7 @@ class Version(Message):
             encode_addr_bare(self.addr_from),
             struct.pack(self.BITS[1][0], self.nonce),
             encode_varstr(self.user_agent),
-            struct.pack(self.BITS[2][0], self.start_height)])
+            struct.pack(self.BITS[2][0], self.start_height, self.relay)])
 
     @classmethod
     def parse(cls, bytes, header=None):
@@ -191,20 +194,21 @@ class Version(Message):
         (addr_from, bytes) = parse_addr_bare(bytes)
         ((nonce,), bytes) = parse(bytes, cls.BITS[1])
         (user_agent, bytes) = parse_varstr(bytes)
-        ((start_height,), bytes) = parse(bytes, cls.BITS[2])
+        ((start_height, relay), bytes) = parse(bytes, cls.BITS[2])
         return (cls(version,
                     addr_recv,
                     addr_from,
                     nonce,
                     user_agent,
                     start_height,
+                    relay,
                     services,
                     timestamp,
                     header),
                 bytes)
 
     def __repr__(self):
-        return 'Version(%r, %r, %r, %r, %r, %r, %r, %r, %r)' % (
+        return 'Version(%r, %r, %r, %r, %r, %r, %r, %r, %r, %r)' % (
             self.header,
             self.version,
             self.services,
@@ -213,7 +217,8 @@ class Version(Message):
             self.addr_from,
             self.nonce,
             self.user_agent,
-            self.start_height)
+            self.start_height,
+            self.relay)
 
 
 class Verack(Message):
@@ -233,21 +238,39 @@ class Verack(Message):
         return (cls(header), bytes)
 
 
-class Ping(Message):
-    COMMAND = 'ping'
+class PingPong(Message):
+    PAYLOAD = fmt_w_size('<Q')
 
-    def __init__(self, header=None):
-        super(Ping, self).__init__(header=header)
+    def __init__(self, nonce=None, header=None):
+        super(PingPong, self).__init__(header=header)
+        if nonce is None:
+            nonce = random.randint(0, 0xFFFFFFFFFFFFFFFF)
+        self.nonce = nonce
 
     @property
     def payload(self):
-        return ''
+        return struct.pack(self.PAYLOAD[0], self.nonce)
 
     @classmethod
     def parse(cls, bytes, header=None):
         if header is None:
             (header, bytes) = MessageHeader.parse(bytes)
-        return (cls(header), bytes)
+        ((nonce,), bytes) = parse(bytes, cls.PAYLOAD)
+        return (cls(nonce, header), bytes)
+
+    def __repr__(self):
+        return '%s(%r, %r)' % (
+            self.__class__.__name__,
+            self.header,
+            self.nonce)
+
+
+class Ping(PingPong):
+    COMMAND = 'ping'
+
+
+class Pong(PingPong):
+    COMMAND = 'pong'
 
 
 class AddressList(Message):
@@ -685,6 +708,7 @@ COMMAND_CLASS_MAP = {
         Version,
         Verack,
         Ping,
+        Pong,
         Inventory,
         AddressList,
         TransactionMessage,
