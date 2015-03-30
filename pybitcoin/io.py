@@ -79,7 +79,7 @@ class IOLoop(threading.Thread):
         self.shutdown_event = multiprocessing.Event()
         self._internal_shutdown_event = threading.Event()
 
-        self.ping_timing = 30
+        self.ping_timing = 120
         self.last_ping = time.time()
         self.last_pong = None
 
@@ -87,6 +87,11 @@ class IOLoop(threading.Thread):
         if self.shutdown_event.is_set():
             return
         self.shutdown_event.set()
+
+    def _internal_shutdown(self):
+        if self._internal_shutdown_event.is_set():
+            return
+        self._internal_shutdown_event.set()
 
     def send_msg(self, msg):
         log.info('Sending %s', msg.header.command)
@@ -104,6 +109,7 @@ class IOLoop(threading.Thread):
 
     def _do_run(self):
         while not self.shutdown_event.is_set():
+            log.info('starting threads')
             self.process_thread = threading.Thread(target=self.process_loop)
             self.process_thread.start()
             self.write_thread = threading.Thread(target=self.write_loop)
@@ -113,6 +119,7 @@ class IOLoop(threading.Thread):
             try:
                 self.sock = socket.socket()
                 try:
+                    log.info('Connecting')
                     self.sock.connect(('127.0.0.1', 8333))
                     #self.sock.connect(('10.0.76.98', 8333))
                     outmsg = protocol.Version(70001, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.2/', 0, False)
@@ -121,19 +128,24 @@ class IOLoop(threading.Thread):
                     while not self.shutdown_event.is_set():
                         self.read_thread.join(0.05)
                         if not self.read_thread.isAlive():
+                            log.warn('read_thread is dead')
                             break
                         self.process_thread.join(0.05)
                         if not self.process_thread.isAlive():
+                            log.warn('process_thread is dead')
                             break
                         self.write_thread.join(0.05)
                         if not self.write_thread.isAlive():
+                            log.warn('write_thread is dead')
                             break
                         # TODO: keep track of last_pong and disconnect if too long
                         if time.time() - self.last_ping > self.ping_timing:
+                            log.info('Sending another Ping')
                             self.out_queue.put(protocol.Ping())
                             self.last_ping = time.time()
 
                 finally:
+                    log.warn('shutting down socket')
                     try:
                         self.sock.shutdown(socket.SHUTDOWN_RDWR)
                     except:
@@ -143,6 +155,7 @@ class IOLoop(threading.Thread):
                     except:
                         pass
                     self.sock = None
+                    log.info('shutting down threads')
                     self._internal_shutdown_event.set()
                     try:
                         self.read_thread.join()
@@ -157,8 +170,11 @@ class IOLoop(threading.Thread):
                     except:
                         pass
                     self._internal_shutdown_event.clear()
+                    log.info('shutdown finished')
             except Exception:
                 log.exception('Exception in IO loop, reconnecting')
+            log.info('End of while loop')
+        log.info('End of _do_run')
 
     def process_loop(self):
         try:
@@ -170,9 +186,13 @@ class IOLoop(threading.Thread):
                 outmsg = self.handle_message(inmsg)
                 if outmsg:
                     self.out_queue.put(outmsg)
+        except KeyboardInterrupt:
+            log.exception('KeyboardInterrupt in process_loop')
+            self.shutdown()
+            raise
         except Exception:
             log.exception('Exception in process_loop')
-            self.shutdown()
+            self._internal_shutdown()
             raise
 
     def write_loop(self):
@@ -185,9 +205,13 @@ class IOLoop(threading.Thread):
                     continue
                 outmsg = self.out_queue.get()
                 self.send_msg(outmsg)
+        except KeyboardInterrupt:
+            log.exception('KeyboardInterrupt in write_loop')
+            self.shutdown()
+            raise
         except Exception:
             log.exception('Exception in write_loop')
-            self.shutdown()
+            self._internal_shutdown()
             raise
 
     def read_loop(self):
@@ -209,9 +233,13 @@ class IOLoop(threading.Thread):
                 log.debug('Received %s', inmsg.header.command)
                 log.debug('%r', inmsg)
                 self.process_queue.put(inmsg)
+        except KeyboardInterrupt:
+            log.exception('KeyboardInterrupt in read_loop')
+            self.shutdown()
+            raise
         except Exception:
             log.exception('Exception in read_loop')
-            self.shutdown()
+            self._internal_shutdown()
             raise
 
     def handle_default(self, msg):
