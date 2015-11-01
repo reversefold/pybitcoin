@@ -121,7 +121,7 @@ class IOLoop(threading.Thread):
         self._internal_shutdown_event = threading.Event()
 
         self.ping_timing = SECONDS_BETWEEN_PINGS
-        self.last_ping = time.time()
+        self.last_ping = None
         self.last_pong = None
 
         self.remote_addr = ('10.0.42.253', 8333)
@@ -163,6 +163,8 @@ class IOLoop(threading.Thread):
 
     def _do_run(self):
         while not self.shutdown_event.is_set():
+            self.last_ping = None
+            self.last_pong = None
             log.info('starting threads')
             self.process_thread = threading.Thread(target=self.process_loop)
             self.process_thread.start()
@@ -203,8 +205,8 @@ class IOLoop(threading.Thread):
                         if not self.write_thread.isAlive():
                             log.warn('write_thread is dead')
                             break
-                        if time.time() - self.last_ping > self.ping_timing:
-                            if self.last_pong is None or self.last_pong < self.last_ping:
+                        if self.last_ping is None or time.time() - self.last_ping > self.ping_timing:
+                            if self.last_ping is not None and self.last_pong is None or self.last_pong < self.last_ping:
                                 raise TimeoutError('No PONG received for ping, connection is stale')
                             log.info('Sending another Ping')
                             self.out_queue.put(protocol.Ping())
