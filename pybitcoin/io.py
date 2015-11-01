@@ -2,7 +2,7 @@ import binascii
 import datetime
 import multiprocessing
 import os
-from Queue import Queue
+import Queue
 import random
 import socket
 import threading
@@ -17,6 +17,11 @@ from pybitcoin import db, protocol
 
 
 log = logging.getLogger(__name__)
+
+
+CONNECT_TIMEOUT = 10
+SOCKET_TIMEOUT = 120
+SLEEP_BETWEEN_CONNECTS = 120
 
 
 class Error(Exception):
@@ -90,7 +95,7 @@ class IOLoop(threading.Thread):
     def __init__(self):
         super(IOLoop, self).__init__()
         self.sock = None
-        self.out_queue = Queue()
+        self.out_queue = Queue.Queue()
         self.waiting_for = {}
         self.stored = {}
         self.max_height = multiprocessing.Value('i', 0)
@@ -102,7 +107,7 @@ class IOLoop(threading.Thread):
         self.num_blocks = multiprocessing.Value('i', len(self.known_blocks))
         log.info('Block database starting with %r blocks', self.num_blocks.value)
 
-        self.process_queue = Queue()
+        self.process_queue = Queue.Queue()
 
         self.block_queue = QueueWithQSize()
         self.db_write_thread_stop_event = multiprocessing.Event()
@@ -114,7 +119,7 @@ class IOLoop(threading.Thread):
         self.shutdown_event = multiprocessing.Event()
         self._internal_shutdown_event = threading.Event()
 
-        self.ping_timing = 120
+        self.ping_timing = 45
         self.last_ping = time.time()
         self.last_pong = None
 
@@ -165,10 +170,12 @@ class IOLoop(threading.Thread):
             self.read_thread = threading.Thread(target=self.read_loop)
             self.read_thread.start()
             try:
-                self.sock = socket.socket()
+                #self.sock = socket.socket()
                 try:
                     log.info('Connecting')
-                    self.sock.connect(self.remote_addr)
+                    #self.sock.connect(self.remote_addr)
+                    self.sock = socket.create_connection(self.remote_addr, timeout=CONNECT_TIMEOUT)
+                    self.sock.settimeout(SOCKET_TIMEOUT)
                     outmsg = protocol.Version(
                         version=protocol.PROTOCOL_VERSION,
                         addr_recv=(1, self.remote_addr[0], self.remote_addr[1]),
@@ -200,14 +207,15 @@ class IOLoop(threading.Thread):
 
                 finally:
                     log.warn('shutting down socket')
-                    try:
-                        self.sock.shutdown(socket.SHUTDOWN_RDWR)
-                    except:
-                        pass
-                    try:
-                        self.sock.close()
-                    except:
-                        pass
+                    if self.sock:
+                        try:
+                            self.sock.shutdown(socket.SHUTDOWN_RDWR)
+                        except:
+                            pass
+                        try:
+                            self.sock.close()
+                        except:
+                            pass
                     self.sock = None
                     log.info('shutting down threads')
                     self._internal_shutdown_event.set()
@@ -215,18 +223,22 @@ class IOLoop(threading.Thread):
                         self.read_thread.join()
                     except:
                         pass
+                    log.info('Read thread joined')
                     try:
                         self.process_thread.join()
                     except:
                         pass
+                    log.info('Proess thread joined')
                     try:
                         self.write_thread.join()
                     except:
                         pass
+                    log.info('Write thread joined')
                     self._internal_shutdown_event.clear()
                     log.info('shutdown finished')
             except Exception:
                 log.exception('Exception in IO loop, reconnecting')
+                time.sleep(SLEEP_BETWEEN_CONNECTS)
             log.info('End of while loop')
         log.info('End of _do_run')
 
@@ -236,7 +248,10 @@ class IOLoop(threading.Thread):
                 if self._internal_shutdown_event.is_set():
                     return
                 #print bc.visual2(inmsg)
-                inmsg = self.process_queue.get()
+                try:
+                    inmsg = self.process_queue.get(timeout=1)
+                except Queue.Empty:
+                    continue
                 outmsg = self.handle_message(inmsg)
                 if outmsg:
                     self.out_queue.put(outmsg)
@@ -257,7 +272,10 @@ class IOLoop(threading.Thread):
                 if self.sock is None:
                     time.sleep(1)
                     continue
-                outmsg = self.out_queue.get()
+                try:
+                    outmsg = self.out_queue.get(timeout=1)
+                except Queue.Empty:
+                    continue
                 self.send_msg(outmsg)
         except KeyboardInterrupt:
             log.exception('KeyboardInterrupt in write_loop')
