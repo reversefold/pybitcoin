@@ -2,4 +2,8 @@ coverage
 ecdsa
 greenhouse
 mox
+netifaces
+nose
+psycopg2
+requests
 sqlalchemy
