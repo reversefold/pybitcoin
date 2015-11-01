@@ -208,7 +208,7 @@ class IOLoop(threading.Thread):
                         if self.last_ping is None or time.time() - self.last_ping > self.ping_timing:
                             if self.last_ping is not None and self.last_pong is None or self.last_pong < self.last_ping:
                                 raise TimeoutError('No PONG received for ping, connection is stale')
-                            log.info('Sending another Ping')
+                            log.info('Sending a Ping')
                             self.out_queue.put(protocol.Ping())
                             self.last_ping = time.time()
 
