@@ -21,7 +21,8 @@ log = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT = 10
 SOCKET_TIMEOUT = 120
-SLEEP_BETWEEN_CONNECTS = 120
+SLEEP_BETWEEN_CONNECTS = 300
+SECONDS_BETWEEN_PINGS = 60
 
 
 class Error(Exception):
@@ -119,7 +120,7 @@ class IOLoop(threading.Thread):
         self.shutdown_event = multiprocessing.Event()
         self._internal_shutdown_event = threading.Event()
 
-        self.ping_timing = 45
+        self.ping_timing = SECONDS_BETWEEN_PINGS
         self.last_ping = time.time()
         self.last_pong = None
 
@@ -202,8 +203,9 @@ class IOLoop(threading.Thread):
                         if not self.write_thread.isAlive():
                             log.warn('write_thread is dead')
                             break
-                        # TODO: keep track of last_pong and disconnect if too long
                         if time.time() - self.last_ping > self.ping_timing:
+                            if self.last_pong is None or self.last_pong < self.last_ping:
+                                raise TimeoutError('No PONG received for ping, connection is stale')
                             log.info('Sending another Ping')
                             self.out_queue.put(protocol.Ping())
                             self.last_ping = time.time()
