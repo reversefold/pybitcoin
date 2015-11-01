@@ -222,36 +222,38 @@ class Block(Base):
         log.info('Processing txouts took %s', datetime.datetime.now() - start)
 
     def update_chain_metadata(self, _update_pending=True):
-            res = session.query(Block.depth, Block.id).filter(Block.block_hash == self.prev_block_hash).first()
-            if res is None:
-                log.warn('Previous block not found, queueing metadata update (%s)', binascii.hexlify(self.block_hash))
+        # TODO: This needs to be rewritten to keep an index of blocks not in the known block chain and properly choose the right ones when updating pending metadata
+        # TODO: update IOLoop.max_height
+        res = session.query(Block.depth, Block.id).filter(Block.block_hash == self.prev_block_hash).first()
+        if res is None:
+            log.warn('Previous block not found, queueing metadata update (%s)', binascii.hexlify(self.block_hash))
+            self.pending_meta_updates.append(self)
+            return False
+        else:
+            depth, self.prev_block_id = res
+            self.depth = depth + 1 if depth is not None else None
+            session.query(Block).filter(Block.id == self.id).update(
+                values={'depth': self.depth, 'prev_block_id': self.prev_block_id})
+
+            if self.depth is None:
+                log.warn('Previous block found but depth is null, queueing metadata update (%s)', binascii.hexlify(self.block_hash))
                 self.pending_meta_updates.append(self)
                 return False
-            else:
-                depth, self.prev_block_id = res
-                self.depth = depth + 1 if depth is not None else None
-                session.query(Block).filter(Block.id == self.id).update(
-                    values={'depth': self.depth, 'prev_block_id': self.prev_block_id})
 
-                if self.depth is None:
-                    log.warn('Previous block found but depth is null, queueing metadata update (%s)', binascii.hexlify(self.block_hash))
-                    self.pending_meta_updates.append(self)
-                    return False
+            if _update_pending and self.pending_meta_updates:
+                success = True
+                while success:
+                    success = False
 
-                if _update_pending and self.pending_meta_updates:
-                    success = True
-                    while success:
-                        success = False
-
-                        for to_update in self.pending_meta_updates[:]:
-                            log.info('Running pending meta update for %s', binascii.hexlify(to_update.block_hash))
-                            if to_update.update_chain_metadata(False):
-                                success = True
-                                log.info('Pending metadata update succeeded for %s', binascii.hexlify(to_update.block_hash))
-                                self.pending_meta_updates.remove(to_update)
-                            else:
-                                log.error('Pending metadata update failed for %s', binascii.hexlify(to_update.block_hash))
-                return True
+                    for to_update in self.pending_meta_updates[:]:
+                        log.info('Running pending meta update for %s', binascii.hexlify(to_update.block_hash))
+                        if to_update.update_chain_metadata(False):
+                            success = True
+                            log.info('Pending metadata update succeeded for %s', binascii.hexlify(to_update.block_hash))
+                            self.pending_meta_updates.remove(to_update)
+                        else:
+                            log.error('Pending metadata update failed for %s', binascii.hexlify(to_update.block_hash))
+            return True
 
     def update_metadata(self, _update_pending=True):
         log.info('Updating links from txin to txout in this block')

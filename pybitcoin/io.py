@@ -10,7 +10,11 @@ import time
 import logging
 import logging.config
 
+import netifaces
+from sqlalchemy.sql import functions as sql_functions
+
 from pybitcoin import db, protocol
+
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +59,33 @@ def recv_bytes(sock, num_bytes):
     return data
 
 
+class QueueWithQSize(object):
+    def __init__(self, *a, **k):
+        super(QueueWithQSize, self).__init__(*a, **k)
+        self._size_lock = multiprocessing.Lock()
+        self._qsize = 0
+        self._queue = multiprocessing.Queue(*a, **k)
+
+    def put(self, *a, **k):
+        result = self._queue.put(*a, **k)
+        with self._size_lock:
+            self._qsize += 1
+        return result
+
+    def get(self, *a, **k):
+        result = self._queue.get(*a, **k)
+        with self._size_lock:
+            self._qsize -= 1
+        return result
+
+    def empty(self):
+        return self._queue.empty()
+
+    def qsize(self):
+        with self._size_lock:
+            return self._qsize
+
+
 class IOLoop(threading.Thread):
     def __init__(self):
         super(IOLoop, self).__init__()
@@ -63,13 +94,17 @@ class IOLoop(threading.Thread):
         self.waiting_for = {}
         self.stored = {}
         self.max_height = multiprocessing.Value('i', 0)
-        self.known_blocks = set(block.block_hash for block in db.session.query(db.Block.block_hash).all())
+        self.max_height.value = db.session.query(sql_functions.max(db.Block.depth)).scalar()
+        self.known_blocks = set(
+            block.block_hash
+            for block in db.session.query(db.Block.block_hash).all()
+        )
         self.num_blocks = multiprocessing.Value('i', len(self.known_blocks))
         log.info('Block database starting with %r blocks', self.num_blocks.value)
 
         self.process_queue = Queue()
 
-        self.block_queue = multiprocessing.Queue()
+        self.block_queue = QueueWithQSize()
         self.db_write_thread_stop_event = multiprocessing.Event()
 
         self.process_thread = None
@@ -82,6 +117,19 @@ class IOLoop(threading.Thread):
         self.ping_timing = 120
         self.last_ping = time.time()
         self.last_pong = None
+
+        self.remote_addr = ('10.0.42.253', 8333)
+        local_addr = [
+            addrs for i, addrs in
+            ((i, [addr for addr in addrs[netifaces.AF_INET] if 'peer' not in addr])
+                for i, addrs in
+                ((i, netifaces.ifaddresses(i))
+                    for i in netifaces.interfaces())
+                if netifaces.AF_INET in addrs)
+            if addrs
+        ][0][0]
+        self.local_addr = local_addr['addr']
+        self.local_port = 8334
 
     def shutdown(self):
         if self.shutdown_event.is_set():
@@ -120,9 +168,15 @@ class IOLoop(threading.Thread):
                 self.sock = socket.socket()
                 try:
                     log.info('Connecting')
-                    self.sock.connect(('127.0.0.1', 8333))
-                    #self.sock.connect(('10.0.76.98', 8333))
-                    outmsg = protocol.Version(70001, (1, '0.0.0.0', 0), (1, '0.0.0.0', 0), random.getrandbits(32), '/PyBitCoin:0.0.2/', 0, False)
+                    self.sock.connect(self.remote_addr)
+                    outmsg = protocol.Version(
+                        version=protocol.PROTOCOL_VERSION,
+                        addr_recv=(1, self.remote_addr[0], self.remote_addr[1]),
+                        addr_from=(1, self.local_addr, self.local_port),
+                        nonce=random.getrandbits(32),
+                        user_agent='/PyBitCoin:0.0.3/',
+                        start_height=self.max_height.value,
+                        relay=False)
                     self.out_queue.put(outmsg)
 
                     while not self.shutdown_event.is_set():
@@ -272,7 +326,7 @@ class IOLoop(threading.Thread):
 
     def handle_version(self, msg):
         log.info('Handling version %r', msg)
-        self.max_height.value = msg.start_height
+        #self.max_height.value = msg.start_height
         return protocol.Verack()
 
     def handle_inv(self, msg):
@@ -332,12 +386,18 @@ class IOLoop(threading.Thread):
             txouts += len(tx.tx_out)
         log.info('Handling Block %s %u txns %u txins %u txouts', hashhex, len(msg.txns), txins, txouts)
 
+        if block_hash in self.known_blocks:
+            log.info('Block already known')
+            return
+
         #if db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
 
         self.known_blocks.add(msg.block_hash)
 
         if msg.prev_block_hash in self.known_blocks:
-            self.max_height.value += 1
+            # TODO: This is incorrect, we need to calculate this based on the depth values in the Block
+            #self.max_height.value += 1
+            pass
         else:
             log.info('Previous block not found %s', binascii.hexlify(msg.prev_block_hash))
             self.get_block(msg.prev_block_hash)

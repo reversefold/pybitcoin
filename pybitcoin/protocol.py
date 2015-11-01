@@ -12,8 +12,9 @@ from pybitcoin.byte_util import Error, ParseError, fmt_w_size, splitn, parse
 log = logging.getLogger(__name__)
 
 
-MAGIC = struct.pack('<I', 0xD9B4BEF9)
+PROTOCOL_VERSION = 70011
 
+MAGIC = struct.pack('<I', 0xD9B4BEF9)
 
 UINT32_FMT = fmt_w_size('<I')
 INT64_FMT = fmt_w_size('<q')
@@ -118,7 +119,7 @@ class MessageHeader(object):
 class Message(object):
     def __init__(self, header=None):
         if header is None:
-            self._header = MessageHeader(self.COMMAND) # self.__class__.COMMAND
+            self._header = MessageHeader(self.COMMAND)  # self.__class__.COMMAND
         else:
             self._header = header
 
@@ -655,9 +656,6 @@ class GetBlocks(Message):
 
 class GetHeaders(GetBlocks):
     COMMAND = 'getheaders'
-
-    def __init__(self):
-        raise Error('Unimplemented')
 
 
 class Headers(Message):
