@@ -165,10 +165,13 @@ class IOLoop(threading.Thread):
             log.info('starting threads')
             self.process_thread = threading.Thread(target=self.process_loop)
             self.process_thread.start()
+            log.info('process thread started')
             self.write_thread = threading.Thread(target=self.write_loop)
             self.write_thread.start()
+            log.info('write thread started')
             self.read_thread = threading.Thread(target=self.read_loop)
             self.read_thread.start()
+            log.info('read thread started')
             try:
                 #self.sock = socket.socket()
                 try:
@@ -228,7 +231,7 @@ class IOLoop(threading.Thread):
                         self.process_thread.join()
                     except:
                         pass
-                    log.info('Proess thread joined')
+                    log.info('Process thread joined')
                     try:
                         self.write_thread.join()
                     except:
@@ -265,6 +268,7 @@ class IOLoop(threading.Thread):
             raise
 
     def write_loop(self):
+        # TODO: Keep track of unacked messages (getdata without a block sent back, etc.)
         try:
             while True:
                 if self._internal_shutdown_event.is_set():
@@ -287,6 +291,7 @@ class IOLoop(threading.Thread):
             raise
 
     def read_loop(self):
+        # TODO: Keep track of unacked messages (getdata without a block sent back, etc.)
         try:
             while True:
                 if self._internal_shutdown_event.is_set():
