@@ -49,11 +49,12 @@ def recv_bytes(sock, num_bytes):
         try:
             buf = sock.recv(remaining_len)
         except socket.error, e:
-            if e.errno == 104:
-                log.warn('Connection reset by peer')
-                buf = None
-            else:
-                raise
+            raise
+#            if e.errno == errno.ECONNRESET:
+#                log.warn('Connection reset by peer')
+#                buf = None
+#            else:
+#                raise
         if not buf:
             raise ConnectionClosedError('Connection closed from the other side while reading')
         log.debug('Got bytes: %s', binascii.hexlify(buf))
