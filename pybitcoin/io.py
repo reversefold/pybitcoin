@@ -68,28 +68,27 @@ def recv_bytes(sock, num_bytes):
 class QueueWithQSize(object):
     def __init__(self, *a, **k):
         super(QueueWithQSize, self).__init__(*a, **k)
-        self._size_lock = multiprocessing.Lock()
-        self._qsize = 0
+        self._qsize = multiprocessing.Value(ctypes.c_ulonglong, 0)
         self._queue = multiprocessing.Queue(*a, **k)
 
     def put(self, *a, **k):
         result = self._queue.put(*a, **k)
-        with self._size_lock:
-            self._qsize += 1
+        with self._qsize.get_lock():
+            self._qsize.value += 1
         return result
 
     def get(self, *a, **k):
         result = self._queue.get(*a, **k)
-        with self._size_lock:
-            self._qsize -= 1
+        with self._qsize.get_lock():
+            self._qsize.value -= 1
         return result
 
     def empty(self):
         return self._queue.empty()
 
     def qsize(self):
-        with self._size_lock:
-            return self._qsize
+        with self._qsize.get_lock():
+            return self._qsize.value
 
 
 class IOLoop(threading.Thread):
