@@ -1,5 +1,8 @@
 import binascii
+import ctypes
 import datetime
+import errno
+import glob
 import multiprocessing
 import os
 import Queue
@@ -23,6 +26,7 @@ CONNECT_TIMEOUT = 10
 SOCKET_TIMEOUT = 120
 SLEEP_BETWEEN_CONNECTS = 300
 SECONDS_BETWEEN_PINGS = 60
+MESSAGE_TIMEOUT = 60
 
 
 class Error(Exception):
@@ -93,19 +97,36 @@ class QueueWithQSize(object):
 
 
 class IOLoop(threading.Thread):
-    def __init__(self):
+    def __init__(self, read_blocktmp_files=True):
         super(IOLoop, self).__init__()
         self.sock = None
         self.out_queue = Queue.Queue()
         self.waiting_for = {}
         self.stored = {}
-        self.max_height = multiprocessing.Value('i', 0)
-        self.max_height.value = db.session.query(sql_functions.max(db.Block.depth)).scalar()
+        self.max_height = multiprocessing.Value(ctypes.c_ulong, 0)
+        max_height = db.session.query(sql_functions.max(db.Block.depth)).scalar()
+        if max_height is not None:
+            self.max_height.value = max_height
         self.known_blocks = set(
             block.block_hash
             for block in db.session.query(db.Block.block_hash).all()
         )
-        self.num_blocks = multiprocessing.Value('i', len(self.known_blocks))
+        self._prev_block_hashes = set()
+        if read_blocktmp_files:
+            for blktmpfilename in glob.glob('blocktmp/*.rawblk'):
+                log.info('Reading blockfile %s', blktmpfilename)
+                try:
+                    with open(blktmpfilename, 'rb') as blktmpfile:
+                        data = blktmpfile.read()
+                except IOError:
+                    log.exception('IOError reading blockfile %s', blktmpfilename)
+                    continue
+                (msg, _) = protocol.Message.parse(data)
+                assert not _, _
+                self.known_blocks.add(msg.block_hash)
+                self._prev_block_hashes.add(msg.prev_block_hash)
+
+        self.num_blocks = multiprocessing.Value(ctypes.c_ulonglong, len(self.known_blocks))
         log.info('Block database starting with %r blocks', self.num_blocks.value)
 
         self.process_queue = Queue.Queue()
