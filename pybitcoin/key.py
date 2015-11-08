@@ -41,7 +41,7 @@ secp256k1 = ecdsa.curves.Curve(
     curve_secp256k1,
     generator_secp256k1,
     (1, 3, 132, 0, 10)
-    )
+)
 # add this to the list of official NIST curves.
 ecdsa.curves.curves.append(secp256k1)
 

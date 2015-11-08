@@ -145,7 +145,7 @@ class Message(object):
     def parse(cls, bytes, header=None):
         if header is None:
             (header, bytes) = MessageHeader.parse(bytes)
-        log.info('Parsing message %s' % (header.command,))
+        log.debug('Parsing message %s' % (header.command,))
         (payload, bytes) = splitn(bytes, header.payload_length)
         if header.checksum != cls.calc_checksum(payload):
             raise ParseError('Checksum is incorrect')

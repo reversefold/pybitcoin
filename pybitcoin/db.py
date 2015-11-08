@@ -12,14 +12,15 @@ from sqlalchemy.sql import text
 from pybitcoin import protocol
 
 try:
-    from .db_local import BINARY, engine
+    from .db_local import BINARY, engine_factory
 except ImportError:
     print 'Using default sqlite DB, create db_local.py to customize'
-    from .db_sqlite import BINARY, engine
+    from .db_sqlite import BINARY, engine_factory
 
 log = logging.getLogger(__name__)
 
 Base = declarative_base()
+engine = engine_factory()
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -256,8 +257,8 @@ class Block(Base):
             return True
 
     def update_metadata(self, _update_pending=True):
-        log.info('Updating links from txin to txout in this block')
         with engine.begin() as conn:
+            log.info('Updating links from txin to txout in this block')
             start = datetime.datetime.now()
             # match up previously committed txins to newly committed txouts
             # (blocks committed out of order)
