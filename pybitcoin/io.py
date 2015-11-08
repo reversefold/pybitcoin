@@ -454,19 +454,32 @@ class IOLoop(threading.Thread):
             self.get_block(msg.prev_block_hash)
 
         blktmpfilename = 'blocktmp/' + hashhex + '.rawblk'
-        log.info('Queueing block, writing to disk %s', blktmpfilename)
-        with open(blktmpfilename, 'wb') as blktmpfile:
-            blktmpfile.write(msg.bytes)
-        self.block_queue.put(blktmpfilename)
+        if not os.path.exists(blktmpfilename):
+            log.info('Queueing block, writing to disk %s', blktmpfilename)
+            with open(blktmpfilename, 'wb') as blktmpfile:
+                blktmpfile.write(msg.bytes)
+            self.block_queue.put(blktmpfilename)
+        else:
+            log.info('Block already written to disk %s', blktmpfilename)
 
         #self.write_block_to_db(msg)
 
         log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
 
     def write_block_to_db(self, msg):
+        if db.session.query(sql_functions.count(db.Block.block_hash)).filter(db.Block.block_hash == msg.block_hash).scalar():
+            log.warning('Block already in DB, skipping')
+            return
+
         hexhash = binascii.hexlify(msg.block_hash)
-        log.info('Writing block %s to DB', hexhash)
+        txins = 0
+        txouts = 0
+        for tx in msg.txns:
+            txins += len(tx.tx_in)
+            txouts += len(tx.tx_out)
+        log.info('Writing Block %s to DB %u txns %u txins %u txouts', hexhash, len(msg.txns), txins, txouts)
         self.num_blocks.value += 1
+        #db.session.begin()
         db_block = db.Block.from_protocol(msg)
         db.session.add(db_block)
         #db.Block.from_protocol(msg).bulk_insert(db.session)
