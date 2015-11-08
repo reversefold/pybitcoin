@@ -141,11 +141,14 @@ class IOLoop(threading.Thread):
         self.shutdown_event = multiprocessing.Event()
         self._internal_shutdown_event = threading.Event()
 
+        self.message_timeout = MESSAGE_TIMEOUT
         self.ping_timing = SECONDS_BETWEEN_PINGS
         self.last_ping = None
         self.last_pong = None
+        self.last_message = None
 
         self.remote_addr = ('10.0.42.253', 8333)
+        self.remote_addr = ('127.0.0.1', 8333)
         local_addr = [
             addrs for i, addrs in
             ((i, [addr for addr in addrs[netifaces.AF_INET] if 'peer' not in addr])
@@ -228,7 +231,8 @@ class IOLoop(threading.Thread):
                             break
                         if self.last_ping is None or time.time() - self.last_ping > self.ping_timing:
                             if self.last_ping is not None and (self.last_pong is None or self.last_pong < self.last_ping):
-                                raise TimeoutError('No PONG received for ping, connection is stale')
+                                if self.last_message is None or time.time() - self.last_message > self.message_timeout:
+                                    raise TimeoutError('No PONG received for ping and no message in %us, connection is stale' % (self.message_timeout,))
                             log.info('Sending a Ping')
                             self.out_queue.put(protocol.Ping())
                             self.last_ping = time.time()
@@ -477,11 +481,13 @@ class IOLoop(threading.Thread):
         db.session.commit()
         log.debug('DB Commit took %s', datetime.datetime.now() - start)
         log.debug('Running block post-commit cleanup')
+        # TODO: Allow this to be turned off when doing intial block import
         db_block.update_metadata()
         log.info('Block %s committed', hexhash)
         log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
 
     def handle_message(self, msg):
+        self.last_message = time.time()
         handle_name = 'handle_' + msg.COMMAND
         if hasattr(self, handle_name):
             return getattr(self, handle_name)(msg)
