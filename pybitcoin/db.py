@@ -20,9 +20,23 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 Base = declarative_base()
-engine = engine_factory()
-Session = sessionmaker(bind=engine)
-session = Session()
+engine = None
+Session = None
+session = None
+
+
+def reconnect():
+    global engine, Session, session
+    if session is not None:
+        session.close()
+    if engine is not None:
+        engine.dispose()
+    engine = engine_factory()
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+
+reconnect()
 
 
 def row_to_dict(row):
@@ -39,7 +53,7 @@ class TxIn(Base):
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
     transaction_index = Column(Integer, nullable=False)
 
-    txout_id = Column(Integer, nullable=True, index=True)  #ForeignKey('txout.id'),
+    txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
 
     __table_args__ = (Index('txin_tx_hash_idx', 'previous_output_transaction_hash', 'previous_output_index'),)
 

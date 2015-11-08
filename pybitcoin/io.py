@@ -506,6 +506,8 @@ class IOLoop(threading.Thread):
         return self.handle_default(msg)
 
     def db_write_loop(self):
+        # Since this is running in a separate process we need to reconnect to the DB or we get fun errors
+        db.reconnect()
         try:
             while not self.db_write_thread_stop_event.is_set():
                 try:
@@ -531,11 +533,10 @@ class IOLoop(threading.Thread):
                     log.exception('Exception in db_write_loop, creating a new session')
                     self.block_queue.put(blktmpfilename)
                     try:
-                        db.session.close()
+                        db.reconnect()
                     except Exception:
-                        log.exception('Exception closing session, ignoring')
-                    db.session = db.Session()
-                    log.info('Opened a new DB session')
+                        log.exception('Exception reconnecting, ignoring')
+                    log.info('Reconnected')
                 except:
                     self.block_queue.put(blktmpfilename)
                     raise
