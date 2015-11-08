@@ -508,18 +508,41 @@ class IOLoop(threading.Thread):
     def db_write_loop(self):
         try:
             while not self.db_write_thread_stop_event.is_set():
-                if self.block_queue.empty():
-                    time.sleep(1)
-                else:
-                    blktmpfilename = self.block_queue.get()
-                    log.info('Reading block file %s', blktmpfilename)
-                    with open(blktmpfilename, 'rb') as blktmpfile:
-                        (msg, _) = protocol.Message.parse(blktmpfile.read())
+                try:
+                    if self.block_queue.empty():
+                        time.sleep(1)
+                    else:
+                        try:
+                            blktmpfilename = self.block_queue.get(timeout=1)
+                        except Queue.Empty:
+                            continue
+                        log.info('Reading block file %s', blktmpfilename)
+                        try:
+                            with open(blktmpfilename, 'rb') as blktmpfile:
+                                data = blktmpfile.read()
+                        except IOError:
+                            log.exception('IOError reading blockfile %s', blktmpfilename)
+                            continue
+                        (msg, _) = protocol.Message.parse(data)
                         assert not _, _
-                    os.remove(blktmpfilename)
-                    self.write_block_to_db(msg)
+                        self.write_block_to_db(msg)
+                        os.remove(blktmpfilename)
+                except Exception:
+                    log.exception('Exception in db_write_loop, creating a new session')
+                    self.block_queue.put(blktmpfilename)
+                    try:
+                        db.session.close()
+                    except Exception:
+                        log.exception('Exception closing session, ignoring')
+                    db.session = db.Session()
+                    log.info('Opened a new DB session')
+                except:
+                    self.block_queue.put(blktmpfilename)
+                    raise
         except:
             log.exception('exception in db_write_loop')
             raise
         finally:
+            log.info('db_write_loop shutting down IOLoop')
             self.shutdown()
+        log.info('db_write_loop finished')
