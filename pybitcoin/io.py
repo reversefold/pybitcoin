@@ -203,7 +203,6 @@ class IOLoop(threading.Thread):
                 #self.sock = socket.socket()
                 try:
                     log.info('Connecting')
-                    #self.sock.connect(self.remote_addr)
                     self.sock = socket.create_connection(self.remote_addr, timeout=CONNECT_TIMEOUT)
                     self.sock.settimeout(SOCKET_TIMEOUT)
                     outmsg = protocol.Version(
@@ -357,7 +356,7 @@ class IOLoop(threading.Thread):
 
     def get_missing_blocks(self):
         log.info('Calculating missing blocks')
-        prev_block_hashes = set(block.prev_block_hash for block in db.session.query(db.Block.prev_block_hash).all())
+        prev_block_hashes = set(block.prev_block_hash for block in db.session.query(db.Block.prev_block_hash).all()).union(self._prev_block_hashes)
         missing_block_hashes = prev_block_hashes - self.known_blocks - set([32 * '\x00'])
         if missing_block_hashes:
             log.info('Requesting %d missing blocks', len(missing_block_hashes))
@@ -365,8 +364,7 @@ class IOLoop(threading.Thread):
                 self.get_block(bytes(block_hash))
         else:
             log.info('No blocks missing from the stored blockchain')
-            #self.get_block(bytes(binascii.unhexlify('28872449d988d43a8b0246fc43a2b97e50b64d422f3b2bc10100000000000000')))
-        ## TODO: implement merkle-root syncing with the other side
+        ## TODO: implement merkle-root syncing with the other side, possibly via GetBlocks
 
     def handle_ping(self, msg):
         log.info('Handling ping %r', msg)
@@ -444,7 +442,8 @@ class IOLoop(threading.Thread):
 
         #if db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
 
-        self.known_blocks.add(msg.block_hash)
+        self.known_blocks.add(block_hash)
+        self._prev_block_hashes.add(msg.prev_block_hash)
 
         if msg.prev_block_hash in self.known_blocks:
             # TODO: This is incorrect, we need to calculate this based on the depth values in the Block
