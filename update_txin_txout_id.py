@@ -4,13 +4,16 @@ from datetime import datetime
 import os
 import multiprocessing
 import Queue
-from sqlalchemy import func
 import sys
 import threading
 import time
 
+from reversefold.util import chunked
+from sqlalchemy import func
+
 from pybitcoin import db
 from pybitcoin.key import encode_bigint
+
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
@@ -192,10 +195,10 @@ JOIN transaction txo ON txout.transaction_id = txo.id
 WHERE txo.tx_hash = txin.previous_output_transaction_hash
 AND txout.transaction_index = txin.previous_output_index
 AND txin.txout_id IS NULL
-AND txo.block_id >= %s AND txo.block_id < %s
+AND txin.id IN (%s)
 """
 
-BLOCK = 1  # 250
+BLOCK = 100  # 250
 
 
 class TxInUpdater(object):
@@ -219,14 +222,16 @@ class TxInUpdater(object):
 #            ).scalar()
 #        ).scalar()
 
-        min_txid = db.session.query(
-            func.min(db.TxIn.id)
+        self.min_id, self.max_id = db.session.query(
+            func.min(db.TxIn.id), func.max(db.TxIn.id)
         ).filter(
             db.TxIn.txout_id.is_(None)
             & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
-        ).subquery()
-        txin = db.session.query(db.TxIn).filter(db.TxIn.id == min_txid).subquery()
-        self.min_id = db.session.query(db.Transaction.block_id).filter(db.Transaction.tx_hash == txin.c.previous_output_transaction_hash).scalar()
+        ).first()
+
+        #txin = db.session.query(db.TxIn).filter(db.TxIn.id == min_txid).subquery()
+        #self.min_id = db.session.query(db.Transaction.block_id).filter(db.Transaction.tx_hash == txin.c.previous_output_transaction_hash).scalar()
+
         #self.total_to_process = db.session.query(db.TxIn.id).filter(db.TxIn.txout_id.is_(None)).count()
         # takes too long to run
         #self.min_id = db.session.query(
@@ -238,50 +243,58 @@ class TxInUpdater(object):
         #).filter(
         #    (db.TxOut.transaction_index == db.TxIn.previous_output_index) & db.TxIn.txout_id.is_(None)
         #).scalar()
-        self.start_time = datetime.now()
         self.queue = multiprocessing.Queue()
         self.num_processed = multiprocessing.Value('i', 0)
-        self.total_blocks = (self.max_id - self.min_id) / BLOCK
+        self.total_blocks = db.session.query(db.TxIn.id).filter(
+            db.TxIn.txout_id.is_(None)
+            & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
+        ).count() / BLOCK
         self.blocks_processed = multiprocessing.Value('i', 0)
         self.shutdown_event = multiprocessing.Event()
+        self.queued_blocks = 0
+        self.start_time = datetime.now()
 
-    def process_chunk(self, cur_id, end_id):
+    def process_chunk(self, txin_ids):
         query_start = datetime.now()
         with db.engine.begin() as conn:
-            res = conn.execute(SQL, (cur_id, end_id))
+            res = conn.execute(SQL % (', '.join(str(i) for i in txin_ids),))
         query_end = datetime.now()
         tot_time = query_end - self.start_time
-        avg_time = tot_time / (end_id - self.min_id) * BLOCK
         with self.num_processed.get_lock():
             self.num_processed.value += res.rowcount
         with self.blocks_processed.get_lock():
             self.blocks_processed.value += 1
-        if cur_id % 5 == 0:
-            print('%u - %u / %u %.3f%% done, %u matched, %s for query, %s total, %s avg, ~%s remaining' % (
-                cur_id,
-                end_id,
-                self.max_id,
-                (cur_id - self.min_id) * 100.0 / (self.max_id - self.min_id),
-                res.rowcount,
-                query_end - query_start,
-                tot_time,
-                avg_time,
-                avg_time * (self.max_id - end_id) / BLOCK))
+            blocks_processed = self.blocks_processed.value
+        avg_time = tot_time / blocks_processed
+        print('%u / %u %.3f%% done, %u matched, %s for query, %s total, %s avg, ~%s remaining' % (
+            blocks_processed,
+            self.total_blocks,
+            blocks_processed * 100.0 / self.total_blocks,
+            res.rowcount,
+            query_end - query_start,
+            tot_time,
+            avg_time,
+            avg_time * (self.total_blocks - blocks_processed)))
 
     def process_chunks(self):
         while not self.shutdown_event.is_set():
             try:
-                args = self.queue.get(timeout=1)
-                self.process_chunk(*args)
+                chunk = self.queue.get(timeout=1)
+                self.process_chunk(chunk)
             except Queue.Empty:
                 continue
 
     def queue_blocks(self):
-        cur_id = self.min_id
-        while cur_id <= self.max_id:
-            end_id = min(cur_id + BLOCK, self.max_id + 1)
-            self.queue.put((cur_id, end_id))
-            cur_id = end_id
+        txin_ids = db.session.query(db.TxIn.id).filter(
+            db.TxIn.txout_id.is_(None)
+            & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
+        ).yield_per(BLOCK).enable_eagerloads(False)
+
+        for chunk in chunked(txin_ids, BLOCK):
+            self.queue.put([txin_id for (txin_id,) in chunk])
+            self.queued_blocks += 1
+            if self.queued_blocks % 1000 == 0:
+                print '%r queued' % (self.queued_blocks,)
 
     def run(self):
         self.queue_thread = threading.Thread(target=self.queue_blocks)
