@@ -203,7 +203,7 @@ BLOCK = 100  # 250
 
 class TxInUpdater(object):
     def __init__(self):
-        self.max_id = db.session.query(func.max(db.Block.id)).scalar()
+        #self.max_id = db.session.query(func.max(db.Block.id)).scalar()
         #self.min_id = 11200
 #        self.min_id = db.session.query(
 #            db.Transaction.block_id
@@ -222,12 +222,12 @@ class TxInUpdater(object):
 #            ).scalar()
 #        ).scalar()
 
-        self.min_id, self.max_id = db.session.query(
-            func.min(db.TxIn.id), func.max(db.TxIn.id)
-        ).filter(
-            db.TxIn.txout_id.is_(None)
-            & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
-        ).first()
+        #self.min_id, self.max_id = db.session.query(
+        #    func.min(db.TxIn.id), func.max(db.TxIn.id)
+        #).filter(
+        #    db.TxIn.txout_id.is_(None)
+        #    & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
+        #).first()
 
         #txin = db.session.query(db.TxIn).filter(db.TxIn.id == min_txid).subquery()
         #self.min_id = db.session.query(db.Transaction.block_id).filter(db.Transaction.tx_hash == txin.c.previous_output_transaction_hash).scalar()
@@ -245,10 +245,11 @@ class TxInUpdater(object):
         #).scalar()
         self.queue = multiprocessing.Queue()
         self.num_processed = multiprocessing.Value('i', 0)
-        self.total_blocks = db.session.query(db.TxIn.id).filter(
+        self.total_to_process = db.session.query(db.TxIn.id).filter(
             db.TxIn.txout_id.is_(None)
             & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
-        ).count() / BLOCK
+        ).count()
+        self.total_blocks = self.total_to_process / BLOCK
         self.blocks_processed = multiprocessing.Value('i', 0)
         self.shutdown_event = multiprocessing.Event()
         self.queued_blocks = 0
