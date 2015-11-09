@@ -306,7 +306,7 @@ class TxInUpdater(object):
             proc.start()
             procs.append(proc)
         output = 0
-        while not self.queue.empty():
+        while not self.queue.empty() or self.queue_thread.is_alive():
             with self.blocks_processed.get_lock():
                 blocks_processed = self.blocks_processed.value
 
