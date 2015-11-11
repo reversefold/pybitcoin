@@ -43,7 +43,7 @@ def row_to_dict(row):
 class TxIn(Base):
     __tablename__ = 'txin'
     id = Column(Integer, Sequence('txin_id'), primary_key=True, nullable=False, unique=True, index=True)
-    previous_output_transaction_hash = Column(BINARY(32), nullable=False, index=True)
+    previous_output_transaction_hash = Column(BINARY(32), nullable=False)
     previous_output_index = Column(BigInteger, nullable=False)
     signature_script = Column(LargeBinary, nullable=False)
     sequence = Column(BigInteger, nullable=False)
@@ -52,7 +52,13 @@ class TxIn(Base):
 
     txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
 
-    __table_args__ = (Index('txin_tx_hash_idx', 'previous_output_transaction_hash', 'previous_output_index'),)
+    __table_args__ = (
+        Index(
+            'ix_txin_tx_hash_idx',
+            previous_output_transaction_hash, previous_output_index,
+            postgresql_where=txout_id.is_(None)
+        ),
+    )
 
     @classmethod
     def from_protocol(cls, in_txin):
