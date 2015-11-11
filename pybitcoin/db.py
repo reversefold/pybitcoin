@@ -246,6 +246,7 @@ class Block(Base):
             self.depth = depth + 1 if depth is not None else None
             session.query(Block).filter(Block.id == self.id).update(
                 values={'depth': self.depth, 'prev_block_id': self.prev_block_id})
+            session.commit()
 
             if self.depth is None:
                 log.warn('Previous block found but depth is null, queueing metadata update (%s)', binascii.hexlify(self.block_hash))
