@@ -44,7 +44,6 @@ def main():
     finally:
         ioloop.shutdown()
         ioloop.join()
-        db.session.commit()
     log.info('Exiting')
 
 

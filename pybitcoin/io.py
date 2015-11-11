@@ -104,16 +104,22 @@ class IOLoop(threading.Thread):
         self.waiting_for = {}
         self.stored = {}
         self.max_height = multiprocessing.Value(ctypes.c_ulong, 0)
-        max_height = db.session.query(sql_functions.max(db.Block.depth)).scalar()
+
+        self.db_session = db.Session()
+
+        self.db_write_loop = DBWriteLoop(self)
+
+        max_height = self.db_session.query(sql_functions.max(db.Block.depth)).scalar()
         if max_height is not None:
             self.max_height.value = max_height
         self.known_blocks = set(
             block.block_hash
-            for block in db.session.query(db.Block.block_hash).all()
+            for block in self.db_session.query(db.Block.block_hash).all()
         )
         self._prev_block_hashes = set()
         if read_blocktmp_files:
             for blktmpfilename in glob.glob('blocktmp/*.rawblk'):
+                self.db_write_loop.queue_block(blktmpfilename)
                 log.info('Reading blockfile %s', blktmpfilename)
                 try:
                     with open(blktmpfilename, 'rb') as blktmpfile:
@@ -130,9 +136,6 @@ class IOLoop(threading.Thread):
         log.info('Block database starting with %r blocks', self.num_blocks.value)
 
         self.process_queue = Queue.Queue()
-
-        self.block_queue = QueueWithQSize()
-        self.db_write_thread_stop_event = multiprocessing.Event()
 
         self.process_thread = None
         self.write_thread = None
@@ -177,13 +180,13 @@ class IOLoop(threading.Thread):
         self.sock.sendall(msg.bytes)
 
     def run(self):
-        db_write_thread = multiprocessing.Process(target=self.db_write_loop)
-        db_write_thread.start()
+        self.db_write_thread = multiprocessing.Process(target=self.db_write_loop.run)
+        self.db_write_thread.start()
         try:
             self._do_run()
         finally:
-            self.db_write_thread_stop_event.set()
-            db_write_thread.join()
+            self.db_write_thread.shutdown()
+            self.db_write_thread.join()
 
     def _do_run(self):
         while not self.shutdown_event.is_set():
@@ -356,7 +359,10 @@ class IOLoop(threading.Thread):
 
     def get_missing_blocks(self):
         log.info('Calculating missing blocks')
-        prev_block_hashes = set(block.prev_block_hash for block in db.session.query(db.Block.prev_block_hash).all()).union(self._prev_block_hashes)
+        prev_block_hashes = set(
+            block.prev_block_hash
+            for block in self.db_session.query(db.Block.prev_block_hash).filter(db.Block.prev_block_id.is_(None)).all()
+        ).union(self._prev_block_hashes)
         missing_block_hashes = prev_block_hashes - self.known_blocks - set([32 * '\x00'])
         if missing_block_hashes:
             log.info('Requesting %d missing blocks', len(missing_block_hashes))
@@ -417,8 +423,8 @@ class IOLoop(threading.Thread):
         tx_hash = msg.tx.tx_hash
         hashhex = binascii.hexlify(tx_hash)
         log.info('Handling TX %s', hashhex)
-#        db.session.add(db.Transaction.from_protocol(msg.tx))
-#        db.session.commit()
+#        self.db_session.add(db.Transaction.from_protocol(msg.tx))
+#        self.db_session.commit()
         event = self.waiting_for.get((protocol.InventoryVector.MSG_TX, tx_hash))
         if not event:
             return
@@ -440,7 +446,7 @@ class IOLoop(threading.Thread):
             log.info('Block already known')
             return
 
-        #if db.session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
+        #if self.db_session.query(db.Block).filter(db.Block.block_hash == msg.prev_block_hash).first():
 
         self.known_blocks.add(block_hash)
         self._prev_block_hashes.add(msg.prev_block_hash)
@@ -458,16 +464,40 @@ class IOLoop(threading.Thread):
             log.info('Queueing block, writing to disk %s', blktmpfilename)
             with open(blktmpfilename, 'wb') as blktmpfile:
                 blktmpfile.write(msg.bytes)
-            self.block_queue.put(blktmpfilename)
+            self.db_write_loop.queue_block(blktmpfilename)
         else:
             log.info('Block already written to disk %s', blktmpfilename)
 
         #self.write_block_to_db(msg)
 
-        log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
+        log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.db_write_loop.num_queued_blocks())
+
+    def handle_message(self, msg):
+        self.last_message = time.time()
+        handle_name = 'handle_' + msg.COMMAND
+        if hasattr(self, handle_name):
+            return getattr(self, handle_name)(msg)
+        return self.handle_default(msg)
+
+
+class DBWriteLoop(object):
+    def __init__(self, ioloop):
+        self.ioloop = ioloop
+        self.db_write_thread_stop_event = multiprocessing.Event()
+        self.block_queue = QueueWithQSize()
+        self.db_session = None
+
+    def shutdown(self):
+        return self.db_write_thread_stop_event.set()
+
+    def queue_block(self, blktmpfilename):
+        return self.block_queue.put(blktmpfilename)
+
+    def num_queued_blocks(self):
+        return self.block_queue.qsize()
 
     def write_block_to_db(self, msg):
-        if db.session.query(sql_functions.count(db.Block.block_hash)).filter(db.Block.block_hash == msg.block_hash).scalar():
+        if self.db_session.query(sql_functions.count(db.Block.block_hash)).filter(db.Block.block_hash == msg.block_hash).scalar():
             log.warning('Block already in DB, skipping')
             return
 
@@ -478,36 +508,31 @@ class IOLoop(threading.Thread):
             txins += len(tx.tx_in)
             txouts += len(tx.tx_out)
         log.info('Writing Block %s to DB %u txns %u txins %u txouts', hexhash, len(msg.txns), txins, txouts)
-        self.num_blocks.value += 1
-        #db.session.begin()
+        self.ioloop.num_blocks.value += 1
+        #self.db_session.begin()
         db_block = db.Block.from_protocol(msg)
-        db.session.add(db_block)
-        #db.Block.from_protocol(msg).bulk_insert(db.session)
+        self.db_session.add(db_block)
+        #db.Block.from_protocol(msg).bulk_insert(self.db_session)
         log.debug('Flushing DB session')
         start = datetime.datetime.now()
-        db.session.flush()
+        self.db_session.flush()
         log.debug('DB Flush took %s', datetime.datetime.now() - start)
-        self.known_blocks.add(msg.block_hash)
+        self.ioloop.known_blocks.add(msg.block_hash)
         log.debug('Committing DB session')
         start = datetime.datetime.now()
-        db.session.commit()
+        self.db_session.commit()
         log.debug('DB Commit took %s', datetime.datetime.now() - start)
         log.debug('Running block post-commit cleanup')
         # TODO: Allow this to be turned off when doing intial block import
-        db_block.update_metadata()
+        db_block.update_metadata(self.db_session)
         log.info('Block %s committed', hexhash)
-        log.info('Block database has %d/%d blocks (%d queued)', self.num_blocks.value, self.max_height.value, self.block_queue.qsize())
+        log.info(
+            'Block database has %d/%d blocks (%d queued)',
+            self.ioloop.num_blocks.value, self.ioloop.max_height.value, self.num_queued_blocks()
+        )
 
-    def handle_message(self, msg):
-        self.last_message = time.time()
-        handle_name = 'handle_' + msg.COMMAND
-        if hasattr(self, handle_name):
-            return getattr(self, handle_name)(msg)
-        return self.handle_default(msg)
-
-    def db_write_loop(self):
-        # Since this is running in a separate process we need to reconnect to the DB or we get fun errors
-        db.reconnect()
+    def run(self):
+        self.db_session = db.Session()
         try:
             while not self.db_write_thread_stop_event.is_set():
                 try:
@@ -545,5 +570,5 @@ class IOLoop(threading.Thread):
             raise
         finally:
             log.info('db_write_loop shutting down IOLoop')
-            self.shutdown()
-        log.info('db_write_loop finished')
+            self.ioloop.shutdown()
+            log.info('db_write_loop finished')

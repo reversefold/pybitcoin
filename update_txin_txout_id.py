@@ -191,8 +191,8 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 SQL = """
 UPDATE txin SET txout_id = txout.id
 FROM txout
-JOIN transaction txo ON txout.transaction_id = txo.id
-WHERE txo.tx_hash = txin.previous_output_transaction_hash
+JOIN transaction tx ON txout.transaction_id = tx.id
+WHERE tx.tx_hash = txin.previous_output_transaction_hash
 AND txout.transaction_index = txin.previous_output_index
 AND txin.txout_id IS NULL
 AND txin.id IN (%s)
@@ -203,12 +203,14 @@ BLOCK = 100  # 250
 
 class TxInUpdater(object):
     def __init__(self):
-        #self.max_id = db.session.query(func.max(db.Block.id)).scalar()
+        self.db_session = db.Session()
+
+        #self.max_id = self.db_session.query(func.max(db.Block.id)).scalar()
         #self.min_id = 11200
-#        self.min_id = db.session.query(
+#        self.min_id = self.db_session.query(
 #            db.Transaction.block_id
 #        ).filter(
-#            db.Transaction.id == db.session.query(
+#            db.Transaction.id == self.db_session.query(
 #                func.min(db.TxOut.transaction_id)
 #            ).join(
 #                db.Transaction,
@@ -222,19 +224,19 @@ class TxInUpdater(object):
 #            ).scalar()
 #        ).scalar()
 
-        #self.min_id, self.max_id = db.session.query(
+        #self.min_id, self.max_id = self.db_session.query(
         #    func.min(db.TxIn.id), func.max(db.TxIn.id)
         #).filter(
         #    db.TxIn.txout_id.is_(None)
         #    & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
         #).first()
 
-        #txin = db.session.query(db.TxIn).filter(db.TxIn.id == min_txid).subquery()
-        #self.min_id = db.session.query(db.Transaction.block_id).filter(db.Transaction.tx_hash == txin.c.previous_output_transaction_hash).scalar()
+        #txin = self.db_session.query(db.TxIn).filter(db.TxIn.id == min_txid).subquery()
+        #self.min_id = self.db_session.query(db.Transaction.block_id).filter(db.Transaction.tx_hash == txin.c.previous_output_transaction_hash).scalar()
 
-        #self.total_to_process = db.session.query(db.TxIn.id).filter(db.TxIn.txout_id.is_(None)).count()
+        #self.total_to_process = self.db_session.query(db.TxIn.id).filter(db.TxIn.txout_id.is_(None)).count()
         # takes too long to run
-        #self.min_id = db.session.query(
+        #self.min_id = self.db_session.query(
         #    func.min(db.Transaction.block_id)
         #).join(
         #    db.TxOut, db.Transaction.id == db.TxOut.transaction_id
@@ -245,7 +247,7 @@ class TxInUpdater(object):
         #).scalar()
         self.queue = multiprocessing.Queue()
         self.num_processed = multiprocessing.Value('i', 0)
-        self.total_to_process = db.session.query(db.TxIn.id).filter(
+        self.total_to_process = self.db_session.query(db.TxIn.id).filter(
             db.TxIn.txout_id.is_(None)
             & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
         ).count()
@@ -286,7 +288,7 @@ class TxInUpdater(object):
                 continue
 
     def queue_blocks(self):
-        txin_ids = db.session.query(db.TxIn.id).filter(
+        txin_ids = self.db_session.query(db.TxIn.id).filter(
             db.TxIn.txout_id.is_(None)
             & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
         ).yield_per(BLOCK).enable_eagerloads(False)
@@ -298,40 +300,44 @@ class TxInUpdater(object):
                 print '%r queued' % (self.queued_blocks,)
 
     def run(self):
-        self.queue_thread = threading.Thread(target=self.queue_blocks)
-        self.queue_thread.start()
-        procs = []
-        for i in xrange(multiprocessing.cpu_count()):
-            proc = multiprocessing.Process(target=self.process_chunks)
-            proc.start()
-            procs.append(proc)
-        output = 0
-        while not self.queue.empty() or self.queue_thread.is_alive():
-            with self.blocks_processed.get_lock():
-                blocks_processed = self.blocks_processed.value
+        try:
+            self.queue_thread = threading.Thread(target=self.queue_blocks)
+            self.queue_thread.start()
+            procs = []
+            for i in xrange(multiprocessing.cpu_count()):
+                proc = multiprocessing.Process(target=self.process_chunks)
+                proc.start()
+                procs.append(proc)
+            output = 0
+            while not self.queue.empty() or self.queue_thread.is_alive():
+                with self.blocks_processed.get_lock():
+                    blocks_processed = self.blocks_processed.value
 
-            tot_time = datetime.now() - self.start_time
-            if blocks_processed == 0:
-                print('%s' % (tot_time,))
+                tot_time = datetime.now() - self.start_time
+                if blocks_processed == 0:
+                    print('%s' % (tot_time,))
+                    time.sleep(5)
+                    continue
+
+                avg_time = tot_time / blocks_processed
+                if blocks_processed - output > 20:
+                    output = blocks_processed
+                    print('%u / %u %.3f%% done, %s total, %s avg, ~%s remaining\n' % (
+                        blocks_processed,
+                        self.total_blocks,
+                        blocks_processed * 100.0 / self.total_blocks,
+                        tot_time,
+                        avg_time,
+                        avg_time * (self.total_blocks - blocks_processed))
+                    )
                 time.sleep(5)
-                continue
-
-            avg_time = tot_time / blocks_processed
-            if blocks_processed - output > 20:
-                output = blocks_processed
-                print('%u / %u %.3f%% done, %s total, %s avg, ~%s remaining\n' % (
-                    blocks_processed,
-                    self.total_blocks,
-                    blocks_processed * 100.0 / self.total_blocks,
-                    tot_time,
-                    avg_time,
-                    avg_time * (self.total_blocks - blocks_processed))
-                )
-            time.sleep(5)
-        self.shutdown_event.set()
-        self.queue_thread.join()
-        for proc in procs:
-            proc.join()
+            self.shutdown_event.set()
+            self.queue_thread.join()
+            for proc in procs:
+                proc.join()
+        finally:
+            self.db_session.flush()
+            self.db_session.commit()
 
 
 def main():

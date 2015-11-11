@@ -2,12 +2,13 @@ import binascii
 import datetime
 import logging
 
-from sqlalchemy import Column, BigInteger, Integer, LargeBinary, ForeignKey, String, Sequence
+from sqlalchemy import Column, ForeignKey, Sequence
 from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.sql import text
+from sqlalchemy.types import Boolean, BigInteger, Integer, LargeBinary, String
 
 from pybitcoin import protocol
 
@@ -22,18 +23,14 @@ log = logging.getLogger(__name__)
 Base = declarative_base()
 engine = None
 Session = None
-session = None
 
 
 def reconnect():
-    global engine, Session, session
-    if session is not None:
-        session.close()
+    global engine, Session
     if engine is not None:
         engine.dispose()
     engine = engine_factory()
     Session = sessionmaker(bind=engine)
-    session = Session()
 
 
 reconnect()
@@ -236,7 +233,7 @@ class Block(Base):
         conn.execute(txout.__table__.insert().values(data))
         log.info('Processing txouts took %s', datetime.datetime.now() - start)
 
-    def update_chain_metadata(self, _update_pending=True):
+    def update_chain_metadata(self, session, _update_pending=True):
         # TODO: This needs to be rewritten to keep an index of blocks not in the known block chain and properly choose the right ones when updating pending metadata
         # TODO: update IOLoop.max_height
         res = session.query(Block.depth, Block.id).filter(Block.block_hash == self.prev_block_hash).first()
@@ -262,7 +259,7 @@ class Block(Base):
 
                     for to_update in self.pending_meta_updates[:]:
                         log.info('Running pending meta update for %s', binascii.hexlify(to_update.block_hash))
-                        if to_update.update_chain_metadata(False):
+                        if to_update.update_chain_metadata(session, _update_pending=False):
                             success = True
                             log.info('Pending metadata update succeeded for %s', binascii.hexlify(to_update.block_hash))
                             self.pending_meta_updates.remove(to_update)
@@ -270,7 +267,7 @@ class Block(Base):
                             log.error('Pending metadata update failed for %s', binascii.hexlify(to_update.block_hash))
             return True
 
-    def update_metadata(self, _update_pending=True):
+    def update_metadata(self, session, _update_pending=True):
         with engine.begin() as conn:
             log.info('Updating links from txin to txout in this block')
             start = datetime.datetime.now()
@@ -304,7 +301,7 @@ class Block(Base):
                     AND txi.block_id = :block_id"""),
                block_id=self.id)
             log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
-            return self.update_chain_metadata()
+        return self.update_chain_metadata(session)
 
         #These don't work as expected...:-(
         #(db.session.query(db.TxIn)
