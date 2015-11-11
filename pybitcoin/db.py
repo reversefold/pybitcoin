@@ -102,7 +102,9 @@ class TxOut(Base):
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
     transaction_index = Column(Integer, nullable=False, index=True)
 
-    __table_args__ = (Index('txout_tx_id_idx', 'transaction_id', 'transaction_index'),)
+    __table_args__ = (
+        Index('ix_txout_tx_id_idx', transaction_id, transaction_index),
+    )
 
     @classmethod
     def from_protocol(cls, in_txout):
