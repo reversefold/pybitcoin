@@ -48,7 +48,7 @@ class TxIn(Base):
     previous_output_index = Column(BigInteger, nullable=False)
     signature_script = Column(LargeBinary, nullable=False)
     sequence = Column(BigInteger, nullable=False)
-    transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
+    transaction_id = Column(Integer, ForeignKey('transaction.id'), nullable=False, index=True)
     transaction_index = Column(Integer, nullable=False)
 
     txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
