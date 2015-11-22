@@ -180,6 +180,23 @@ class TxOut(Base):
         return 'TxOut(%r, %r)' % (self.value, self.pk_script)
 
 
+class TxIn_TxOut(Base):
+    __tablename__ = 'txin_txout'
+    txin_id = Column(Integer, ForeignKey('txin.id'), primary_key=True, nullable=False, index=True)
+    txout_id = Column(Integer, ForeignKey('txout.id'), primary_key=True, nullable=False, index=True)
+
+    __table_args__ = (
+        Index(
+            'ix_txin_txout_txin_id_txout_id',
+            txin_id, txout_id,
+            unique=True
+        ),
+    )
+
+
+# INSERT INTO txin_txout (txin_id, txout_id) SELECT id, txout_id FROM txin WHERE txout_id IS NOT NULL
+
+
 class Transaction(Base):
     __tablename__ = 'transaction'
     id = Column(Integer, Sequence('transaction_id'), primary_key=True, nullable=False, unique=True, index=True)
