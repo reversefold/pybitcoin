@@ -298,8 +298,10 @@ class Block(Base):
                     WHERE txo.tx_hash = txin.previous_output_transaction_hash
                     AND txout.transaction_index = txin.previous_output_index
                     AND txin.txout_id IS NULL
-                    AND txo.block_id = :block_id"""),
-                block_id=self.id)
+                    AND txo.block_id = :block_id
+                """),
+                block_id=self.id
+            )
             log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
             log.info('Updating links from txin in this block to txout')
             # match up new txins to the txouts in previous transactions
@@ -315,8 +317,10 @@ class Block(Base):
                     AND txout.transaction_index = txin.previous_output_index
                     AND txin.txout_id IS NULL
                     AND txin.transaction_id = txi.id
-                    AND txi.block_id = :block_id"""),
-               block_id=self.id)
+                    AND txi.block_id = :block_id
+                """),
+                block_id=self.id
+            )
             log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
         return self.update_chain_metadata(session)
 
@@ -392,11 +396,12 @@ class Block(Base):
 #for table in Base.metadata.tables.itervalues():
 #    for idx in table.indexes:
 #        try:
-#            log.debug('Creating %r', idx)
+#            log.info('Creating %r', idx)
 #            idx.create(engine)
 #            log.info('Created %r', idx)
 #        except Exception as exc:
-#            log.debug('exc, probably already exists: %r', exc)
+#            log.info('exc, probably already exists: %r', exc)
+#import sys; sys.exit()
 
 
 # unspent sum for an address
