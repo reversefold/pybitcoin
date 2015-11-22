@@ -199,7 +199,7 @@ class Transaction(Base):
 class Block(Base):
     __tablename__ = 'block'
     id = Column(Integer, Sequence('block_id'), primary_key=True, nullable=False, unique=True, index=True)
-    block_hash = Column(BINARY(32), nullable=False, index=True)  # , unique=True?
+    block_hash = Column(BINARY(32), nullable=False)  # , unique=True?
     version = Column(BigInteger, nullable=False)
     prev_block_hash = Column(BINARY(32), nullable=False)
     merkle_root = Column(BINARY(32), nullable=False)
@@ -213,6 +213,12 @@ class Block(Base):
     depth = Column(Integer, nullable=True)
 
     __table_args__ = (
+        Index(
+            'ix_block_block_hash',
+            block_hash,
+            # We only ever do == against block_hash so a hash index will be more efficient
+            postgresql_using='hash',
+        ),
         Index(
             'ix_block_prev_block_hash',
             prev_block_hash,
