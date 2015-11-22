@@ -74,6 +74,9 @@ class TxInUpdater(object):
                 continue
 
     def queue_blocks(self):
+        if self.total_to_process == 0:
+            print('Nothing to queue')
+            return
         txin_ids = self.db_session.query(db.TxIn.id).filter(
             db.TxIn.txout_id.is_(None)
             & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
@@ -94,7 +97,7 @@ class TxInUpdater(object):
                 proc = multiprocessing.Process(target=self.process_chunks)
                 proc.start()
                 procs.append(proc)
-            output = 0
+            #output = 0
             while not self.queue.empty() or self.queue_thread.is_alive():
                 with self.blocks_processed.get_lock():
                     blocks_processed = self.blocks_processed.value
@@ -105,17 +108,17 @@ class TxInUpdater(object):
                     time.sleep(5)
                     continue
 
-                avg_time = tot_time / blocks_processed
-                if blocks_processed - output > 20:
-                    output = blocks_processed
-                    print('%u / %u %.3f%% done, %s total, %s avg, ~%s remaining\n' % (
-                        blocks_processed,
-                        self.total_blocks,
-                        blocks_processed * 100.0 / self.total_blocks,
-                        tot_time,
-                        avg_time,
-                        avg_time * (self.total_blocks - blocks_processed))
-                    )
+                #avg_time = tot_time / blocks_processed
+                #if blocks_processed - output > 20:
+                #    output = blocks_processed
+                #    print('%u / %u %.3f%% done, %s total, %s avg, ~%s remaining\n' % (
+                #        blocks_processed,
+                #        self.total_blocks,
+                #        blocks_processed * 100.0 / self.total_blocks,
+                #        tot_time,
+                #        avg_time,
+                #        avg_time * (self.total_blocks - blocks_processed))
+                #    )
                 time.sleep(5)
             self.shutdown_event.set()
             self.queue_thread.join()
