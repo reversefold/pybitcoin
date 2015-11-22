@@ -115,6 +115,21 @@ class TxIn(Base):
             self.sequence)
 
 
+class TxOutUnspent(Base):
+    __tablename__ = 'txout_unspent'
+    txout_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    to_address = Column(String(34))  # 27-34 chars
+    __table_args__ = (
+        Index(
+            'ix_txout_unspent_to_address',
+            to_address,
+            postgresql_using='hash',
+        ),
+    )
+
+# INSERT INTO txout_unspent (txout_id, to_address) SELECT id, to_address FROM txout WHERE NOT spent
+
+
 class TxOut(Base):
     __tablename__ = 'txout'
     id = Column(Integer, Sequence('txout_id'), primary_key=True, nullable=False, unique=True, index=True)
