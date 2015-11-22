@@ -134,7 +134,7 @@ class TxOut(Base):
 class Transaction(Base):
     __tablename__ = 'transaction'
     id = Column(Integer, Sequence('transaction_id'), primary_key=True, nullable=False, unique=True, index=True)
-    tx_hash = Column(BINARY(32), nullable=False, index=True)  #, unique=True?
+    tx_hash = Column(BINARY(32), nullable=False)  # , unique=True?
     version = Column(BigInteger, nullable=False)
     lock_time = Column(BigInteger, nullable=False)
     tx_inputs = relationship('TxIn', order_by='TxIn.transaction_index',
@@ -144,6 +144,15 @@ class Transaction(Base):
     block_id = Column(Integer, ForeignKey('block.id'), index=True)
     block_index = Column(Integer, nullable=False)
 #    block = relationship('Block')
+
+    __table_args__ = (
+        Index(
+            'ix_transaction_tx_hash',
+            tx_hash,
+            # We only ever do == against tx_hash so a hash index will be more efficient
+            postgresql_using='hash',
+        ),
+    )
 
     @classmethod
     def from_protocol(cls, in_tx):
