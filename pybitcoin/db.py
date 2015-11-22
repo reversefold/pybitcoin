@@ -216,7 +216,9 @@ class Block(Base):
         Index(
             'ix_block_prev_block_hash',
             prev_block_hash,
-            postgresql_where=prev_block_id.is_(None)
+            postgresql_where=prev_block_id.is_(None),
+            # We only ever do == against prev_block_hash so a hash index will be more efficient
+            postgresql_using='hash',
         ),
     )
 
