@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.sql import text
+from sqlalchemy.sql.expression import null
 from sqlalchemy.types import Boolean, BigInteger, Integer, LargeBinary, String
 
 from pybitcoin import protocol
@@ -102,8 +103,20 @@ class TxOut(Base):
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
     transaction_index = Column(Integer, nullable=False, index=True)
 
+    # TODO: Split txout.spent into txout_unspent table to avoid wasting space when we update these records
+    # Except if this is broken out the partial index below won't be possible.
+    # Solution: move to_address to yet another table which is populated only until the spent is set.
+    # Also, this doesn't necessarily need to be its own table, the txout_id entry from txin can be queried for this value.
+    spent = Column(Boolean, index=True, nullable=True, server_default=null())
     __table_args__ = (
         Index('ix_txout_tx_id_idx', transaction_id, transaction_index),
+        Index(
+            'ix_ixout_to_address_not_spent',
+            to_address,
+            postgresql_where=spent.is_(False),
+            # We only ever do == against to_address so a hash index will be more efficient
+            postgresql_using='hash',
+        )
     )
 
     @classmethod
