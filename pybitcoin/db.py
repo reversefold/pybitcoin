@@ -66,8 +66,6 @@ class TxIn(Base):
     transaction_id = Column(Integer, ForeignKey('transaction.id'), nullable=False, index=True)
     transaction_index = Column(Integer, nullable=False)
 
-    txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
-
     # TODO: Split txin.txout_id into a separate table so that we don't waste space when we update the records.
     # Except if this is broken out the partial index below won't be possible.
     # Solution: move previous_output_transaction_hash to yet another table which is populated only until the txout_id is set.
@@ -143,7 +141,7 @@ class TxOut(Base):
     # Except if this is broken out the partial index below won't be possible.
     # Solution: move to_address to yet another table which is populated only until the spent is set.
     # Also, this doesn't necessarily need to be its own table, the txout_id entry from txin can be queried for this value.
-    spent = Column(Boolean, index=True, nullable=True, server_default=null())
+    #spent = Column(Boolean, index=True, nullable=True, server_default=null())
     __table_args__ = (
         Index('ix_txout_tx_id_idx', transaction_id, transaction_index),
     #    Index(
