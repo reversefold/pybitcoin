@@ -41,6 +41,21 @@ def row_to_dict(row):
     return {c.name: getattr(row, c.name) for c in row.__table__.columns}
 
 
+class TxInUnmatched(Base):
+    __tablename__ = 'txin_unmatched'
+    txin_id = Column(Integer, ForeignKey('txin.id'), primary_key=True, nullable=False, unique=True, index=True)
+    previous_output_transaction_hash = Column(BINARY(32), nullable=False)
+    previous_output_index = Column(BigInteger, nullable=False)
+    __table_args__ = (
+        Index(
+            'ix_txin_unmatched_prev_tx',
+            previous_output_transaction_hash, previous_output_index,
+        ),  # unique=True?
+    )
+
+# INSERT INTO txin_unmatched (txin_id, previous_output_transaction_hash, previous_output_index) SELECT id, previous_output_transaction_hash, previous_output_index FROM txin WHERE txout_id IS NULL
+
+
 class TxIn(Base):
     __tablename__ = 'txin'
     id = Column(Integer, Sequence('txin_id'), primary_key=True, nullable=False, unique=True, index=True)
