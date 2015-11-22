@@ -2,12 +2,10 @@
 import binascii
 from datetime import datetime
 import os
-from sqlalchemy import func
 from sqlalchemy.orm import aliased
 import sys
 
 from pybitcoin import db
-from pybitcoin.key import encode_bigint
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
