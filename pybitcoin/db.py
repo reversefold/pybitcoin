@@ -135,7 +135,7 @@ class TxOut(Base):
     id = Column(Integer, Sequence('txout_id'), primary_key=True, nullable=False, unique=True, index=True)
     value = Column(BigInteger, nullable=False)
     pk_script = Column(LargeBinary, nullable=False)
-    to_address = Column(String(34), index=True)  # 27-34 chars
+    #to_address = Column(String(34))  # 27-34 chars, might want a general to_address index as well
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
     transaction_index = Column(Integer, nullable=False, index=True)
 
@@ -146,13 +146,13 @@ class TxOut(Base):
     spent = Column(Boolean, index=True, nullable=True, server_default=null())
     __table_args__ = (
         Index('ix_txout_tx_id_idx', transaction_id, transaction_index),
-        Index(
-            'ix_ixout_to_address_not_spent',
-            to_address,
-            postgresql_where=spent.is_(False),
-            # We only ever do == against to_address so a hash index will be more efficient
-            postgresql_using='hash',
-        )
+    #    Index(
+    #        'ix_ixout_to_address_not_spent',
+    #        to_address,
+    #        postgresql_where=spent.is_(False),
+    #        # We only ever do == against to_address so a hash index will be more efficient
+    #        postgresql_using='hash',
+    #    )
     )
 
     @classmethod
