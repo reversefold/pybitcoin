@@ -59,8 +59,8 @@ class TxInUnmatched(Base):
 class TxIn(Base):
     __tablename__ = 'txin'
     id = Column(Integer, Sequence('txin_id'), primary_key=True, nullable=False, unique=True, index=True)
-    previous_output_transaction_hash = Column(BINARY(32), nullable=False)
-    previous_output_index = Column(BigInteger, nullable=False)
+    #previous_output_transaction_hash = Column(BINARY(32), nullable=False)
+    #previous_output_index = Column(BigInteger, nullable=False)
     signature_script = Column(LargeBinary, nullable=False)
     sequence = Column(BigInteger, nullable=False)
     transaction_id = Column(Integer, ForeignKey('transaction.id'), nullable=False, index=True)
@@ -68,13 +68,19 @@ class TxIn(Base):
 
     txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
 
-    __table_args__ = (
-        Index(
-            'ix_txin_tx_hash_idx',
-            previous_output_transaction_hash, previous_output_index,
-            postgresql_where=txout_id.is_(None)
-        ),
-    )
+    # TODO: Split txin.txout_id into a separate table so that we don't waste space when we update the records.
+    # Except if this is broken out the partial index below won't be possible.
+    # Solution: move previous_output_transaction_hash to yet another table which is populated only until the txout_id is set.
+    #txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
+    #__table_args__ = (
+    #    Index(
+    #        'ix_txin_prev_transaction_idx',
+    #        previous_output_transaction_hash, previous_output_index,
+    #        postgresql_where=txout_id.is_(None),
+    #        # We only ever do == against previous_output_transaction_hash so a hash index will be more efficient
+    #        postgresql_using='hash',
+    #    ),
+    #)
 
     @classmethod
     def from_protocol(cls, in_txin):
