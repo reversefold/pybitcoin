@@ -2,7 +2,7 @@ import binascii
 import datetime
 import logging
 
-from sqlalchemy import Column, ForeignKey, Sequence
+from sqlalchemy import insert, Column, ForeignKey, Sequence
 from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -41,6 +41,10 @@ def row_to_dict(row):
     return {c.name: getattr(row, c.name) for c in row.__table__.columns}
 
 
+# TODO: Should keep the latest N blocks in memory before writing to the DB to keep the DB clean.
+# May need to either duplicate logic to match txout and txin in python or move it altogether.
+
+
 class TxInUnmatched(Base):
     __tablename__ = 'txin_unmatched'
     txin_id = Column(Integer, ForeignKey('txin.id'), primary_key=True, nullable=False, unique=True, index=True)
@@ -53,38 +57,25 @@ class TxInUnmatched(Base):
         ),  # unique=True?
     )
 
-# INSERT INTO txin_unmatched (txin_id, previous_output_transaction_hash, previous_output_index) SELECT id, previous_output_transaction_hash, previous_output_index FROM txin WHERE txout_id IS NULL
-
 
 class TxIn(Base):
     __tablename__ = 'txin'
     id = Column(Integer, Sequence('txin_id'), primary_key=True, nullable=False, unique=True, index=True)
-    #previous_output_transaction_hash = Column(BINARY(32), nullable=False)
-    #previous_output_index = Column(BigInteger, nullable=False)
     signature_script = Column(LargeBinary, nullable=False)
     sequence = Column(BigInteger, nullable=False)
     transaction_id = Column(Integer, ForeignKey('transaction.id'), nullable=False, index=True)
     transaction_index = Column(Integer, nullable=False)
 
-    # TODO: Split txin.txout_id into a separate table so that we don't waste space when we update the records.
-    # Except if this is broken out the partial index below won't be possible.
-    # Solution: move previous_output_transaction_hash to yet another table which is populated only until the txout_id is set.
-    #txout_id = Column(Integer, nullable=True, index=True)  # ForeignKey('txout.id'),
-    #__table_args__ = (
-    #    Index(
-    #        'ix_txin_prev_transaction_idx',
-    #        previous_output_transaction_hash, previous_output_index,
-    #        postgresql_where=txout_id.is_(None),
-    #        # We only ever do == against previous_output_transaction_hash so a hash index will be more efficient
-    #        postgresql_using='hash',
-    #    ),
-    #)
+    txin_unmatched = relationship('TxInUnmatched', uselist=False, backref='txin')
 
     @classmethod
     def from_protocol(cls, in_txin):
         out_txin = cls()
-        out_txin.previous_output_transaction_hash = in_txin.previous_output[0]
-        out_txin.previous_output_index = in_txin.previous_output[1]
+
+        out_txin.txin_unmatched = TxInUnmatched()
+        out_txin.txin_unmatched.previous_output_transaction_hash = in_txin.previous_output[0]
+        out_txin.txin_unmatched.previous_output_index = in_txin.previous_output[1]
+
         out_txin.signature_script = in_txin.signature_script
         out_txin.sequence = in_txin.sequence
         return out_txin
@@ -115,17 +106,14 @@ class TxIn(Base):
 
 class TxOutUnspent(Base):
     __tablename__ = 'txout_unspent'
-    txout_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    txout_id = Column(Integer, ForeignKey('txout.id'), primary_key=True, nullable=False, index=True)
     to_address = Column(String(34))  # 27-34 chars
     __table_args__ = (
         Index(
             'ix_txout_unspent_to_address',
-            to_address,
-            postgresql_using='hash',
+            to_address
         ),
     )
-
-# INSERT INTO txout_unspent (txout_id, to_address) SELECT id, to_address FROM txout WHERE NOT spent
 
 
 class TxOut(Base):
@@ -133,32 +121,38 @@ class TxOut(Base):
     id = Column(Integer, Sequence('txout_id'), primary_key=True, nullable=False, unique=True, index=True)
     value = Column(BigInteger, nullable=False)
     pk_script = Column(LargeBinary, nullable=False)
-    #to_address = Column(String(34))  # 27-34 chars, might want a general to_address index as well
     transaction_id = Column(Integer, ForeignKey('transaction.id'), index=True)
     transaction_index = Column(Integer, nullable=False, index=True)
+    txout_unspent = relationship('TxOutUnspent', uselist=False, backref='txout')
 
-    # TODO: Split txout.spent into txout_unspent table to avoid wasting space when we update these records
-    # Except if this is broken out the partial index below won't be possible.
-    # Solution: move to_address to yet another table which is populated only until the spent is set.
-    # Also, this doesn't necessarily need to be its own table, the txout_id entry from txin can be queried for this value.
-    #spent = Column(Boolean, index=True, nullable=True, server_default=null())
     __table_args__ = (
         Index('ix_txout_tx_id_idx', transaction_id, transaction_index),
-    #    Index(
-    #        'ix_ixout_to_address_not_spent',
-    #        to_address,
-    #        postgresql_where=spent.is_(False),
-    #        # We only ever do == against to_address so a hash index will be more efficient
-    #        postgresql_using='hash',
-    #    )
     )
+
+    def __init__(self, *a, **k):
+        super(TxOut, self).__init__(*a, **k)
+        self._to_address = None
+        self._pk_script = None
+
+    @property
+    def to_address(self, value):
+        if self.txout_unspent is not None:
+            return self.txout_unspent.to_address
+        if self._to_address is None:
+            if self._pubkey is None:
+                self._pubkey = protocol.PubKeyScript(self.pk_script)
+            self._to_address = self._pubkey.to_address
+        return self._to_address
 
     @classmethod
     def from_protocol(cls, in_txout):
         out_txout = cls()
         out_txout.value = in_txout.value
         out_txout.pk_script = in_txout.pk_script.bytes
-        out_txout.to_address = in_txout.pk_script.to_address
+
+        out_txout.txout_unspent = TxOutUnspent()
+        out_txout.txout_unspent.to_address = in_txout.pk_script.to_address
+
         return out_txout
 
     def to_protocol(self):
@@ -190,9 +184,6 @@ class TxIn_TxOut(Base):
             unique=True
         ),
     )
-
-
-# INSERT INTO txin_txout (txin_id, txout_id) SELECT id, txout_id FROM txin WHERE txout_id IS NOT NULL
 
 
 class Transaction(Base):
@@ -366,67 +357,40 @@ class Block(Base):
             return True
 
     def update_metadata(self, session, _update_pending=True):
-        with engine.begin() as conn:
-            log.info('Updating links from txin to txout in this block')
-            start = datetime.datetime.now()
-            # match up previously committed txins to newly committed txouts
-            # (blocks committed out of order)
-            res = conn.execute(
-                text("""
-                    UPDATE txin SET txout_id = txout.id
-                    FROM txout
-                    JOIN transaction txo ON txout.transaction_id = txo.id
-                    WHERE txo.tx_hash = txin.previous_output_transaction_hash
-                    AND txout.transaction_index = txin.previous_output_index
-                    AND txin.txout_id IS NULL
-                    AND txo.block_id = :block_id
-                """),
-                block_id=self.id
+        ## TODO: This does not take into account branching block chains
+        log.info('Matching txin to previous txout')
+        start = datetime.datetime.now()
+        inserted = session.execute(
+            insert(
+                TxIn_TxOut
+            ).returning(
+                TxIn_TxOut.txin_id, TxIn_TxOut.txout_id
+            ).from_select(
+                [TxIn_TxOut.txin_id, TxIn_TxOut.txout_id],
+                session.query(
+                    TxInUnmatched.txin_id.label('txin_id'), TxOut.id.label('txout_id')
+                ).join(
+                    Transaction, Transaction.tx_hash == TxInUnmatched.previous_output_transaction_hash
+                ).join(
+                    TxOut, (Transaction.id == TxOut.transaction_id) & (TxOut.transaction_index == TxInUnmatched.previous_output_index)
+                )
             )
-            log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
-            log.info('Updating links from txin in this block to txout')
-            # match up new txins to the txouts in previous transactions
-            # (blocks committed in order)
-            start = datetime.datetime.now()
-            res = conn.execute(
-                text("""
-                    UPDATE txin SET txout_id = txout.id
-                    FROM txout
-                    JOIN transaction txo ON txout.transaction_id = txo.id
-                    , transaction txi
-                    WHERE txo.tx_hash = txin.previous_output_transaction_hash
-                    AND txout.transaction_index = txin.previous_output_index
-                    AND txin.txout_id IS NULL
-                    AND txin.transaction_id = txi.id
-                    AND txi.block_id = :block_id
-                """),
-                block_id=self.id
-            )
-            log.info('...%i rows, %s', res.rowcount, datetime.datetime.now() - start)
-        return self.update_chain_metadata(session)
+        ).fetchall()
+        log.info('...%i rows, %s', len(inserted), datetime.datetime.now() - start)
+        txin_ids = [i[0] for i in inserted]
+        txout_ids = [i[1] for i in inserted]
+        log.info('Removing outdated txin_unmatched records')
+        start = datetime.datetime.now()
+        res = session.query(TxInUnmatched).filter(TxInUnmatched.txin_id.in_(txin_ids)).delete(synchronize_session=False)
+        log.info('...%i rows, %s', res, datetime.datetime.now() - start)
+        start = datetime.datetime.now()
+        log.info('Removing outdated txout_unspent records')
+        start = datetime.datetime.now()
+        res = session.query(TxOutUnspent).filter(TxOutUnspent.txout_id.in_(txout_ids)).delete(synchronize_session=False)
+        log.info('...%i rows, %s', res, datetime.datetime.now() - start)
+        session.expire_all()
 
-        #These don't work as expected...:-(
-        #(db.session.query(db.TxIn)
-        # .select_from(db.TxOut)
-        # .join(db.Transaction, db.TxOut.transaction_id == db.Transaction.id)
-        # .filter(
-        #     (db.Transaction.tx_hash == db.TxIn.previous_output_transaction_hash)
-        #     & (db.TxOut.transaction_index == db.TxIn.previous_output_index)
-        #     & (db.TxIn.txout_id == None)
-        #     & (db.Transaction.block_id == db_block.id))
-        # .update(values={'txout_id': db.TxOut.id}, synchronize_session=False)
-        #)
-        #(db.session.query(db.TxIn)
-        # .select_from(db.TxOut)
-        # .join(db.Transaction, db.TxOut.transaction_id == db.Transaction.id)
-        # .filter(
-        #     (db.Transaction.tx_hash == db.TxIn.previous_output_transaction_hash)
-        #     & (db.TxOut.transaction_index == db.TxIn.previous_output_index)
-        #     & (db.TxIn.txout_id == None)
-        #     & (db.TxIn.transaction_id.in_(
-        #         db.session.query(db.Transaction.id).filter(db.Block.id == db_block.id))))
-        # .update(values={'txout_id': db.TxOut.id}, synchronize_session=False)
-        #)
+        return self.update_chain_metadata(session)
 
     @classmethod
     def from_protocol(cls, block):

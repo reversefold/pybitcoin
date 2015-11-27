@@ -513,6 +513,11 @@ class DBWriteLoop(object):
         db_block = db.Block.from_protocol(msg)
         self.db_session.add(db_block)
         #db.Block.from_protocol(msg).bulk_insert(self.db_session)
+
+        # TODO: Allow this to be turned off when doing intial block import
+        log.info('Updating block metadata')
+        db_block.update_metadata(self.db_session)
+
         log.debug('Flushing DB session')
         start = datetime.datetime.now()
         self.db_session.flush()
@@ -522,9 +527,6 @@ class DBWriteLoop(object):
         start = datetime.datetime.now()
         self.db_session.commit()
         log.debug('DB Commit took %s', datetime.datetime.now() - start)
-        log.debug('Running block post-commit cleanup')
-        # TODO: Allow this to be turned off when doing intial block import
-        db_block.update_metadata(self.db_session)
         log.info('Block %s committed', hexhash)
         log.info(
             'Block database has %d/%d blocks (%d queued)',
