@@ -7,9 +7,7 @@ from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.sql import text
-from sqlalchemy.sql.expression import null
-from sqlalchemy.types import Boolean, BigInteger, Integer, LargeBinary, String
+from sqlalchemy.types import BigInteger, Integer, LargeBinary, String
 
 from pybitcoin import protocol
 
