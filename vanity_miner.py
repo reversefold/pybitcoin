@@ -20,6 +20,12 @@ SOLVE_URL = 'https://vanitypool.appspot.com/solve'
 VANITY_RE = r'(firstname|lastname|firstlast)'
 PAYOUT_ADDRESS = '1BTCrcKNC7FoJsAzS3XPubz6vHwZCp5sx9'
 
+VANITY_RE = re.compile(VANITY_RE, re.IGNORECASE)
+
+
+INC = 10
+
+
 def mine(g_num, work):
     num = 0
     while True:
@@ -29,9 +35,12 @@ def mine(g_num, work):
             addr = byte_util.base58_encode(key.pub_to_address(pub))
             addr_comp = byte_util.base58_encode(key.pub_to_address_compressed(pub))
             num += 1
-            if num % 5 == 0:
-                g_num.value += 5
-            if any(re.match(VANITY_RE, a, re.IGNORECASE) for a in [addr, addr_comp]):
+            if num % INC == 0:
+                with g_num.get_lock():
+                    g_num.value += INC
+                # if g_num.value > 10000:
+                #     return
+            if any(VANITY_RE.match(a) for a in [addr, addr_comp]):
                 try:
                     priv_enc = key.encode_privkey(priv)
                 except Exception, e:
@@ -111,6 +120,10 @@ def getwork():
     return work
 
 
+NUM_PER_DOT = 100
+NUM_PER_LINE = 5000
+
+
 def main():
     work = getwork()
     work.sort(key=lambda r: r['work_to_reward'])
@@ -118,7 +131,7 @@ def main():
     pprint(work)
     num = multiprocessing.Value('L')
     procs = []
-    for _ in xrange(multiprocessing.cpu_count()):
+    for _ in xrange(multiprocessing.cpu_count() - 2):
         proc = multiprocessing.Process(target=mine, args=(num, work))
         proc.start()
         procs.append(proc)
@@ -127,18 +140,23 @@ def main():
     lt_num = 0
     while procs:
         for proc in procs:
-            proc.join(0.05)
+            proc.join(0.001)
             if not proc.is_alive():
                 procs.remove(proc)
         nval = num.value
-        num_dots = (nval - l_num) // 10
-        if num_dots > 0:
-            sys.stdout.write('.')
+        num_dots = (nval - l_num) // NUM_PER_DOT
+        writestr = ''
+        for _ in xrange(num_dots):
+            writestr += '.'
+            if nval - lt_num > NUM_PER_LINE:
+                lt_num = nval // NUM_PER_LINE * NUM_PER_LINE
+                writestr += ' %u\n' % (lt_num,)
+            l_num = nval // NUM_PER_DOT * NUM_PER_DOT
+        if writestr:
+            sys.stdout.write(writestr)
             sys.stdout.flush()
-            if nval - lt_num > 1000:
-                lt_num = nval // 1000 * 1000
-                print ' %r' % (lt_num,)
-            l_num = nval // 10 * 10
+        # if nval > 10000:
+        #     sys.exit()
 
 
 if __name__ == '__main__':
