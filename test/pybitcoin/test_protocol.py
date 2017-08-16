@@ -1,4 +1,5 @@
 """PyBitCoin tests"""
+from __future__ import print_function
 import binascii
 import hashlib
 import mox
@@ -144,13 +145,13 @@ class VersionTest(unittest.TestCase):
         (pmsg, bytes) = protocol.Message.parse(msg.bytes)
         for f in msg.__dict__:
             try:
-                print '%s: %r' % (f, msg.__dict__[f])
+                print('%s: %r' % (f, msg.__dict__[f]))
             except:
-                print '%s: <>' % (f,)
+                print('%s: <>' % (f,))
             try:
-                print '%s: %r' % (f, pmsg.__dict__[f])
+                print('%s: %r' % (f, pmsg.__dict__[f]))
             except:
-                print '%s: <>' % (f,)
+                print('%s: <>' % (f,))
         self.assertEqual(len(bytes), 0)
         self.assertEqual(msg.header.magic, pmsg.header.magic)
         self.assertEqual(msg.header.command, pmsg.header.command)

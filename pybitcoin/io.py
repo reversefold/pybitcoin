@@ -52,7 +52,7 @@ def recv_bytes(sock, num_bytes):
         log.debug('read loop %i', remaining_len)
         try:
             buf = sock.recv(remaining_len)
-        except socket.error, e:
+        except socket.error as e:
             raise
 #            if e.errno == errno.ECONNRESET:
 #                log.warn('Connection reset by peer')

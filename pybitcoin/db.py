@@ -1,3 +1,4 @@
+from __future__ import print_function
 import binascii
 import datetime
 import logging
@@ -14,7 +15,7 @@ from pybitcoin import protocol
 try:
     from .db_local import BINARY, engine_factory
 except ImportError:
-    print 'Using default sqlite DB, create db_local.py to customize'
+    print('Using default sqlite DB, create db_local.py to customize')
     from .db_sqlite import BINARY, engine_factory
 
 log = logging.getLogger(__name__)

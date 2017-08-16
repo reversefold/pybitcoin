@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 from datetime import datetime
 import os
 import multiprocessing
@@ -115,7 +116,7 @@ class TxOutUpdater(object):
             self.queue.put([txout_id for (txout_id,) in chunk])
             self.queued_blocks += 1
             if self.queued_blocks % 1000 == 0:
-                print '%r queued' % (self.queued_blocks,)
+                print('%r queued' % (self.queued_blocks,))
 
     def process_chunks(self):
         while not self.shutdown_event.is_set():

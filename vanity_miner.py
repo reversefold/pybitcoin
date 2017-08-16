@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import binascii
 try:
     from cStringIO import StringIO
@@ -43,14 +44,14 @@ def mine(g_num, work):
             if any(VANITY_RE.match(a) for a in [addr, addr_comp]):
                 try:
                     priv_enc = key.encode_privkey(priv)
-                except Exception, e:
+                except Exception as e:
                     priv_enc = repr(e)
                 try:
                     priv_cmp_enc = key.encode_privkey_compressed(priv)
-                except Exception, e:
+                except Exception as e:
                     priv_cmp_enc = repr(e)
                 msg = '\nI found one!\nAddress: %s\nAddress (compressed): %s\nPrivate Key (raw): %r\nPrivate Key Encoded: %s\nPrivate Key Encoded (compressed): %s\n' % (addr, addr_comp, priv, priv_enc, priv_cmp_enc)
-                print msg[:-1]
+                print(msg[:-1])
                 with open('found_keys', 'a') as found_keys:
                     found_keys.write(msg)
 
@@ -63,15 +64,15 @@ def mine(g_num, work):
 
                 try:
                     priv_hex = hex(priv)[2:].rstrip('L').upper()
-                except Exception, e:
+                except Exception as e:
                     priv_hex = repr(e)
                 try:
                     priv_enc = key.encode_privkey(priv)
-                except Exception, e:
+                except Exception as e:
                     priv_enc = repr(e)
                 try:
                     priv_cmp_enc = key.encode_privkey_compressed(priv)
-                except Exception, e:
+                except Exception as e:
                     priv_cmp_enc = repr(e)
                 msg = StringIO()
                 msg.write('\nI solved one!\n%s\nAddress: %s\nAddress (compressed): %s\nPrivate Key (hex): %s\nPrivate Key (raw): %r\nPrivate Key Encoded: %s\nPrivate Key Encoded (compressed): %s\n' % (pformat(rec), addr, addr_comp, priv_hex, priv, priv_enc, priv_cmp_enc))
@@ -85,11 +86,11 @@ def mine(g_num, work):
                     msg.write('Solution post failed!!!')
                     msg.write('\n')
                 msg = msg.getvalue()
-                print msg[:-1]
+                print(msg[:-1])
                 with open('solved_keys', 'a') as solved_keys:
                     solved_keys.write(msg)
 
-        except Exception, e:
+        except Exception as e:
             traceback.print_exc()
 
 
@@ -107,10 +108,10 @@ def getwork():
             continue
         fields = fields[0].split(':') + fields[-1:]
         if len(fields) != len(headers):
-            print 'fields do not match headers: %r' % (fields,)
+            print('fields do not match headers: %r' % (fields,))
         rec = dict(zip(headers, fields))
         if rec['pattern'][0] != '1':
-            print 'pattern does not start with 1: %s' % (rec['pattern'],)
+            print('pattern does not start with 1: %s' % (rec['pattern'],))
             continue
         rec['reward'] = float(rec['reward'])
         rec['work_to_reward'] = pow(58, len(rec['pattern']) - 1) / rec['reward']

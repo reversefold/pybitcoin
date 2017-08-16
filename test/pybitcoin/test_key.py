@@ -1,3 +1,4 @@
+from __future__ import print_function
 import binascii
 import unittest
 
@@ -81,13 +82,13 @@ class TestKey(unittest.TestCase):
             'L1V2uBXLuWh3ACG2e9DFtMZnJewtVg6QPpRHokXpgPM8tGd9yBbX')
 
     def test_encode_privkey2(self):
-        priv = 3566362552192297244228444858243043761472313190548212544975902619635471184649L
+        priv = 3566362552192297244228444858243043761472313190548212544975902619635471184649
         self.assertEqual(
             key.encode_privkey(priv),
             '5Hskz9wmd3fnTPVnmPhaLtvaumjQU9ycCYWwkiRPgdQ1B4PcoAf')
 
     def test_encode_privkey2_compressed(self):
-        priv = 3566362552192297244228444858243043761472313190548212544975902619635471184649L
+        priv = 3566362552192297244228444858243043761472313190548212544975902619635471184649
         self.assertEqual(
             key.encode_privkey_compressed(priv),
             'KwV39GUjx6nBdUJ4zwC6ApBWfvSAarcrMx7Afwpf7ueXm5Wuc1r2')
@@ -97,10 +98,10 @@ class TestKey(unittest.TestCase):
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))
         self.assertEquals(
             pub.x(),
-            106166571357547839921127737825237030169011311004864544123912774005363869489531L)
+            106166571357547839921127737825237030169011311004864544123912774005363869489531)
         self.assertEquals(
             pub.y(),
-            25551918952383289921400942500183155031311393141491670111210077721682692525744L)
+            25551918952383289921400942500183155031311393141491670111210077721682692525744)
 
     def test_encode_pub(self):
         pub = key.priv_to_pub(
@@ -168,7 +169,7 @@ class TestKey(unittest.TestCase):
         self.assertEquals(key.decode_pub(key.encode_pub_compressed(pub)), pub)
 
         for _ in xrange(100):
-            print _
+            print(_)
             priv = key.generate_priv()
             pub = key.priv_to_pub(priv)
             self.assertEquals(key.decode_pub(key.encode_pub_compressed(pub)), pub)

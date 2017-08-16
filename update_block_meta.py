@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import binascii
 from datetime import datetime
 import os
@@ -22,7 +23,7 @@ def main():
     db_session = db.Session()
 
     res = db.engine.execute('update block set prev_block_id = p.id from block p where block.prev_block_hash = p.block_hash and block.prev_block_id is null')
-    print '%r prev_block_id set' % (res.rowcount,)
+    print('%r prev_block_id set' % (res.rowcount,))
     db_session.commit()
 
     db_session.query(db.Block).filter(db.Block.prev_block_hash == 32 * '\x00').update(values={'depth': 0})
