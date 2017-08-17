@@ -1,3 +1,7 @@
+from builtins import str
+from builtins import chr
+from builtins import range
+from builtins import object
 import binascii
 from hashlib import sha256
 import logging
@@ -168,7 +172,7 @@ class Version(Message):
         super(Version, self).__init__(header=header)
         self.version = version
         self.services = services
-        self.timestamp = timestamp if timestamp is not None else long(time.time())
+        self.timestamp = timestamp if timestamp is not None else int(time.time())
         self.addr_recv = addr_recv
         self.addr_from = addr_from
         self.nonce = nonce
@@ -292,7 +296,7 @@ class AddressList(Message):
             (header, bytes) = MessageHeader.parse(bytes)
         (addr_count, bytes) = parse_varint(bytes)
         addresses = []
-        for _ in xrange(addr_count):
+        for _ in range(addr_count):
             (ts, addr, bytes) = parse_addr(bytes)
             addresses.append((ts, addr))
         return (cls(addresses, header), bytes)
@@ -334,7 +338,7 @@ class InventoryVector(Message):
             (header, bytes) = MessageHeader.parse(bytes)
         (count, bytes) = parse_varint(bytes)
         hashes = []
-        for _ in xrange(count):
+        for _ in range(count):
             (item, bytes) = parse(bytes, cls.HASH_FMT)
             hashes.append(item)
         return (cls(hashes, header), bytes)
@@ -470,12 +474,12 @@ class Transaction(object):
         ((version,), bytes) = parse(bytes, UINT32_FMT)
         (num_tx_in, bytes) = parse_varint(bytes)
         tx_in = []
-        for _ in xrange(num_tx_in):
+        for _ in range(num_tx_in):
             (tx, bytes) = TxIn.parse(bytes)
             tx_in.append(tx)
         (num_tx_out, bytes) = parse_varint(bytes)
         tx_out = []
-        for _ in xrange(num_tx_out):
+        for _ in range(num_tx_out):
             (tx, bytes) = TxOut.parse(bytes)
             tx_out.append(tx)
         ((lock_time,), bytes) = parse(bytes, UINT32_FMT)
@@ -576,7 +580,7 @@ class Block(Message):
          bytes) = parse(bytes, cls.HDR_FMT)
         (num_tx, bytes) = parse_varint(bytes)
         txns = []
-        for _ in xrange(num_tx):
+        for _ in range(num_tx):
             (tx, bytes) = Transaction.parse(bytes)
             txns.append(tx)
         return (cls(version, prev_block_hash, merkle_root, timestamp, bits, nonce, txns), bytes)
@@ -635,7 +639,7 @@ class GetBlocks(Message):
         ((version,), bytes) = parse(bytes, UINT32_FMT)
         (num_hashes, bytes) = parse_varint(bytes)
         hashes = []
-        for _ in xrange(num_hashes):
+        for _ in range(num_hashes):
             ((hash,), bytes) = parse(bytes, cls.HASH_FMT)
             hashes.append(hash)
         ((hash_stop,), bytes) = parse(bytes, cls.HASH_FMT)

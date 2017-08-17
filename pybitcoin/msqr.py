@@ -1,5 +1,8 @@
+from __future__ import division
 # from http://eli.thegreenplace.net/2009/03/07/computing-modular-square-roots-in-python/
 
+from builtins import range
+from past.utils import old_div
 def modular_sqrt(a, p):
     """ Find a quadratic residue (mod p) of 'a'. p
     must be an odd prime.
@@ -26,7 +29,7 @@ def modular_sqrt(a, p):
     elif p == 2:
         return p
     elif p % 4 == 3:
-        return pow(a, (p + 1) / 4, p)
+        return pow(a, old_div((p + 1), 4), p)
 
     # Partition p-1 to s * 2^e for an odd s (i.e.
     # reduce all the powers of 2 from p-1)
@@ -59,7 +62,7 @@ def modular_sqrt(a, p):
     # both a and b
     # r is the exponent - decreases with each update
     #
-    x = pow(a, (s + 1) / 2, p)
+    x = pow(a, old_div((s + 1), 2), p)
     b = pow(a, s, p)
     g = pow(n, s, p)
     r = e
@@ -67,7 +70,7 @@ def modular_sqrt(a, p):
     while True:
         t = b
         m = 0
-        for m in xrange(r):
+        for m in range(r):
             if t == 1:
                 break
             t = pow(t, 2, p)
@@ -90,5 +93,5 @@ def legendre_symbol(a, p):
     Returns 1 if a has a square root modulo
     p, -1 otherwise.
     """
-    ls = pow(a, (p - 1) / 2, p)
+    ls = pow(a, old_div((p - 1), 2), p)
     return -1 if ls == p - 1 else ls

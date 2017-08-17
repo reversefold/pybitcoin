@@ -1,5 +1,7 @@
 """PyBitCoin tests"""
 from __future__ import print_function
+from builtins import chr
+from builtins import range
 import binascii
 import hashlib
 import mox
@@ -301,7 +303,7 @@ class AddressListTest(unittest.TestCase):
 
 def random_hash():
     return ''.join(
-        chr(random.randrange(256)) for _ in xrange(32))
+        chr(random.randrange(256)) for _ in range(32))
 
 
 class TestInventoryVectors(unittest.TestCase):

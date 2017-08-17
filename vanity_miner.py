@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import hex
+from builtins import range
+from past.utils import old_div
 import binascii
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 import multiprocessing
 from pprint import pprint, pformat
 import re
@@ -109,12 +116,12 @@ def getwork():
         fields = fields[0].split(':') + fields[-1:]
         if len(fields) != len(headers):
             print('fields do not match headers: %r' % (fields,))
-        rec = dict(zip(headers, fields))
+        rec = dict(list(zip(headers, fields)))
         if rec['pattern'][0] != '1':
             print('pattern does not start with 1: %s' % (rec['pattern'],))
             continue
         rec['reward'] = float(rec['reward'])
-        rec['work_to_reward'] = pow(58, len(rec['pattern']) - 1) / rec['reward']
+        rec['work_to_reward'] = old_div(pow(58, len(rec['pattern']) - 1), rec['reward'])
         rec['public_key_enc'] = binascii.unhexlify(rec['public_key_hex'])
         rec['public_key'] = key.decode_pub(rec['public_key_enc'])
         work.append(rec)
@@ -132,7 +139,7 @@ def main():
     pprint(work)
     num = multiprocessing.Value('L')
     procs = []
-    for _ in xrange(multiprocessing.cpu_count() - 2):
+    for _ in range(multiprocessing.cpu_count() - 2):
         proc = multiprocessing.Process(target=mine, args=(num, work))
         proc.start()
         procs.append(proc)
@@ -147,7 +154,7 @@ def main():
         nval = num.value
         num_dots = (nval - l_num) // NUM_PER_DOT
         writestr = ''
-        for _ in xrange(num_dots):
+        for _ in range(num_dots):
             writestr += '.'
             if nval - lt_num > NUM_PER_LINE:
                 lt_num = nval // NUM_PER_LINE * NUM_PER_LINE

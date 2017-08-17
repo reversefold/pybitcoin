@@ -6,3 +6,4 @@ psycopg2
 requests
 reversefold.util>=1.12.0
 sqlalchemy
+future

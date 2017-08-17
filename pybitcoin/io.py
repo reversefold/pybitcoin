@@ -1,3 +1,7 @@
+from future import standard_library
+standard_library.install_aliases()
+from builtins import bytes
+from builtins import object
 import binascii
 import ctypes
 import datetime
@@ -5,7 +9,7 @@ import errno
 import glob
 import multiprocessing
 import os
-import Queue
+import queue
 import random
 import socket
 import threading
@@ -100,7 +104,7 @@ class IOLoop(threading.Thread):
     def __init__(self, read_blocktmp_files=True):
         super(IOLoop, self).__init__()
         self.sock = None
-        self.out_queue = Queue.Queue()
+        self.out_queue = queue.Queue()
         self.waiting_for = {}
         self.stored = {}
         self.max_height = multiprocessing.Value(ctypes.c_ulong, 0)
@@ -135,7 +139,7 @@ class IOLoop(threading.Thread):
         self.num_blocks = multiprocessing.Value(ctypes.c_ulonglong, len(self.known_blocks))
         log.info('Block database starting with %r blocks', self.num_blocks.value)
 
-        self.process_queue = Queue.Queue()
+        self.process_queue = queue.Queue()
 
         self.process_thread = None
         self.write_thread = None
@@ -284,7 +288,7 @@ class IOLoop(threading.Thread):
                 #print bc.visual2(inmsg)
                 try:
                     inmsg = self.process_queue.get(timeout=1)
-                except Queue.Empty:
+                except queue.Empty:
                     continue
                 outmsg = self.handle_message(inmsg)
                 if outmsg:
@@ -309,7 +313,7 @@ class IOLoop(threading.Thread):
                     continue
                 try:
                     outmsg = self.out_queue.get(timeout=1)
-                except Queue.Empty:
+                except queue.Empty:
                     continue
                 self.send_msg(outmsg)
         except KeyboardInterrupt:
@@ -543,7 +547,7 @@ class DBWriteLoop(object):
                     else:
                         try:
                             blktmpfilename = self.block_queue.get(timeout=1)
-                        except Queue.Empty:
+                        except queue.Empty:
                             continue
                         log.info('Reading block file %s', blktmpfilename)
                         try:

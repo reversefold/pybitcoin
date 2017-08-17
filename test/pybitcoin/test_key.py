@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import range
 import binascii
 import unittest
 
@@ -168,7 +169,7 @@ class TestKey(unittest.TestCase):
             key.decode_privkey('5JnKZDMUAddiGgFjWiHNVrX5pxGcEJ1miscs2Xhy7f9BrGffrps'))
         self.assertEquals(key.decode_pub(key.encode_pub_compressed(pub)), pub)
 
-        for _ in xrange(100):
+        for _ in range(100):
             print(_)
             priv = key.generate_priv()
             pub = key.priv_to_pub(priv)

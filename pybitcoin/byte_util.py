@@ -1,3 +1,5 @@
+from builtins import hex
+from builtins import range
 import binascii
 from hashlib import sha256
 import struct
@@ -52,7 +54,7 @@ def base58_decode(bytes):
         leading_zeros += 1
     bytes = bytes[leading_zeros:]
     num = 0
-    for i in xrange(len(bytes)):
+    for i in range(len(bytes)):
         num = num * 58 + base58_alphabet.index(bytes[i])
     if num > 0:
         decoded_hex = hex(num)[2:].rstrip('L')

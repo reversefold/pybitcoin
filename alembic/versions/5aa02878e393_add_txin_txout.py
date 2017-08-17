@@ -6,8 +6,10 @@ Create Date: 2015-11-22 15:12:01.133965
 
 """
 from __future__ import print_function
+from __future__ import division
 
 # revision identifiers, used by Alembic.
+from past.utils import old_div
 revision = '5aa02878e393'
 down_revision = '3039a2ad73d2'
 branch_labels = None
@@ -59,7 +61,7 @@ def upgrade():
         query_end = datetime.now()
         num_inserted += len(chunk)
         tot_time = query_end - start_time
-        avg_time = tot_time / num_inserted
+        avg_time = old_div(tot_time, num_inserted)
         print('%u / %u %.3f%% done, %u inserted, %s for query, %s total, %s avg, ~%s remaining' % (
             num_inserted,
             num_to_insert,

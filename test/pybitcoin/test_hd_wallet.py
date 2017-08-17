@@ -1,3 +1,4 @@
+from builtins import range
 import binascii
 import random
 import unittest
@@ -237,11 +238,11 @@ class TestHDWallet(unittest.TestCase):
             'nLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt')
 
     def test_random_keys(self):
-        for _ in xrange(5):
+        for _ in range(5):
             key = hd_wallet.HDPrivKey.generate_master(num_random_bytes=(random.randint(1, 1000)))
             self.assertEquals(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
             self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
-            for __ in xrange(10):
+            for __ in range(10):
                 key = key.derive_child(
                     random.randint(0, hd_wallet.PUBLIC_DERIVATION_BIT - 1)
                     | (hd_wallet.PUBLIC_DERIVATION_BIT if bool(random.getrandbits(1)) else 0))

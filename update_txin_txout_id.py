@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from datetime import datetime
 import os
 import multiprocessing
-import Queue
+import queue
 import sys
 import threading
 import time
@@ -38,7 +45,7 @@ class TxInUpdater(object):
             db.TxIn.txout_id.is_(None)
             & (db.TxIn.previous_output_transaction_hash != 32 * '\x00')
         ).count()
-        self.total_blocks = self.total_to_process / BLOCK
+        self.total_blocks = old_div(self.total_to_process, BLOCK)
         self.blocks_processed = multiprocessing.Value('i', 0)
         self.shutdown_event = multiprocessing.Event()
         self.queued_blocks = 0
@@ -55,7 +62,7 @@ class TxInUpdater(object):
         with self.blocks_processed.get_lock():
             self.blocks_processed.value += 1
             blocks_processed = self.blocks_processed.value
-        avg_time = tot_time / blocks_processed
+        avg_time = old_div(tot_time, blocks_processed)
         print('%u / %u %.3f%% done, %u matched, %s for query, %s total, %s avg, ~%s remaining' % (
             blocks_processed,
             self.total_blocks,
@@ -71,7 +78,7 @@ class TxInUpdater(object):
             try:
                 chunk = self.queue.get(timeout=1)
                 self.process_chunk(chunk)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
     def queue_blocks(self):
@@ -94,7 +101,7 @@ class TxInUpdater(object):
             self.queue_thread = threading.Thread(target=self.queue_blocks)
             self.queue_thread.start()
             procs = []
-            for i in xrange(multiprocessing.cpu_count()):
+            for i in range(multiprocessing.cpu_count()):
                 proc = multiprocessing.Process(target=self.process_chunks)
                 proc.start()
                 procs.append(proc)
