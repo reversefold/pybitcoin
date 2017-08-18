@@ -33,7 +33,7 @@ def upgrade():
     )
     op.create_index(op.f('ix_block_block_hash'), 'block', ['block_hash'], unique=False)
     op.create_index(op.f('ix_block_id'), 'block', ['id'], unique=True)
-    op.create_index('ix_block_prev_block_hash', 'block', ['prev_block_hash'], unique=False, postgresql_where=sa.text(u'block.prev_block_id IS NULL'))
+    op.create_index('ix_block_prev_block_hash', 'block', ['prev_block_hash'], unique=False, postgresql_where=sa.text('block.prev_block_id IS NULL'))
     op.create_index(op.f('ix_block_prev_block_id'), 'block', ['prev_block_id'], unique=False)
     op.create_table('transaction',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -62,7 +62,7 @@ def upgrade():
     )
     op.create_index(op.f('ix_txin_id'), 'txin', ['id'], unique=True)
     op.create_index(op.f('ix_txin_transaction_id'), 'txin', ['transaction_id'], unique=False)
-    op.create_index('ix_txin_tx_hash_idx', 'txin', ['previous_output_transaction_hash', 'previous_output_index'], unique=False, postgresql_where=sa.text(u'txin.txout_id IS NULL'))
+    op.create_index('ix_txin_tx_hash_idx', 'txin', ['previous_output_transaction_hash', 'previous_output_index'], unique=False, postgresql_where=sa.text('txin.txout_id IS NULL'))
     op.create_index(op.f('ix_txin_txout_id'), 'txin', ['txout_id'], unique=False)
     op.create_table('txout',
         sa.Column('id', sa.Integer(), nullable=False),

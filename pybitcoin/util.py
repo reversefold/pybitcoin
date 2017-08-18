@@ -13,6 +13,6 @@ def visual2(msg):
         visual(b)
         for b in (
                 bytes[sum(ii[:i]):sum(ii[:i]) + ii[i]]
-                for i in xrange(len(ii))
+                for i in range(len(ii))
         )
     ).upper()

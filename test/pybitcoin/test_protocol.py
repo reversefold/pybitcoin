@@ -1,5 +1,6 @@
 """PyBitCoin tests"""
 from __future__ import print_function
+
 import binascii
 import hashlib
 import mox
@@ -41,36 +42,36 @@ class TestSplitN(unittest.TestCase):
 
 class TestVarint(mox.MoxTestBase):
     def test_encode_varint_char(self):
-        self.assertEquals(protocol.encode_varint(0xfc), '\xfc')
+        self.assertEqual(protocol.encode_varint(0xfc), '\xfc')
 
     def test_encode_varint_short(self):
-        self.assertEquals(protocol.encode_varint(0xfd), '\xfd\xfd\x00')
-        self.assertEquals(protocol.encode_varint(0xfe), '\xfd\xfe\x00')
-        self.assertEquals(protocol.encode_varint(0xff), '\xfd\xff\x00')
+        self.assertEqual(protocol.encode_varint(0xfd), '\xfd\xfd\x00')
+        self.assertEqual(protocol.encode_varint(0xfe), '\xfd\xfe\x00')
+        self.assertEqual(protocol.encode_varint(0xff), '\xfd\xff\x00')
 
     def test_encode_varint_int(self):
-        self.assertEquals(protocol.encode_varint(0x10000), '\xfe\x00\x00\x01\x00')
+        self.assertEqual(protocol.encode_varint(0x10000), '\xfe\x00\x00\x01\x00')
 
     def test_encode_varint_long_long(self):
-        self.assertEquals(protocol.encode_varint(0x100000000), '\xff\x00\x00\x00\x00\x01\x00\x00\x00')
+        self.assertEqual(protocol.encode_varint(0x100000000), '\xff\x00\x00\x00\x00\x01\x00\x00\x00')
 
     def test_encode_varint_too_long(self):
         with self.assertRaises(Error):
             protocol.encode_varint(0x10000000000000000)
 
     def test_parse_varint_char(self):
-        self.assertEquals(protocol.parse_varint('\xfc'), (0xfc, ''))
+        self.assertEqual(protocol.parse_varint('\xfc'), (0xfc, ''))
 
     def test_parse_varint_short(self):
-        self.assertEquals(protocol.parse_varint('\xfd\xfd\x00'), (0xfd, ''))
-        self.assertEquals(protocol.parse_varint('\xfd\xfe\x00'), (0xfe, ''))
-        self.assertEquals(protocol.parse_varint('\xfd\xff\x00'), (0xff, ''))
+        self.assertEqual(protocol.parse_varint('\xfd\xfd\x00'), (0xfd, ''))
+        self.assertEqual(protocol.parse_varint('\xfd\xfe\x00'), (0xfe, ''))
+        self.assertEqual(protocol.parse_varint('\xfd\xff\x00'), (0xff, ''))
 
     def test_parse_varint_int(self):
-        self.assertEquals(protocol.parse_varint('\xfe\x00\x00\x01\x00'), (0x10000, ''))
+        self.assertEqual(protocol.parse_varint('\xfe\x00\x00\x01\x00'), (0x10000, ''))
 
     def test_parse_varint_long_long(self):
-        self.assertEquals(protocol.parse_varint('\xff\x00\x00\x00\x00\x01\x00\x00\x00'), (0x100000000, ''))
+        self.assertEqual(protocol.parse_varint('\xff\x00\x00\x00\x00\x01\x00\x00\x00'), (0x100000000, ''))
 
     def test_parse_varint_too_long(self):
         # since it's impossible to get > 0xff from a single byte, use mox to verify
@@ -176,37 +177,37 @@ class TxInTest(unittest.TestCase):
         idx = 75
         seq = 42
         txin1 = txin = protocol.TxIn((tx_hash, idx), script, seq)
-        self.assertEquals(txin.previous_output, (tx_hash, idx))
-        self.assertEquals(txin.signature_script, script)
-        self.assertEquals(txin.sequence, seq)
+        self.assertEqual(txin.previous_output, (tx_hash, idx))
+        self.assertEqual(txin.signature_script, script)
+        self.assertEqual(txin.sequence, seq)
 
         (txin, bytes) = protocol.TxIn.parse(txin.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(txin.previous_output, (tx_hash, idx))
-        self.assertEquals(txin.signature_script, script)
-        self.assertEquals(txin.sequence, seq)
+        self.assertEqual(bytes, '')
+        self.assertEqual(txin.previous_output, (tx_hash, idx))
+        self.assertEqual(txin.signature_script, script)
+        self.assertEqual(txin.sequence, seq)
 
-        self.assertEquals(txin1, txin)
+        self.assertEqual(txin1, txin)
 
 
 class PubKeyScriptTest(unittest.TestCase):
     def test_pks(self):
         script = '\x42' * 5
         pks = protocol.PubKeyScript(script)
-        self.assertEquals(pks.bytes, script)
-        self.assertEquals(repr(pks), binascii.hexlify(script))
+        self.assertEqual(pks.bytes, script)
+        self.assertEqual(repr(pks), binascii.hexlify(script))
         self.assertFalse(pks.is_standard_transaction)
 
         addr = '\x42' * 20
         script = '\x76\xa9\x14' + addr + '\x88\xac'
         pks = protocol.PubKeyScript(script)
-        self.assertEquals(pks.bytes, script)
-        self.assertEquals(
+        self.assertEqual(pks.bytes, script)
+        self.assertEqual(
             repr(pks),
             'To Addr: ' + byte_util.base58_encode(key.address_from_pk_hash(addr)))
         self.assertTrue(pks.is_standard_transaction)
 
-        self.assertEquals(pks, pks)
+        self.assertEqual(pks, pks)
 
 
 class TxOutTest(unittest.TestCase):
@@ -215,15 +216,15 @@ class TxOutTest(unittest.TestCase):
         pksbytes = '\x32' * 40
         pks = protocol.PubKeyScript(pksbytes)
         txout1 = txout = protocol.TxOut(val, pks)
-        self.assertEquals(txout.value, val)
-        self.assertEquals(txout.pk_script.bytes, pksbytes)
+        self.assertEqual(txout.value, val)
+        self.assertEqual(txout.pk_script.bytes, pksbytes)
 
         (txout, bytes) = protocol.TxOut.parse(txout.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(txout.value, val)
-        self.assertEquals(txout.pk_script.bytes, pksbytes)
+        self.assertEqual(bytes, '')
+        self.assertEqual(txout.value, val)
+        self.assertEqual(txout.pk_script.bytes, pksbytes)
 
-        self.assertEquals(txout1, txout)
+        self.assertEqual(txout1, txout)
 
 
 class TransactionTest(unittest.TestCase):
@@ -247,35 +248,35 @@ class TransactionTest(unittest.TestCase):
         lock = 12345678
 
         tx1 = tx = protocol.TransactionMessage(protocol.Transaction(v, txin, txout, lock))
-        self.assertEquals(tx.tx.version, v)
-        self.assertEquals(tx.tx.tx_in, txin)
-        self.assertEquals(tx.tx.tx_out, txout)
-        self.assertEquals(tx.tx.lock_time, lock)
+        self.assertEqual(tx.tx.version, v)
+        self.assertEqual(tx.tx.tx_in, txin)
+        self.assertEqual(tx.tx.tx_out, txout)
+        self.assertEqual(tx.tx.lock_time, lock)
 
         (tx, bytes) = protocol.TransactionMessage.parse(tx.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(tx.tx.version, v)
-        self.assertEquals(tx.tx.tx_in, txin)
-        self.assertEquals(tx.tx.tx_out, txout)
-        self.assertEquals(tx.tx.lock_time, lock)
+        self.assertEqual(bytes, '')
+        self.assertEqual(tx.tx.version, v)
+        self.assertEqual(tx.tx.tx_in, txin)
+        self.assertEqual(tx.tx.tx_out, txout)
+        self.assertEqual(tx.tx.lock_time, lock)
 
-        self.assertEquals(tx1, tx)
+        self.assertEqual(tx1, tx)
 
 
 class VerackTest(unittest.TestCase):
     def test_verack(self):
         msg = protocol.Verack()
         (parsed, bytes) = protocol.Verack.parse(msg.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(parsed.bytes, msg.bytes)
+        self.assertEqual(bytes, '')
+        self.assertEqual(parsed.bytes, msg.bytes)
 
 
 class PingTest(unittest.TestCase):
     def test_verack(self):
         msg = protocol.Ping()
         (parsed, bytes) = protocol.Ping.parse(msg.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(parsed.bytes, msg.bytes)
+        self.assertEqual(bytes, '')
+        self.assertEqual(parsed.bytes, msg.bytes)
 
 
 class AddressListTest(unittest.TestCase):
@@ -284,24 +285,24 @@ class AddressListTest(unittest.TestCase):
             (12345, (54361, '53.69.86.123', 843)),
             (63528, (95635, '153.169.204.123', 543))])
         (parsed, bytes) = protocol.AddressList.parse(msg.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(parsed.bytes, msg.bytes)
-        self.assertEquals(parsed.addresses[0][0], 12345)
-        self.assertEquals(parsed.addresses[0][1][0], 54361)
-        self.assertEquals(parsed.addresses[0][1][1], '53.69.86.123')
-        self.assertEquals(parsed.addresses[0][1][2], 843)
+        self.assertEqual(bytes, '')
+        self.assertEqual(parsed.bytes, msg.bytes)
+        self.assertEqual(parsed.addresses[0][0], 12345)
+        self.assertEqual(parsed.addresses[0][1][0], 54361)
+        self.assertEqual(parsed.addresses[0][1][1], '53.69.86.123')
+        self.assertEqual(parsed.addresses[0][1][2], 843)
 
-        self.assertEquals(parsed.addresses[1][0], 63528)
-        self.assertEquals(parsed.addresses[1][1][0], 95635)
-        self.assertEquals(parsed.addresses[1][1][1], '153.169.204.123')
-        self.assertEquals(parsed.addresses[1][1][2], 543)
+        self.assertEqual(parsed.addresses[1][0], 63528)
+        self.assertEqual(parsed.addresses[1][1][0], 95635)
+        self.assertEqual(parsed.addresses[1][1][1], '153.169.204.123')
+        self.assertEqual(parsed.addresses[1][1][2], 543)
 
-        self.assertEquals(msg, parsed)
+        self.assertEqual(msg, parsed)
 
 
 def random_hash():
     return ''.join(
-        chr(random.randrange(256)) for _ in xrange(32))
+        chr(random.randrange(256)) for _ in range(32))
 
 
 class TestInventoryVectors(unittest.TestCase):
@@ -320,11 +321,11 @@ class TestInventoryVectors(unittest.TestCase):
             (2, hash2),
             (1, hash3)])
         (parsed, bytes) = cls.parse(msg.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(msg.bytes, parsed.bytes)
-        self.assertEquals(parsed.hashes[0], msg.hashes[0])
-        self.assertEquals(parsed.hashes[1], msg.hashes[1])
-        self.assertEquals(parsed.hashes[2], msg.hashes[2])
+        self.assertEqual(bytes, '')
+        self.assertEqual(msg.bytes, parsed.bytes)
+        self.assertEqual(parsed.hashes[0], msg.hashes[0])
+        self.assertEqual(parsed.hashes[1], msg.hashes[1])
+        self.assertEqual(parsed.hashes[2], msg.hashes[2])
 
 
 class TestBlock(unittest.TestCase):
@@ -354,9 +355,9 @@ class TestBlock(unittest.TestCase):
             975670,
             [tx, tx])
         (parsed, bytes) = protocol.Block.parse(msg.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(msg.bytes, parsed.bytes)
-        self.assertEquals(msg, parsed)
+        self.assertEqual(bytes, '')
+        self.assertEqual(msg.bytes, parsed.bytes)
+        self.assertEqual(msg, parsed)
 
 
 class TestGetBlocks(unittest.TestCase):
@@ -366,5 +367,5 @@ class TestGetBlocks(unittest.TestCase):
             [random_hash(), random_hash(), random_hash()],
             random_hash())
         (parsed, bytes) = protocol.GetBlocks.parse(msg.bytes)
-        self.assertEquals(bytes, '')
-        self.assertEquals(msg, parsed)
+        self.assertEqual(bytes, '')
+        self.assertEqual(msg, parsed)

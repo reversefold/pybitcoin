@@ -25,22 +25,22 @@ class TestHDWallet(unittest.TestCase):
     def test_generate_random(self):
         key = hd_wallet.HDPrivKey.generate_master()
         self.assertEqual(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
-        self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
+        self.assertEqual(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
 
     def test_generate_random_128_bytes(self):
         key = hd_wallet.HDPrivKey.generate_master(num_random_bytes=128)
         self.assertEqual(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
-        self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
+        self.assertEqual(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
 
     def test_decode_encode_priv(self):
         key = ('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPP'
                'qjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
-        self.assertEquals(hd_wallet.HDKey.decode(key).encoded(), key)
+        self.assertEqual(hd_wallet.HDKey.decode(key).encoded(), key)
 
     def test_decode_encode_pub(self):
         key = ('xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhe'
                'PY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8')
-        self.assertEquals(hd_wallet.HDKey.decode(key).encoded(), key)
+        self.assertEqual(hd_wallet.HDKey.decode(key).encoded(), key)
 
     def test_m_priv_to_pub(self):
         key = hd_wallet.HDKey.decode(
@@ -115,7 +115,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprv9wTYmMFdV23N2TdNG573QoEsfRrWKQgWeibmLntzniatZvR9BmLn'
             'vSxqu53Kw1UmYPxLgboyZQaXwTCg8MSY3H2EU4pWcQDnRnrVA1xe8fs')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6ASuArnXKPbfEwhqN6e3mwBcDTgzisQN1wXN9BJcM47sSikHjJf3'
             'UFHKkNAWbWMiGj7Wf5uMash7SyYq527Hqck2AxYysAA7xmALppuCkwQ')
 
@@ -128,7 +128,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprv9z4pot5VBttmtdRTWfWQmoH1taj2axGVzFqSb8C9xaxKymcFzXBD'
             'ptWmT7FwuEzG3ryjH4ktypQSAewRiNMjANTtpgP4mLTj34bhnZX7UiM')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VU'
             'NgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5')
 
@@ -142,7 +142,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprvA2JDeKCSNNZky6uBCviVfJSKyQ1mDYahRjijr5idH2WwLsEd4Hsb'
             '2Tyh8RfQMuPh7f7RtyzTtdrbdqqsunu5Mm3wDvUAKRHSC34sJ7in334')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6FHa3pjLCk84BayeJxFW2SP4XRrFd1JYnxeLeU8EqN3vDfZmbqBq'
             'aGJAyiLjTAwm6ZLRQUMv1ZACTj37sR62cfN7fe5JnJ7dh8zL4fiyLHV')
 
@@ -157,7 +157,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8F'
             'Ha8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6H1LXWLaKsWFhvm6RVpEL9P4KfRZSW7abD2ttkWP3SSQvnyA8FSV'
             'qNTEcYFgJS2UaFcxupHiYkro49S8yGasTvXEYBVPamhGW6cFJodrTHy')
 
@@ -170,7 +170,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQ'
             'RUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9Lgpe'
             'yGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH')
 
@@ -184,7 +184,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprv9wSp6B7kry3Vj9m1zSnLvN3xH8RdsPP1Mh7fAaR7aRLcQMKTR2vi'
             'dYEeEg2mUCTAwCd6vnxVrcjfy2kRgVsFawNzmjuHc2YmYRmagcEPdU9')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6ASAVgeehLbnwdqV6UKMHVzgqAG8Gr6riv3Fxxpj8ksbH9ebxaEy'
             'BLZ85ySDhKiLDBrQSARLq1uNRts8RuJiHjaDMBU4Zn9h8LZNnBC5y4a')
 
@@ -199,7 +199,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprv9zFnWC6h2cLgpmSA46vutJzBcfJ8yaJGg8cX1e5StJh45BBciYTR'
             'XSd25UEPVuesF9yog62tGAQtHjXajPPdbRCHuWS6T8XA2ECKADdw4Ef')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6DF8uhdarytz3FWdA8TvFSvvAh8dP3283MY7p2V4SeE2wyWmG5mg'
             '5EwVvmdMVCQcoNJxGoWaU9DCWh89LojfZ537wTfunKau47EL2dhHKon')
 
@@ -215,7 +215,7 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS'
             '3xz7iAxn8L39njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhg'
             'bmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL')
 
@@ -232,21 +232,21 @@ class TestHDWallet(unittest.TestCase):
         self.assertEqual(key.encoded(),
             'xprvA2nrNbFZABcdryreWet9Ea4LvTJcGsqrMzxHx98MMrotbir7yrKC'
             'EXw7nadnHM8Dq38EGfSh6dqA9QWTyefMLEcBYJUuekgW4BYPJcr9E7j')
-        self.assertEquals(key.pub().encoded(),
+        self.assertEqual(key.pub().encoded(),
             'xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdS'
             'nLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt')
 
     def test_random_keys(self):
-        for _ in xrange(5):
+        for _ in range(5):
             key = hd_wallet.HDPrivKey.generate_master(num_random_bytes=(random.randint(1, 1000)))
-            self.assertEquals(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
-            self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
-            for __ in xrange(10):
+            self.assertEqual(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
+            self.assertEqual(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
+            for __ in range(10):
                 key = key.derive_child(
                     random.randint(0, hd_wallet.PUBLIC_DERIVATION_BIT - 1)
                     | (hd_wallet.PUBLIC_DERIVATION_BIT if bool(random.getrandbits(1)) else 0))
-                self.assertEquals(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
-                self.assertEquals(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
+                self.assertEqual(key.encoded(), hd_wallet.HDKey.decode(key.encoded()).encoded())
+                self.assertEqual(key.pub().encoded(), hd_wallet.HDKey.decode(key.pub().encoded()).encoded())
 
 #for _ in xrange(9):
 #    setattr(TestHDWallet, 'test_random_keys_%s' % (_,), TestHDWallet.test_random_keys)

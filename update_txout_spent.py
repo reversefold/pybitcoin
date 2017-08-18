@@ -3,7 +3,10 @@ from __future__ import print_function
 from datetime import datetime
 import os
 import multiprocessing
-import Queue
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 import sys
 import threading
 import time
@@ -68,7 +71,7 @@ class TxOutUpdater(object):
             self.queue_thread = threading.Thread(target=self.queue_blocks)
             self.queue_thread.start()
             procs = []
-            for i in xrange(multiprocessing.cpu_count()):
+            for i in range(multiprocessing.cpu_count()):
                 proc = multiprocessing.Process(target=self.process_chunks)
                 proc.start()
                 procs.append(proc)
@@ -123,7 +126,7 @@ class TxOutUpdater(object):
             try:
                 chunk = self.queue.get(timeout=1)
                 self.process_chunk(chunk)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
     def process_chunk(self, txout_ids):

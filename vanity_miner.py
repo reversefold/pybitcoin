@@ -2,10 +2,7 @@
 
 from __future__ import print_function
 import binascii
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import StringIO
 import multiprocessing
 from pprint import pprint, pformat
 import re
@@ -109,7 +106,7 @@ def getwork():
         fields = fields[0].split(':') + fields[-1:]
         if len(fields) != len(headers):
             print('fields do not match headers: %r' % (fields,))
-        rec = dict(zip(headers, fields))
+        rec = dict(list(zip(headers, fields)))
         if rec['pattern'][0] != '1':
             print('pattern does not start with 1: %s' % (rec['pattern'],))
             continue
@@ -132,7 +129,7 @@ def main():
     pprint(work)
     num = multiprocessing.Value('L')
     procs = []
-    for _ in xrange(multiprocessing.cpu_count() - 2):
+    for _ in range(multiprocessing.cpu_count() - 2):
         proc = multiprocessing.Process(target=mine, args=(num, work))
         proc.start()
         procs.append(proc)
@@ -147,7 +144,7 @@ def main():
         nval = num.value
         num_dots = (nval - l_num) // NUM_PER_DOT
         writestr = ''
-        for _ in xrange(num_dots):
+        for _ in range(num_dots):
             writestr += '.'
             if nval - lt_num > NUM_PER_LINE:
                 lt_num = nval // NUM_PER_LINE * NUM_PER_LINE

@@ -164,8 +164,8 @@ class HDPubKey(HDKey):
 
 VERSION_KEY_MAP = {}
 for cls in [HDPubKey, HDPrivKey]:
-    cls.V_T = {v: k for k, v in cls.T_V.iteritems()}
-    cls.VERSIONS = cls.T_V.values()
+    cls.V_T = {v: k for k, v in cls.T_V.items()}
+    cls.VERSIONS = list(cls.T_V.values())
     for version in cls.VERSIONS:
         VERSION_KEY_MAP[version] = cls
 
