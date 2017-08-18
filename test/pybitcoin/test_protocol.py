@@ -38,6 +38,7 @@ class TestSplitN(unittest.TestCase):
         with self.assertRaises(ParseError):
             (a, b) = splitn('12', 3)
 
+
 class TestVarint(mox.MoxTestBase):
     def test_encode_varint_char(self):
         self.assertEquals(protocol.encode_varint(0xfc), '\xfc')
@@ -97,7 +98,6 @@ class MessageHeaderTest(unittest.TestCase):
         self.assertEqual(hdr.payload_length, 1024)
         self.assertEqual(hdr.checksum, '\x01\x12\xae\x97')
         self.assertEqual(hdr.bytes, '\xf9\xbe\xb4\xd9header\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x01\x12\xae\x97')
-
 
     def test_header_parse_bad_magic(self):
         with self.assertRaises(ParseError):

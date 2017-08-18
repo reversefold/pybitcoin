@@ -1,10 +1,7 @@
 alembic
-coverage
 ecdsa
 greenhouse
-mox
 netifaces
-nose
 psycopg2
 requests
 reversefold.util>=1.12.0
