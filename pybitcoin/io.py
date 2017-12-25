@@ -332,6 +332,7 @@ class IOLoop(threading.Thread):
                     continue
                 hdr_bytes = recv_bytes(self.sock, protocol.MessageHeader.HEADER_FMT[1])
                 (hdr, _) = protocol.MessageHeader.parse(hdr_bytes)
+                log.debug('Received header %r', hdr)
                 assert not _, _
                 payload_bytes = recv_bytes(self.sock, hdr.payload_length)
                 (inmsg, _) = protocol.Message.parse(payload_bytes, hdr)
@@ -537,10 +538,12 @@ class DBWriteLoop(object):
         self.db_session = db.Session()
         try:
             while not self.db_write_thread_stop_event.is_set():
+                blktmpfilename = None
                 try:
                     if self.block_queue.empty():
                         time.sleep(1)
                     else:
+                        blktmpfilename = None
                         try:
                             blktmpfilename = self.block_queue.get(timeout=1)
                         except Queue.Empty:
@@ -558,14 +561,16 @@ class DBWriteLoop(object):
                         os.remove(blktmpfilename)
                 except Exception:
                     log.exception('Exception in db_write_loop, creating a new session')
-                    self.block_queue.put(blktmpfilename)
+                    if blktmpfilename:
+                        self.block_queue.put(blktmpfilename)
                     try:
                         db.reconnect()
                     except Exception:
                         log.exception('Exception reconnecting, ignoring')
                     log.info('Reconnected')
                 except:
-                    self.block_queue.put(blktmpfilename)
+                    if blktmpfilename:
+                        self.block_queue.put(blktmpfilename)
                     raise
         except:
             log.exception('exception in db_write_loop')
