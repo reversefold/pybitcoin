@@ -664,11 +664,19 @@ class Headers(Message):
     def __init__(self):
         raise Error('Unimplemented')
 
+    @classmethod
+    def parse(cls, bytes, header=None):
+        raise Error('Unimplemented')
+
 
 class GetAddresses(Message):
     COMMAND = 'getaddr'
 
     def __init__(self):
+        raise Error('Unimplemented')
+
+    @classmethod
+    def parse(cls, bytes, header=None):
         raise Error('Unimplemented')
 
 
@@ -678,11 +686,19 @@ class CheckOrder(Message):
     def __init__(self):
         raise Error('Unimplemented')
 
+    @classmethod
+    def parse(cls, bytes, header=None):
+        raise Error('Unimplemented')
+
 
 class SubmitOrder(Message):
     COMMAND = 'submitorder'
 
     def __init__(self):
+        raise Error('Unimplemented')
+
+    @classmethod
+    def parse(cls, bytes, header=None):
         raise Error('Unimplemented')
 
 
@@ -692,11 +708,19 @@ class Reply(Message):
     def __init__(self):
         raise Error('Unimplemented')
 
+    @classmethod
+    def parse(cls, bytes, header=None):
+        raise Error('Unimplemented')
+
 
 class Alert(Message):
     COMMAND = 'alert'
 
     def __init__(self):
+        raise Error('Unimplemented')
+
+    @classmethod
+    def parse(cls, bytes, header=None):
         raise Error('Unimplemented')
 
 
