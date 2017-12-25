@@ -658,70 +658,83 @@ class GetHeaders(GetBlocks):
     COMMAND = 'getheaders'
 
 
-class Headers(Message):
+class OpaqueMessage(Message):
+    def __init__(self, payload, header=None):
+        super(OpaqueMessage, self).__init__(header=header)
+        self.payload = payload
+
+    @classmethod
+    def parse(cls, payload, header=None):
+        if header is None:
+            (header, payload) = MessageHeader.parse(payload)
+        return (cls(payload, header=header), payload)
+
+
+
+class Headers(OpaqueMessage):
     COMMAND = 'headers'
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    # def __init__(self):
+    #     raise Error('Unimplemented')
 
-    @classmethod
-    def parse(cls, bytes, header=None):
-        raise Error('Unimplemented')
+    # @classmethod
+    # def parse(cls, bytes, header=None):
+    #     raise Error('Unimplemented')
 
 
-class GetAddresses(Message):
+class GetAddresses(OpaqueMessage):
     COMMAND = 'getaddr'
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    # def __init__(self):
+    #     raise Error('Unimplemented')
 
-    @classmethod
-    def parse(cls, bytes, header=None):
-        raise Error('Unimplemented')
+    # @classmethod
+    # def parse(cls, bytes, header=None):
+    #     raise Error('Unimplemented')
 
 
-class CheckOrder(Message):
+class CheckOrder(OpaqueMessage):
     COMMAND = 'checkorder'
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    # def __init__(self):
+    #     raise Error('Unimplemented')
 
-    @classmethod
-    def parse(cls, bytes, header=None):
-        raise Error('Unimplemented')
+    # @classmethod
+    # def parse(cls, bytes, header=None):
+    #     raise Error('Unimplemented')
 
 
-class SubmitOrder(Message):
+class SubmitOrder(OpaqueMessage):
     COMMAND = 'submitorder'
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    # def __init__(self):
+    #     raise Error('Unimplemented')
 
-    @classmethod
-    def parse(cls, bytes, header=None):
-        raise Error('Unimplemented')
+    # @classmethod
+    # def parse(cls, bytes, header=None):
+    #     raise Error('Unimplemented')
 
 
-class Reply(Message):
+class Reply(OpaqueMessage):
     COMMAND = 'reply'
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    # def __init__(self):
+    #     raise Error('Unimplemented')
 
-    @classmethod
-    def parse(cls, bytes, header=None):
-        raise Error('Unimplemented')
+    # @classmethod
+    # def parse(cls, bytes, header=None):
+    #     raise Error('Unimplemented')
 
 
-class Alert(Message):
+class Alert(OpaqueMessage):
     COMMAND = 'alert'
 
-    def __init__(self):
-        raise Error('Unimplemented')
+    # def __init__(self):
+    #     raise Error('Unimplemented')
 
-    @classmethod
-    def parse(cls, bytes, header=None):
-        raise Error('Unimplemented')
+    # @classmethod
+    # def parse(cls, bytes, header=None):
+    #     raise Error('Unimplemented')
 
 
 COMMAND_CLASS_MAP = {
