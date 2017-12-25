@@ -667,7 +667,7 @@ class OpaqueMessage(Message):
     def parse(cls, payload, header=None):
         if header is None:
             (header, payload) = MessageHeader.parse(payload)
-        return (cls(payload, header=header), payload)
+        return (cls(payload, header=header), b'')
 
 
 
