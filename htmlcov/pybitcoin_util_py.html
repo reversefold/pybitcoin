@@ -42,22 +42,22 @@
 
 <div class="help_panel">
     <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
-<p class="legend">Hot-keys on this page</p>
+    <p class="legend">Hot-keys on this page</p>
     <div>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">r</span>
         <span class="key">m</span>
         <span class="key">x</span>
         <span class="key">p</span> &nbsp; toggle line displays
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">j</span>
         <span class="key">k</span> &nbsp; next/prev highlighted chunk
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">0</span> &nbsp; (zero) top of page
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">1</span> &nbsp; (one) first highlighted chunk
     </p>
     </div>
@@ -85,28 +85,28 @@
 <p id="n16" class="pln"><a href="#n16">16</a></p>
 <p id="n17" class="pln"><a href="#n17">17</a></p>
 <p id="n18" class="pln"><a href="#n18">18</a></p>
-                
+
             </td>
             <td class="text">
 <p id="t1" class="stm run hide_run"><span class="key">import</span> <span class="nam">binascii</span><span class="strut">&nbsp;</span></p>
 <p id="t2" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t3" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t4" class="stm run hide_run"><span class="key">def</span> <span class="nam">visual</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t5" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="str">&#39; &#39;</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">binascii</span><span class="op">.</span><span class="nam">hexlify</span><span class="op">(</span><span class="nam">c</span><span class="op">)</span> <span class="key">for</span> <span class="nam">c</span> <span class="key">in</span> <span class="nam">bytes</span><span class="op">)</span><span class="op">.</span><span class="nam">upper</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t5" class="stm run hide_run">    <span class="key">return</span> <span class="str">' '</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">binascii</span><span class="op">.</span><span class="nam">hexlify</span><span class="op">(</span><span class="nam">c</span><span class="op">)</span> <span class="key">for</span> <span class="nam">c</span> <span class="key">in</span> <span class="nam">bytes</span><span class="op">)</span><span class="op">.</span><span class="nam">upper</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t6" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t7" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t8" class="stm run hide_run"><span class="key">def</span> <span class="nam">visual2</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t9" class="stm mis">&nbsp; &nbsp; <span class="nam">ii</span> <span class="op">=</span> <span class="op">[</span><span class="num">4</span><span class="op">,</span> <span class="num">12</span><span class="op">,</span> <span class="num">4</span><span class="op">,</span> <span class="num">4</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t10" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="num">4</span><span class="op">,</span> <span class="num">8</span><span class="op">,</span> <span class="num">8</span><span class="op">,</span> <span class="num">26</span><span class="op">,</span> <span class="num">26</span><span class="op">,</span> <span class="num">8</span><span class="op">,</span> <span class="num">16</span><span class="op">,</span> <span class="num">4</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t11" class="stm mis">&nbsp; &nbsp; <span class="nam">bytes</span> <span class="op">=</span> <span class="nam">msg</span><span class="op">.</span><span class="nam">bytes</span><span class="strut">&nbsp;</span></p>
-<p id="t12" class="stm mis">&nbsp; &nbsp; <span class="key">return</span> <span class="str">&#39;\n&#39;</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t13" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">visual</span><span class="op">(</span><span class="nam">b</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t14" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">for</span> <span class="nam">b</span> <span class="key">in</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t15" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">bytes</span><span class="op">[</span><span class="nam">sum</span><span class="op">(</span><span class="nam">ii</span><span class="op">[</span><span class="op">:</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="op">:</span><span class="nam">sum</span><span class="op">(</span><span class="nam">ii</span><span class="op">[</span><span class="op">:</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="nam">ii</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t16" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">xrange</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">ii</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t17" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; <span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t18" class="pln">&nbsp; &nbsp; <span class="op">)</span><span class="op">.</span><span class="nam">upper</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-                
+<p id="t9" class="stm mis">    <span class="nam">ii</span> <span class="op">=</span> <span class="op">[</span><span class="num">4</span><span class="op">,</span> <span class="num">12</span><span class="op">,</span> <span class="num">4</span><span class="op">,</span> <span class="num">4</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t10" class="pln">          <span class="num">4</span><span class="op">,</span> <span class="num">8</span><span class="op">,</span> <span class="num">8</span><span class="op">,</span> <span class="num">26</span><span class="op">,</span> <span class="num">26</span><span class="op">,</span> <span class="num">8</span><span class="op">,</span> <span class="num">16</span><span class="op">,</span> <span class="num">4</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t11" class="stm mis">    <span class="nam">bytes</span> <span class="op">=</span> <span class="nam">msg</span><span class="op">.</span><span class="nam">bytes</span><span class="strut">&nbsp;</span></p>
+<p id="t12" class="stm mis">    <span class="key">return</span> <span class="str">'\n'</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t13" class="pln">        <span class="nam">visual</span><span class="op">(</span><span class="nam">b</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t14" class="pln">        <span class="key">for</span> <span class="nam">b</span> <span class="key">in</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t15" class="pln">                <span class="nam">bytes</span><span class="op">[</span><span class="nam">sum</span><span class="op">(</span><span class="nam">ii</span><span class="op">[</span><span class="op">:</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="op">:</span><span class="nam">sum</span><span class="op">(</span><span class="nam">ii</span><span class="op">[</span><span class="op">:</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="nam">ii</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t16" class="pln">                <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">xrange</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">ii</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t17" class="pln">        <span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t18" class="pln">    <span class="op">)</span><span class="op">.</span><span class="nam">upper</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+
             </td>
         </tr>
     </table>
@@ -115,8 +115,8 @@
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.org">coverage.py v4.0.3</a>,
-            created at 2015-11-28 05:04
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.3</a>,
+            created at 2019-03-15 01:33
         </p>
     </div>
 </div>

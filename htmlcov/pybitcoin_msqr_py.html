@@ -42,22 +42,22 @@
 
 <div class="help_panel">
     <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
-<p class="legend">Hot-keys on this page</p>
+    <p class="legend">Hot-keys on this page</p>
     <div>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">r</span>
         <span class="key">m</span>
         <span class="key">x</span>
         <span class="key">p</span> &nbsp; toggle line displays
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">j</span>
         <span class="key">k</span> &nbsp; next/prev highlighted chunk
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">0</span> &nbsp; (zero) top of page
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">1</span> &nbsp; (one) first highlighted chunk
     </p>
     </div>
@@ -161,104 +161,104 @@
 <p id="n92" class="pln"><a href="#n92">92</a></p>
 <p id="n93" class="stm run hide_run"><a href="#n93">93</a></p>
 <p id="n94" class="stm run hide_run"><a href="#n94">94</a></p>
-                
+
             </td>
             <td class="text">
 <p id="t1" class="pln"><span class="com"># from http://eli.thegreenplace.net/2009/03/07/computing-modular-square-roots-in-python/</span><span class="strut">&nbsp;</span></p>
 <p id="t2" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t3" class="stm run hide_run"><span class="key">def</span> <span class="nam">modular_sqrt</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t4" class="pln">&nbsp; &nbsp; <span class="str">&quot;&quot;&quot; Find a quadratic residue (mod p) of &#39;a&#39;. p</span><span class="strut">&nbsp;</span></p>
-<p id="t5" class="pln"><span class="str">&nbsp; &nbsp; must be an odd prime.</span><span class="strut">&nbsp;</span></p>
+<p id="t4" class="pln">    <span class="str">""" Find a quadratic residue (mod p) of 'a'. p</span><span class="strut">&nbsp;</span></p>
+<p id="t5" class="pln"><span class="str">    must be an odd prime.</span><span class="strut">&nbsp;</span></p>
 <p id="t6" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t7" class="pln"><span class="str">&nbsp; &nbsp; Solve the congruence of the form:</span><span class="strut">&nbsp;</span></p>
-<p id="t8" class="pln"><span class="str">&nbsp; &nbsp; x^2 = a (mod p)</span><span class="strut">&nbsp;</span></p>
-<p id="t9" class="pln"><span class="str">&nbsp; &nbsp; And returns x. Note that p - x is also a root.</span><span class="strut">&nbsp;</span></p>
+<p id="t7" class="pln"><span class="str">    Solve the congruence of the form:</span><span class="strut">&nbsp;</span></p>
+<p id="t8" class="pln"><span class="str">    x^2 = a (mod p)</span><span class="strut">&nbsp;</span></p>
+<p id="t9" class="pln"><span class="str">    And returns x. Note that p - x is also a root.</span><span class="strut">&nbsp;</span></p>
 <p id="t10" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t11" class="pln"><span class="str">&nbsp; &nbsp; 0 is returned is no square root exists for</span><span class="strut">&nbsp;</span></p>
-<p id="t12" class="pln"><span class="str">&nbsp; &nbsp; these a and p.</span><span class="strut">&nbsp;</span></p>
+<p id="t11" class="pln"><span class="str">    0 is returned is no square root exists for</span><span class="strut">&nbsp;</span></p>
+<p id="t12" class="pln"><span class="str">    these a and p.</span><span class="strut">&nbsp;</span></p>
 <p id="t13" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t14" class="pln"><span class="str">&nbsp; &nbsp; The Tonelli-Shanks algorithm is used (except</span><span class="strut">&nbsp;</span></p>
-<p id="t15" class="pln"><span class="str">&nbsp; &nbsp; for some simple cases in which the solution</span><span class="strut">&nbsp;</span></p>
-<p id="t16" class="pln"><span class="str">&nbsp; &nbsp; is known from an identity). This algorithm</span><span class="strut">&nbsp;</span></p>
-<p id="t17" class="pln"><span class="str">&nbsp; &nbsp; runs in polynomial time (unless the</span><span class="strut">&nbsp;</span></p>
-<p id="t18" class="pln"><span class="str">&nbsp; &nbsp; generalized Riemann hypothesis is false).</span><span class="strut">&nbsp;</span></p>
-<p id="t19" class="pln"><span class="str">&nbsp; &nbsp; &quot;&quot;&quot;</span><span class="strut">&nbsp;</span></p>
-<p id="t20" class="pln">&nbsp; &nbsp; <span class="com"># Simple cases</span><span class="strut">&nbsp;</span></p>
-<p id="t21" class="pln">&nbsp; &nbsp; <span class="com">#</span><span class="strut">&nbsp;</span></p>
-<p id="t22" class="stm run hide_run">&nbsp; &nbsp; <span class="key">if</span> <span class="nam">legendre_symbol</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span> <span class="op">!=</span> <span class="num">1</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t23" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">return</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t24" class="stm run hide_run">&nbsp; &nbsp; <span class="key">elif</span> <span class="nam">a</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t25" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">return</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t26" class="stm run hide_run">&nbsp; &nbsp; <span class="key">elif</span> <span class="nam">p</span> <span class="op">==</span> <span class="num">2</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t27" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">return</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
-<p id="t28" class="stm run hide_run">&nbsp; &nbsp; <span class="key">elif</span> <span class="nam">p</span> <span class="op">%</span> <span class="num">4</span> <span class="op">==</span> <span class="num">3</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t29" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">return</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="op">(</span><span class="nam">p</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span> <span class="op">/</span> <span class="num">4</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t14" class="pln"><span class="str">    The Tonelli-Shanks algorithm is used (except</span><span class="strut">&nbsp;</span></p>
+<p id="t15" class="pln"><span class="str">    for some simple cases in which the solution</span><span class="strut">&nbsp;</span></p>
+<p id="t16" class="pln"><span class="str">    is known from an identity). This algorithm</span><span class="strut">&nbsp;</span></p>
+<p id="t17" class="pln"><span class="str">    runs in polynomial time (unless the</span><span class="strut">&nbsp;</span></p>
+<p id="t18" class="pln"><span class="str">    generalized Riemann hypothesis is false).</span><span class="strut">&nbsp;</span></p>
+<p id="t19" class="pln"><span class="str">    """</span><span class="strut">&nbsp;</span></p>
+<p id="t20" class="pln">    <span class="com"># Simple cases</span><span class="strut">&nbsp;</span></p>
+<p id="t21" class="pln">    <span class="com">#</span><span class="strut">&nbsp;</span></p>
+<p id="t22" class="stm run hide_run">    <span class="key">if</span> <span class="nam">legendre_symbol</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span> <span class="op">!=</span> <span class="num">1</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t23" class="stm mis">        <span class="key">return</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t24" class="stm run hide_run">    <span class="key">elif</span> <span class="nam">a</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t25" class="stm mis">        <span class="key">return</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t26" class="stm run hide_run">    <span class="key">elif</span> <span class="nam">p</span> <span class="op">==</span> <span class="num">2</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t27" class="stm mis">        <span class="key">return</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
+<p id="t28" class="stm run hide_run">    <span class="key">elif</span> <span class="nam">p</span> <span class="op">%</span> <span class="num">4</span> <span class="op">==</span> <span class="num">3</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t29" class="stm run hide_run">        <span class="key">return</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="op">(</span><span class="nam">p</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span> <span class="op">/</span> <span class="num">4</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t30" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t31" class="pln">&nbsp; &nbsp; <span class="com"># Partition p-1 to s * 2^e for an odd s (i.e.</span><span class="strut">&nbsp;</span></p>
-<p id="t32" class="pln">&nbsp; &nbsp; <span class="com"># reduce all the powers of 2 from p-1)</span><span class="strut">&nbsp;</span></p>
-<p id="t33" class="pln">&nbsp; &nbsp; <span class="com">#</span><span class="strut">&nbsp;</span></p>
-<p id="t34" class="stm mis">&nbsp; &nbsp; <span class="nam">s</span> <span class="op">=</span> <span class="nam">p</span> <span class="op">-</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
-<p id="t35" class="stm mis">&nbsp; &nbsp; <span class="nam">e</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t36" class="stm mis">&nbsp; &nbsp; <span class="key">while</span> <span class="nam">s</span> <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t37" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">s</span> <span class="op">/=</span> <span class="num">2</span><span class="strut">&nbsp;</span></p>
-<p id="t38" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">e</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t31" class="pln">    <span class="com"># Partition p-1 to s * 2^e for an odd s (i.e.</span><span class="strut">&nbsp;</span></p>
+<p id="t32" class="pln">    <span class="com"># reduce all the powers of 2 from p-1)</span><span class="strut">&nbsp;</span></p>
+<p id="t33" class="pln">    <span class="com">#</span><span class="strut">&nbsp;</span></p>
+<p id="t34" class="stm mis">    <span class="nam">s</span> <span class="op">=</span> <span class="nam">p</span> <span class="op">-</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t35" class="stm mis">    <span class="nam">e</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t36" class="stm mis">    <span class="key">while</span> <span class="nam">s</span> <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t37" class="stm mis">        <span class="nam">s</span> <span class="op">/=</span> <span class="num">2</span><span class="strut">&nbsp;</span></p>
+<p id="t38" class="stm mis">        <span class="nam">e</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
 <p id="t39" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t40" class="pln">&nbsp; &nbsp; <span class="com"># Find some &#39;n&#39; with a legendre symbol n|p = -1.</span><span class="strut">&nbsp;</span></p>
-<p id="t41" class="pln">&nbsp; &nbsp; <span class="com"># Shouldn&#39;t take long.</span><span class="strut">&nbsp;</span></p>
-<p id="t42" class="pln">&nbsp; &nbsp; <span class="com">#</span><span class="strut">&nbsp;</span></p>
-<p id="t43" class="stm mis">&nbsp; &nbsp; <span class="nam">n</span> <span class="op">=</span> <span class="num">2</span><span class="strut">&nbsp;</span></p>
-<p id="t44" class="stm mis">&nbsp; &nbsp; <span class="key">while</span> <span class="nam">legendre_symbol</span><span class="op">(</span><span class="nam">n</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span> <span class="op">!=</span> <span class="op">-</span><span class="num">1</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t45" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">n</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t40" class="pln">    <span class="com"># Find some 'n' with a legendre symbol n|p = -1.</span><span class="strut">&nbsp;</span></p>
+<p id="t41" class="pln">    <span class="com"># Shouldn't take long.</span><span class="strut">&nbsp;</span></p>
+<p id="t42" class="pln">    <span class="com">#</span><span class="strut">&nbsp;</span></p>
+<p id="t43" class="stm mis">    <span class="nam">n</span> <span class="op">=</span> <span class="num">2</span><span class="strut">&nbsp;</span></p>
+<p id="t44" class="stm mis">    <span class="key">while</span> <span class="nam">legendre_symbol</span><span class="op">(</span><span class="nam">n</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span> <span class="op">!=</span> <span class="op">-</span><span class="num">1</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t45" class="stm mis">        <span class="nam">n</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
 <p id="t46" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t47" class="pln">&nbsp; &nbsp; <span class="com"># Here be dragons!</span><span class="strut">&nbsp;</span></p>
-<p id="t48" class="pln">&nbsp; &nbsp; <span class="com"># Read the paper &quot;Square roots from 1; 24, 51,</span><span class="strut">&nbsp;</span></p>
-<p id="t49" class="pln">&nbsp; &nbsp; <span class="com"># 10 to Dan Shanks&quot; by Ezra Brown for more</span><span class="strut">&nbsp;</span></p>
-<p id="t50" class="pln">&nbsp; &nbsp; <span class="com"># information</span><span class="strut">&nbsp;</span></p>
-<p id="t51" class="pln">&nbsp; &nbsp; <span class="com">#</span><span class="strut">&nbsp;</span></p>
+<p id="t47" class="pln">    <span class="com"># Here be dragons!</span><span class="strut">&nbsp;</span></p>
+<p id="t48" class="pln">    <span class="com"># Read the paper "Square roots from 1; 24, 51,</span><span class="strut">&nbsp;</span></p>
+<p id="t49" class="pln">    <span class="com"># 10 to Dan Shanks" by Ezra Brown for more</span><span class="strut">&nbsp;</span></p>
+<p id="t50" class="pln">    <span class="com"># information</span><span class="strut">&nbsp;</span></p>
+<p id="t51" class="pln">    <span class="com">#</span><span class="strut">&nbsp;</span></p>
 <p id="t52" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t53" class="pln">&nbsp; &nbsp; <span class="com"># x is a guess of the square root that gets better</span><span class="strut">&nbsp;</span></p>
-<p id="t54" class="pln">&nbsp; &nbsp; <span class="com"># with each iteration.</span><span class="strut">&nbsp;</span></p>
-<p id="t55" class="pln">&nbsp; &nbsp; <span class="com"># b is the &quot;fudge factor&quot; - by how much we&#39;re off</span><span class="strut">&nbsp;</span></p>
-<p id="t56" class="pln">&nbsp; &nbsp; <span class="com"># with the guess. The invariant x^2 = ab (mod p)</span><span class="strut">&nbsp;</span></p>
-<p id="t57" class="pln">&nbsp; &nbsp; <span class="com"># is maintained throughout the loop.</span><span class="strut">&nbsp;</span></p>
-<p id="t58" class="pln">&nbsp; &nbsp; <span class="com"># g is used for successive powers of n to update</span><span class="strut">&nbsp;</span></p>
-<p id="t59" class="pln">&nbsp; &nbsp; <span class="com"># both a and b</span><span class="strut">&nbsp;</span></p>
-<p id="t60" class="pln">&nbsp; &nbsp; <span class="com"># r is the exponent - decreases with each update</span><span class="strut">&nbsp;</span></p>
-<p id="t61" class="pln">&nbsp; &nbsp; <span class="com">#</span><span class="strut">&nbsp;</span></p>
-<p id="t62" class="stm mis">&nbsp; &nbsp; <span class="nam">x</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="op">(</span><span class="nam">s</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span> <span class="op">/</span> <span class="num">2</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t63" class="stm mis">&nbsp; &nbsp; <span class="nam">b</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="nam">s</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t64" class="stm mis">&nbsp; &nbsp; <span class="nam">g</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">n</span><span class="op">,</span> <span class="nam">s</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t65" class="stm mis">&nbsp; &nbsp; <span class="nam">r</span> <span class="op">=</span> <span class="nam">e</span><span class="strut">&nbsp;</span></p>
+<p id="t53" class="pln">    <span class="com"># x is a guess of the square root that gets better</span><span class="strut">&nbsp;</span></p>
+<p id="t54" class="pln">    <span class="com"># with each iteration.</span><span class="strut">&nbsp;</span></p>
+<p id="t55" class="pln">    <span class="com"># b is the "fudge factor" - by how much we're off</span><span class="strut">&nbsp;</span></p>
+<p id="t56" class="pln">    <span class="com"># with the guess. The invariant x^2 = ab (mod p)</span><span class="strut">&nbsp;</span></p>
+<p id="t57" class="pln">    <span class="com"># is maintained throughout the loop.</span><span class="strut">&nbsp;</span></p>
+<p id="t58" class="pln">    <span class="com"># g is used for successive powers of n to update</span><span class="strut">&nbsp;</span></p>
+<p id="t59" class="pln">    <span class="com"># both a and b</span><span class="strut">&nbsp;</span></p>
+<p id="t60" class="pln">    <span class="com"># r is the exponent - decreases with each update</span><span class="strut">&nbsp;</span></p>
+<p id="t61" class="pln">    <span class="com">#</span><span class="strut">&nbsp;</span></p>
+<p id="t62" class="stm mis">    <span class="nam">x</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="op">(</span><span class="nam">s</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span> <span class="op">/</span> <span class="num">2</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t63" class="stm mis">    <span class="nam">b</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="nam">s</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t64" class="stm mis">    <span class="nam">g</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">n</span><span class="op">,</span> <span class="nam">s</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t65" class="stm mis">    <span class="nam">r</span> <span class="op">=</span> <span class="nam">e</span><span class="strut">&nbsp;</span></p>
 <p id="t66" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t67" class="stm mis">&nbsp; &nbsp; <span class="key">while</span> <span class="nam">True</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t68" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">t</span> <span class="op">=</span> <span class="nam">b</span><span class="strut">&nbsp;</span></p>
-<p id="t69" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">m</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t70" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">for</span> <span class="nam">m</span> <span class="key">in</span> <span class="nam">xrange</span><span class="op">(</span><span class="nam">r</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t71" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="key">if</span> <span class="nam">t</span> <span class="op">==</span> <span class="num">1</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t72" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="key">break</span><span class="strut">&nbsp;</span></p>
-<p id="t73" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">t</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">t</span><span class="op">,</span> <span class="num">2</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t67" class="stm mis">    <span class="key">while</span> <span class="nam">True</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t68" class="stm mis">        <span class="nam">t</span> <span class="op">=</span> <span class="nam">b</span><span class="strut">&nbsp;</span></p>
+<p id="t69" class="stm mis">        <span class="nam">m</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t70" class="stm mis">        <span class="key">for</span> <span class="nam">m</span> <span class="key">in</span> <span class="nam">xrange</span><span class="op">(</span><span class="nam">r</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t71" class="stm mis">            <span class="key">if</span> <span class="nam">t</span> <span class="op">==</span> <span class="num">1</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t72" class="stm mis">                <span class="key">break</span><span class="strut">&nbsp;</span></p>
+<p id="t73" class="stm mis">            <span class="nam">t</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">t</span><span class="op">,</span> <span class="num">2</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t74" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t75" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">if</span> <span class="nam">m</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t76" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="key">return</span> <span class="nam">x</span><span class="strut">&nbsp;</span></p>
+<p id="t75" class="stm mis">        <span class="key">if</span> <span class="nam">m</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t76" class="stm mis">            <span class="key">return</span> <span class="nam">x</span><span class="strut">&nbsp;</span></p>
 <p id="t77" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t78" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">gs</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">g</span><span class="op">,</span> <span class="num">2</span> <span class="op">**</span> <span class="op">(</span><span class="nam">r</span> <span class="op">-</span> <span class="nam">m</span> <span class="op">-</span> <span class="num">1</span><span class="op">)</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t79" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">g</span> <span class="op">=</span> <span class="op">(</span><span class="nam">gs</span> <span class="op">*</span> <span class="nam">gs</span><span class="op">)</span> <span class="op">%</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
-<p id="t80" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">x</span> <span class="op">=</span> <span class="op">(</span><span class="nam">x</span> <span class="op">*</span> <span class="nam">gs</span><span class="op">)</span> <span class="op">%</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
-<p id="t81" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">b</span> <span class="op">=</span> <span class="op">(</span><span class="nam">b</span> <span class="op">*</span> <span class="nam">g</span><span class="op">)</span> <span class="op">%</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
-<p id="t82" class="stm mis">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">r</span> <span class="op">=</span> <span class="nam">m</span><span class="strut">&nbsp;</span></p>
+<p id="t78" class="stm mis">        <span class="nam">gs</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">g</span><span class="op">,</span> <span class="num">2</span> <span class="op">**</span> <span class="op">(</span><span class="nam">r</span> <span class="op">-</span> <span class="nam">m</span> <span class="op">-</span> <span class="num">1</span><span class="op">)</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t79" class="stm mis">        <span class="nam">g</span> <span class="op">=</span> <span class="op">(</span><span class="nam">gs</span> <span class="op">*</span> <span class="nam">gs</span><span class="op">)</span> <span class="op">%</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
+<p id="t80" class="stm mis">        <span class="nam">x</span> <span class="op">=</span> <span class="op">(</span><span class="nam">x</span> <span class="op">*</span> <span class="nam">gs</span><span class="op">)</span> <span class="op">%</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
+<p id="t81" class="stm mis">        <span class="nam">b</span> <span class="op">=</span> <span class="op">(</span><span class="nam">b</span> <span class="op">*</span> <span class="nam">g</span><span class="op">)</span> <span class="op">%</span> <span class="nam">p</span><span class="strut">&nbsp;</span></p>
+<p id="t82" class="stm mis">        <span class="nam">r</span> <span class="op">=</span> <span class="nam">m</span><span class="strut">&nbsp;</span></p>
 <p id="t83" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t84" class="stm run hide_run"><span class="key">def</span> <span class="nam">legendre_symbol</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t85" class="pln">&nbsp; &nbsp; <span class="str">&quot;&quot;&quot; Compute the Legendre symbol a|p using</span><span class="strut">&nbsp;</span></p>
-<p id="t86" class="pln"><span class="str">&nbsp; &nbsp; Euler&#39;s criterion. p is a prime, a is</span><span class="strut">&nbsp;</span></p>
-<p id="t87" class="pln"><span class="str">&nbsp; &nbsp; relatively prime to p (if p divides</span><span class="strut">&nbsp;</span></p>
-<p id="t88" class="pln"><span class="str">&nbsp; &nbsp; a, then a|p = 0)</span><span class="strut">&nbsp;</span></p>
+<p id="t85" class="pln">    <span class="str">""" Compute the Legendre symbol a|p using</span><span class="strut">&nbsp;</span></p>
+<p id="t86" class="pln"><span class="str">    Euler's criterion. p is a prime, a is</span><span class="strut">&nbsp;</span></p>
+<p id="t87" class="pln"><span class="str">    relatively prime to p (if p divides</span><span class="strut">&nbsp;</span></p>
+<p id="t88" class="pln"><span class="str">    a, then a|p = 0)</span><span class="strut">&nbsp;</span></p>
 <p id="t89" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t90" class="pln"><span class="str">&nbsp; &nbsp; Returns 1 if a has a square root modulo</span><span class="strut">&nbsp;</span></p>
-<p id="t91" class="pln"><span class="str">&nbsp; &nbsp; p, -1 otherwise.</span><span class="strut">&nbsp;</span></p>
-<p id="t92" class="pln"><span class="str">&nbsp; &nbsp; &quot;&quot;&quot;</span><span class="strut">&nbsp;</span></p>
-<p id="t93" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">ls</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="op">(</span><span class="nam">p</span> <span class="op">-</span> <span class="num">1</span><span class="op">)</span> <span class="op">/</span> <span class="num">2</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t94" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="op">-</span><span class="num">1</span> <span class="key">if</span> <span class="nam">ls</span> <span class="op">==</span> <span class="nam">p</span> <span class="op">-</span> <span class="num">1</span> <span class="key">else</span> <span class="nam">ls</span><span class="strut">&nbsp;</span></p>
-                
+<p id="t90" class="pln"><span class="str">    Returns 1 if a has a square root modulo</span><span class="strut">&nbsp;</span></p>
+<p id="t91" class="pln"><span class="str">    p, -1 otherwise.</span><span class="strut">&nbsp;</span></p>
+<p id="t92" class="pln"><span class="str">    """</span><span class="strut">&nbsp;</span></p>
+<p id="t93" class="stm run hide_run">    <span class="nam">ls</span> <span class="op">=</span> <span class="nam">pow</span><span class="op">(</span><span class="nam">a</span><span class="op">,</span> <span class="op">(</span><span class="nam">p</span> <span class="op">-</span> <span class="num">1</span><span class="op">)</span> <span class="op">/</span> <span class="num">2</span><span class="op">,</span> <span class="nam">p</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t94" class="stm run hide_run">    <span class="key">return</span> <span class="op">-</span><span class="num">1</span> <span class="key">if</span> <span class="nam">ls</span> <span class="op">==</span> <span class="nam">p</span> <span class="op">-</span> <span class="num">1</span> <span class="key">else</span> <span class="nam">ls</span><span class="strut">&nbsp;</span></p>
+
             </td>
         </tr>
     </table>
@@ -267,8 +267,8 @@
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.org">coverage.py v4.0.3</a>,
-            created at 2015-11-28 05:04
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.3</a>,
+            created at 2019-03-15 01:33
         </p>
     </div>
 </div>

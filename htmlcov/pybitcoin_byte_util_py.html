@@ -42,22 +42,22 @@
 
 <div class="help_panel">
     <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
-<p class="legend">Hot-keys on this page</p>
+    <p class="legend">Hot-keys on this page</p>
     <div>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">r</span>
         <span class="key">m</span>
         <span class="key">x</span>
         <span class="key">p</span> &nbsp; toggle line displays
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">j</span>
         <span class="key">k</span> &nbsp; next/prev highlighted chunk
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">0</span> &nbsp; (zero) top of page
     </p>
-<p class="keyhelp">
+    <p class="keyhelp">
         <span class="key">1</span> &nbsp; (one) first highlighted chunk
     </p>
     </div>
@@ -155,7 +155,7 @@
 <p id="n86" class="pln"><a href="#n86">86</a></p>
 <p id="n87" class="pln"><a href="#n87">87</a></p>
 <p id="n88" class="pln"><a href="#n88">88</a></p>
-                
+
             </td>
             <td class="text">
 <p id="t1" class="stm run hide_run"><span class="key">import</span> <span class="nam">binascii</span><span class="strut">&nbsp;</span></p>
@@ -163,90 +163,90 @@
 <p id="t3" class="stm run hide_run"><span class="key">import</span> <span class="nam">struct</span><span class="strut">&nbsp;</span></p>
 <p id="t4" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t5" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t6" class="stm run hide_run"><span class="nam">base58_alphabet</span> <span class="op">=</span> <span class="str">&#39;123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz&#39;</span><span class="strut">&nbsp;</span></p>
+<p id="t6" class="stm run hide_run"><span class="nam">base58_alphabet</span> <span class="op">=</span> <span class="str">'123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'</span><span class="strut">&nbsp;</span></p>
 <p id="t7" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t8" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t9" class="stm run hide_run"><span class="key">class</span> <span class="nam">Error</span><span class="op">(</span><span class="nam">Exception</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t10" class="stm run hide_run">&nbsp; &nbsp; <span class="key">pass</span><span class="strut">&nbsp;</span></p>
+<p id="t10" class="stm run hide_run">    <span class="key">pass</span><span class="strut">&nbsp;</span></p>
 <p id="t11" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t12" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t13" class="stm run hide_run"><span class="key">class</span> <span class="nam">ParseError</span><span class="op">(</span><span class="nam">Error</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t14" class="stm run hide_run">&nbsp; &nbsp; <span class="key">pass</span><span class="strut">&nbsp;</span></p>
+<p id="t14" class="stm run hide_run">    <span class="key">pass</span><span class="strut">&nbsp;</span></p>
 <p id="t15" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t16" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t17" class="stm run hide_run"><span class="key">def</span> <span class="nam">fmt_w_size</span><span class="op">(</span><span class="nam">fmt</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t18" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="op">(</span><span class="nam">fmt</span><span class="op">,</span> <span class="nam">struct</span><span class="op">.</span><span class="nam">calcsize</span><span class="op">(</span><span class="nam">fmt</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t18" class="stm run hide_run">    <span class="key">return</span> <span class="op">(</span><span class="nam">fmt</span><span class="op">,</span> <span class="nam">struct</span><span class="op">.</span><span class="nam">calcsize</span><span class="op">(</span><span class="nam">fmt</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t19" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t20" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t21" class="stm run hide_run"><span class="key">def</span> <span class="nam">splitn</span><span class="op">(</span><span class="nam">bytes</span><span class="op">,</span> <span class="nam">n</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t22" class="stm run hide_run">&nbsp; &nbsp; <span class="key">if</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span> <span class="op">&lt;</span> <span class="nam">n</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t23" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">raise</span> <span class="nam">ParseError</span><span class="op">(</span><span class="str">&#39;Expected %r+ bytes, got %r: %r&#39;</span> <span class="op">%</span> <span class="op">(</span><span class="nam">n</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t24" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="nam">bytes</span><span class="op">[</span><span class="op">:</span><span class="nam">n</span><span class="op">]</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">n</span><span class="op">:</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t22" class="stm run hide_run">    <span class="key">if</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span> <span class="op">&lt;</span> <span class="nam">n</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t23" class="stm run hide_run">        <span class="key">raise</span> <span class="nam">ParseError</span><span class="op">(</span><span class="str">'Expected %r+ bytes, got %r: %r'</span> <span class="op">%</span> <span class="op">(</span><span class="nam">n</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">)</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t24" class="stm run hide_run">    <span class="key">return</span> <span class="nam">bytes</span><span class="op">[</span><span class="op">:</span><span class="nam">n</span><span class="op">]</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">n</span><span class="op">:</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 <p id="t25" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t26" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t27" class="stm run hide_run"><span class="key">def</span> <span class="nam">parse</span><span class="op">(</span><span class="nam">bytes</span><span class="op">,</span> <span class="nam">fmt</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t28" class="stm run hide_run">&nbsp; &nbsp; <span class="op">(</span><span class="nam">bit</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">)</span> <span class="op">=</span> <span class="nam">splitn</span><span class="op">(</span><span class="nam">bytes</span><span class="op">,</span> <span class="nam">fmt</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t29" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="op">(</span><span class="nam">struct</span><span class="op">.</span><span class="nam">unpack</span><span class="op">(</span><span class="nam">fmt</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="nam">bit</span><span class="op">)</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t28" class="stm run hide_run">    <span class="op">(</span><span class="nam">bit</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">)</span> <span class="op">=</span> <span class="nam">splitn</span><span class="op">(</span><span class="nam">bytes</span><span class="op">,</span> <span class="nam">fmt</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t29" class="stm run hide_run">    <span class="key">return</span> <span class="op">(</span><span class="nam">struct</span><span class="op">.</span><span class="nam">unpack</span><span class="op">(</span><span class="nam">fmt</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="nam">bit</span><span class="op">)</span><span class="op">,</span> <span class="nam">bytes</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t30" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t31" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t32" class="stm run hide_run"><span class="key">def</span> <span class="nam">base58_chars</span><span class="op">(</span><span class="nam">num</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t33" class="stm run hide_run">&nbsp; &nbsp; <span class="key">while</span> <span class="nam">num</span> <span class="op">&gt;</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t34" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="op">(</span><span class="nam">num</span><span class="op">,</span> <span class="nam">remainder</span><span class="op">)</span> <span class="op">=</span> <span class="nam">divmod</span><span class="op">(</span><span class="nam">num</span><span class="op">,</span> <span class="num">58</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t35" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">yield</span> <span class="nam">base58_alphabet</span><span class="op">[</span><span class="nam">remainder</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t33" class="stm run hide_run">    <span class="key">while</span> <span class="nam">num</span> <span class="op">></span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t34" class="stm run hide_run">        <span class="op">(</span><span class="nam">num</span><span class="op">,</span> <span class="nam">remainder</span><span class="op">)</span> <span class="op">=</span> <span class="nam">divmod</span><span class="op">(</span><span class="nam">num</span><span class="op">,</span> <span class="num">58</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t35" class="stm run hide_run">        <span class="key">yield</span> <span class="nam">base58_alphabet</span><span class="op">[</span><span class="nam">remainder</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 <p id="t36" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t37" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t38" class="stm run hide_run"><span class="key">def</span> <span class="nam">base58_encode</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t39" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">leading_zeros</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t40" class="stm run hide_run">&nbsp; &nbsp; <span class="key">while</span> <span class="nam">leading_zeros</span> <span class="op">&lt;</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span> <span class="key">and</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">leading_zeros</span><span class="op">]</span> <span class="op">==</span> <span class="str">&#39;\x00&#39;</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t41" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">leading_zeros</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
-<p id="t42" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">num</span> <span class="op">=</span> <span class="nam">int</span><span class="op">(</span><span class="nam">binascii</span><span class="op">.</span><span class="nam">hexlify</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">,</span> <span class="num">16</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t43" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">encoded</span> <span class="op">=</span> <span class="str">&#39;%s%s&#39;</span> <span class="op">%</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
-<p id="t44" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; <span class="str">&#39;&#39;</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">base58_chars</span><span class="op">(</span><span class="nam">num</span><span class="op">)</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t45" class="pln">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">base58_alphabet</span><span class="op">[</span><span class="num">0</span><span class="op">]</span> <span class="op">*</span> <span class="nam">leading_zeros</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t46" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="nam">encoded</span><span class="op">[</span><span class="op">:</span><span class="op">:</span><span class="op">-</span><span class="num">1</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t39" class="stm run hide_run">    <span class="nam">leading_zeros</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t40" class="stm run hide_run">    <span class="key">while</span> <span class="nam">leading_zeros</span> <span class="op">&lt;</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span> <span class="key">and</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">leading_zeros</span><span class="op">]</span> <span class="op">==</span> <span class="str">'\x00'</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t41" class="stm run hide_run">        <span class="nam">leading_zeros</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t42" class="stm run hide_run">    <span class="nam">num</span> <span class="op">=</span> <span class="nam">int</span><span class="op">(</span><span class="nam">binascii</span><span class="op">.</span><span class="nam">hexlify</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">,</span> <span class="num">16</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t43" class="stm run hide_run">    <span class="nam">encoded</span> <span class="op">=</span> <span class="str">'%s%s'</span> <span class="op">%</span> <span class="op">(</span><span class="strut">&nbsp;</span></p>
+<p id="t44" class="pln">        <span class="str">''</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">base58_chars</span><span class="op">(</span><span class="nam">num</span><span class="op">)</span><span class="op">)</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t45" class="pln">        <span class="nam">base58_alphabet</span><span class="op">[</span><span class="num">0</span><span class="op">]</span> <span class="op">*</span> <span class="nam">leading_zeros</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t46" class="stm run hide_run">    <span class="key">return</span> <span class="nam">encoded</span><span class="op">[</span><span class="op">:</span><span class="op">:</span><span class="op">-</span><span class="num">1</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
 <p id="t47" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t48" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t49" class="stm run hide_run"><span class="key">def</span> <span class="nam">base58_decode</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t50" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">leading_zeros</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t51" class="stm run hide_run">&nbsp; &nbsp; <span class="key">while</span> <span class="nam">leading_zeros</span> <span class="op">&lt;</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span> <span class="key">and</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">leading_zeros</span><span class="op">]</span> <span class="op">==</span> <span class="str">&#39;1&#39;</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t52" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">leading_zeros</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
-<p id="t53" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">bytes</span> <span class="op">=</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">leading_zeros</span><span class="op">:</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t54" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">num</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
-<p id="t55" class="stm run hide_run">&nbsp; &nbsp; <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">xrange</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t56" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">num</span> <span class="op">=</span> <span class="nam">num</span> <span class="op">*</span> <span class="num">58</span> <span class="op">+</span> <span class="nam">base58_alphabet</span><span class="op">.</span><span class="nam">index</span><span class="op">(</span><span class="nam">bytes</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t57" class="stm run hide_run">&nbsp; &nbsp; <span class="key">if</span> <span class="nam">num</span> <span class="op">&gt;</span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t58" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">decoded_hex</span> <span class="op">=</span> <span class="nam">hex</span><span class="op">(</span><span class="nam">num</span><span class="op">)</span><span class="op">[</span><span class="num">2</span><span class="op">:</span><span class="op">]</span><span class="op">.</span><span class="nam">rstrip</span><span class="op">(</span><span class="str">&#39;L&#39;</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t59" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">if</span> <span class="nam">len</span><span class="op">(</span><span class="nam">decoded_hex</span><span class="op">)</span> <span class="op">%</span> <span class="num">2</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t60" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">decoded_hex</span> <span class="op">=</span> <span class="str">&#39;0&#39;</span> <span class="op">+</span> <span class="nam">decoded_hex</span><span class="strut">&nbsp;</span></p>
-<p id="t61" class="pln">&nbsp; &nbsp; <span class="key">else</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t62" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="nam">decoded_hex</span> <span class="op">=</span> <span class="str">&#39;&#39;</span><span class="strut">&nbsp;</span></p>
-<p id="t63" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="op">(</span><span class="nam">leading_zeros</span> <span class="op">*</span> <span class="str">&#39;\x00&#39;</span><span class="op">)</span> <span class="op">+</span> <span class="nam">binascii</span><span class="op">.</span><span class="nam">unhexlify</span><span class="op">(</span><span class="nam">decoded_hex</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t50" class="stm run hide_run">    <span class="nam">leading_zeros</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t51" class="stm run hide_run">    <span class="key">while</span> <span class="nam">leading_zeros</span> <span class="op">&lt;</span> <span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span> <span class="key">and</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">leading_zeros</span><span class="op">]</span> <span class="op">==</span> <span class="str">'1'</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t52" class="stm run hide_run">        <span class="nam">leading_zeros</span> <span class="op">+=</span> <span class="num">1</span><span class="strut">&nbsp;</span></p>
+<p id="t53" class="stm run hide_run">    <span class="nam">bytes</span> <span class="op">=</span> <span class="nam">bytes</span><span class="op">[</span><span class="nam">leading_zeros</span><span class="op">:</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t54" class="stm run hide_run">    <span class="nam">num</span> <span class="op">=</span> <span class="num">0</span><span class="strut">&nbsp;</span></p>
+<p id="t55" class="stm run hide_run">    <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">xrange</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">bytes</span><span class="op">)</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t56" class="stm run hide_run">        <span class="nam">num</span> <span class="op">=</span> <span class="nam">num</span> <span class="op">*</span> <span class="num">58</span> <span class="op">+</span> <span class="nam">base58_alphabet</span><span class="op">.</span><span class="nam">index</span><span class="op">(</span><span class="nam">bytes</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t57" class="stm run hide_run">    <span class="key">if</span> <span class="nam">num</span> <span class="op">></span> <span class="num">0</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t58" class="stm run hide_run">        <span class="nam">decoded_hex</span> <span class="op">=</span> <span class="nam">hex</span><span class="op">(</span><span class="nam">num</span><span class="op">)</span><span class="op">[</span><span class="num">2</span><span class="op">:</span><span class="op">]</span><span class="op">.</span><span class="nam">rstrip</span><span class="op">(</span><span class="str">'L'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t59" class="stm run hide_run">        <span class="key">if</span> <span class="nam">len</span><span class="op">(</span><span class="nam">decoded_hex</span><span class="op">)</span> <span class="op">%</span> <span class="num">2</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t60" class="stm run hide_run">            <span class="nam">decoded_hex</span> <span class="op">=</span> <span class="str">'0'</span> <span class="op">+</span> <span class="nam">decoded_hex</span><span class="strut">&nbsp;</span></p>
+<p id="t61" class="pln">    <span class="key">else</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t62" class="stm run hide_run">        <span class="nam">decoded_hex</span> <span class="op">=</span> <span class="str">''</span><span class="strut">&nbsp;</span></p>
+<p id="t63" class="stm run hide_run">    <span class="key">return</span> <span class="op">(</span><span class="nam">leading_zeros</span> <span class="op">*</span> <span class="str">'\x00'</span><span class="op">)</span> <span class="op">+</span> <span class="nam">binascii</span><span class="op">.</span><span class="nam">unhexlify</span><span class="op">(</span><span class="nam">decoded_hex</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t64" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t65" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t66" class="stm run hide_run"><span class="key">def</span> <span class="nam">base58_encode_checksum</span><span class="op">(</span><span class="nam">raw</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t67" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">hash</span> <span class="op">=</span> <span class="nam">sha256</span><span class="op">(</span><span class="nam">sha256</span><span class="op">(</span><span class="nam">raw</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t68" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="nam">base58_encode</span><span class="op">(</span><span class="nam">raw</span> <span class="op">+</span> <span class="nam">hash</span><span class="op">[</span><span class="op">:</span><span class="num">4</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t67" class="stm run hide_run">    <span class="nam">hash</span> <span class="op">=</span> <span class="nam">sha256</span><span class="op">(</span><span class="nam">sha256</span><span class="op">(</span><span class="nam">raw</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t68" class="stm run hide_run">    <span class="key">return</span> <span class="nam">base58_encode</span><span class="op">(</span><span class="nam">raw</span> <span class="op">+</span> <span class="nam">hash</span><span class="op">[</span><span class="op">:</span><span class="num">4</span><span class="op">]</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t69" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t70" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t71" class="stm run hide_run"><span class="key">def</span> <span class="nam">base58_decode_checksum</span><span class="op">(</span><span class="nam">enc</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t72" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">raw</span> <span class="op">=</span> <span class="nam">base58_decode</span><span class="op">(</span><span class="nam">enc</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t73" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">checksum</span> <span class="op">=</span> <span class="nam">raw</span><span class="op">[</span><span class="op">-</span><span class="num">4</span><span class="op">:</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t74" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">data</span> <span class="op">=</span> <span class="nam">raw</span><span class="op">[</span><span class="op">:</span><span class="op">-</span><span class="num">4</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
-<p id="t75" class="stm run hide_run">&nbsp; &nbsp; <span class="nam">hash</span> <span class="op">=</span> <span class="nam">sha256</span><span class="op">(</span><span class="nam">sha256</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t76" class="stm run hide_run">&nbsp; &nbsp; <span class="key">if</span> <span class="nam">hash</span><span class="op">[</span><span class="op">:</span><span class="num">4</span><span class="op">]</span> <span class="op">!=</span> <span class="nam">checksum</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
-<p id="t77" class="stm run hide_run">&nbsp; &nbsp; &nbsp; &nbsp; <span class="key">raise</span> <span class="nam">Error</span><span class="op">(</span><span class="str">&#39;Checksum mismatch&#39;</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t78" class="stm run hide_run">&nbsp; &nbsp; <span class="key">return</span> <span class="nam">data</span><span class="strut">&nbsp;</span></p>
+<p id="t72" class="stm run hide_run">    <span class="nam">raw</span> <span class="op">=</span> <span class="nam">base58_decode</span><span class="op">(</span><span class="nam">enc</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t73" class="stm run hide_run">    <span class="nam">checksum</span> <span class="op">=</span> <span class="nam">raw</span><span class="op">[</span><span class="op">-</span><span class="num">4</span><span class="op">:</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t74" class="stm run hide_run">    <span class="nam">data</span> <span class="op">=</span> <span class="nam">raw</span><span class="op">[</span><span class="op">:</span><span class="op">-</span><span class="num">4</span><span class="op">]</span><span class="strut">&nbsp;</span></p>
+<p id="t75" class="stm run hide_run">    <span class="nam">hash</span> <span class="op">=</span> <span class="nam">sha256</span><span class="op">(</span><span class="nam">sha256</span><span class="op">(</span><span class="nam">data</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">digest</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t76" class="stm run hide_run">    <span class="key">if</span> <span class="nam">hash</span><span class="op">[</span><span class="op">:</span><span class="num">4</span><span class="op">]</span> <span class="op">!=</span> <span class="nam">checksum</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
+<p id="t77" class="stm run hide_run">        <span class="key">raise</span> <span class="nam">Error</span><span class="op">(</span><span class="str">'Checksum mismatch'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t78" class="stm run hide_run">    <span class="key">return</span> <span class="nam">data</span><span class="strut">&nbsp;</span></p>
 <p id="t79" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t80" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t81" class="pln"><span class="com"># while clever, these are equivalent to encode_bigint and decode_bigint and much slower</span><span class="strut">&nbsp;</span></p>
 <p id="t82" class="pln"><span class="com">#def long_to_bytes(num):</span><span class="strut">&nbsp;</span></p>
-<p id="t83" class="pln"><span class="com">#&nbsp; &nbsp; return binascii.unhexlify(hex(num)[2:].rstrip(&#39;L&#39;).zfill(64))</span><span class="strut">&nbsp;</span></p>
+<p id="t83" class="pln"><span class="com">#    return binascii.unhexlify(hex(num)[2:].rstrip('L').zfill(64))</span><span class="strut">&nbsp;</span></p>
 <p id="t84" class="pln"><span class="com">#</span><span class="strut">&nbsp;</span></p>
 <p id="t85" class="pln"><span class="com">#</span><span class="strut">&nbsp;</span></p>
 <p id="t86" class="pln"><span class="com">#def bytes_to_long(raw):</span><span class="strut">&nbsp;</span></p>
-<p id="t87" class="pln"><span class="com">#&nbsp; &nbsp; return int(binascii.hexlify(raw), 16)</span><span class="strut">&nbsp;</span></p>
+<p id="t87" class="pln"><span class="com">#    return int(binascii.hexlify(raw), 16)</span><span class="strut">&nbsp;</span></p>
 <p id="t88" class="pln"><span class="strut">&nbsp;</span></p>
-                
+
             </td>
         </tr>
     </table>
@@ -255,8 +255,8 @@
 <div id="footer">
     <div class="content">
         <p>
-            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.org">coverage.py v4.0.3</a>,
-            created at 2015-11-28 05:04
+            <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.5.3</a>,
+            created at 2019-03-15 01:33
         </p>
     </div>
 </div>
